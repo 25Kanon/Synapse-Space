@@ -20,6 +20,8 @@ To get this project up and running on your local machine, follow these steps:
 	git clone https://github.com/25Kanon/Synapse-Space.git
 
 	cd <repository-name>
+
+ 	cd front-synapse_space
 	```
 2. **Install dependencies**
 
