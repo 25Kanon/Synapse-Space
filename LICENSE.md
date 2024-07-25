@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright (c) 2024 Synapse Space Team ~(Jomari~ ~M.~ ~Profeta,~ ~Christopher~ ~Joseph~ ~Gimeno,~ ~Ma.~ ~Estelle~ ~Florentino,~ ~Christine~ ~Jean~ ~Rebandaban)~
+Copyright (c) 2024 Synapse Space Team *(Jomari M. Profeta, Christopher Joseph Gimeno, Ma. Estelle Florentino, Christine Jean Rebandaban)*
 
 
 
