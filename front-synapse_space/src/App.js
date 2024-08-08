@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import larry from './larry.jpg';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -8,7 +9,7 @@ function App() {
   });
 
   useEffect(() => {
-    document.title = "New Page Title";
+    document.title = "Synapse Space";
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
@@ -24,7 +25,7 @@ function App() {
       <div className="hero bg-base-200 min-h-screen">
         <div className="hero-content flex-col lg:flex-row-reverse">
           <img
-            src="https://scontent.fmnl3-4.fna.fbcdn.net/v/t39.30808-6/218640353_2862111047377797_2009681759120790276_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=62qcSTGmw98Q7kNvgGn1bQb&_nc_zt=23&_nc_ht=scontent.fmnl3-4.fna&oh=00_AYBkDatLjiXxNCbPoi-YuzCo-IoODzzuCJcnPgpoA2CZCQ&oe=66A5A6F9"
+            src={larry}
             className="max-w-sm rounded-lg shadow-2xl" />
           <div>
             <h1 className="text-5xl font-bold">Start of the Development Journey</h1>
