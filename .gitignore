@@ -12,4 +12,4 @@ front-synapse_space/.env.production.local
 front-synapse_space/npm-debug.log*
 front-synapse_space/yarn-debug.log*
 front-synapse_space/yarn-error.log*
-env
+env/
