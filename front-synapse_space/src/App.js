@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserLogin from './pages/UserLogin';
+import UserRegister from './pages/UserRegister';
 import './App.css';
-import larry from './larry.jpg';
+
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -27,6 +28,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<UserLogin/>} />
+          <Route path="/register" element={<UserRegister/>} />
         </Routes>
       </Router>
     </div>

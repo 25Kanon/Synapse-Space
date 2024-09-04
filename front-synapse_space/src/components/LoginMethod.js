@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons'
+import {Link} from 'react-router-dom';
 import LoginForm from './LoginForm';
 
 
@@ -47,9 +48,9 @@ export default function LoginMethod() {
                             By Signing in, you agree to the Terms of Use, Community Rules, and Privacy Policy
                         </p>
                     </article>
-                    <p className="text-center text-xs text-gray-500 mt-4">
+                    <Link className="text-center text-xs text-gray-500 mt-4" to='/register'>
                         Don’t have an account? Sign up
-                    </p>
+                    </Link>
     
                 </div>
             </div>
