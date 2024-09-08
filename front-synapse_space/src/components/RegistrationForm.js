@@ -7,7 +7,7 @@ import * as yup from 'yup';
 import SuccessAlert from './SuccessAlert';
 import ErrorAlert from './ErrorAlert';
 const validationSchema = yup.object({
-    student_id: yup
+    student_number: yup
         .number()
         .required('Student Number is required')
         .typeError('Student Number must be a number'),
@@ -41,7 +41,7 @@ export default function RegistrationForm() {
 
     const formik = useFormik({
         initialValues: {
-            student_id: '',
+            student_number: '',
             first_name: '',
             last_name: '',
             email: '',
@@ -52,7 +52,7 @@ export default function RegistrationForm() {
         validationSchema: validationSchema,
         onSubmit: async(values) => {
             const sanitizedValues = {
-                student_id: DOMPurify.sanitize(values.student_id),
+                student_number: DOMPurify.sanitize(values.student_number),
                 first_name: DOMPurify.sanitize(values.first_name),
                 last_name: DOMPurify.sanitize(values.last_name),
                 email: DOMPurify.sanitize(values.email),
@@ -60,7 +60,7 @@ export default function RegistrationForm() {
                 password: DOMPurify.sanitize(values.password),
                 confirmPassword: DOMPurify.sanitize(values.confirmPassword),
             };
-            const { confirmPassword, ... submittedValues } = sanitizedValues;
+            const { confirmPassword, ...submittedValues } = sanitizedValues;
             console.log(JSON.stringify(submittedValues));
             axios.post('http://127.0.0.1:8000/api/auth/register/', submittedValues)
                 .then(response => {
@@ -71,8 +71,10 @@ export default function RegistrationForm() {
                 .catch(error => {
                     if (error.response) {
                         setErrorMessage(JSON.stringify(error.response.data));
+                        console.error('An error occurred:', error.response.data);
                     } else {
                         setErrorMessage(('An error occurred: ' + error.message));
+                        console.error('An error occurred:', error.response.data);
                     }
                 });
         },
@@ -91,13 +93,13 @@ export default function RegistrationForm() {
                 </label>
                 <input
                     type="number"
-                    name="student_id"
+                    name="student_number"
                     placeholder="Student Number"
                     className="input input-bordered w-full"
                     onChange={formik.handleChange}
-                    value={formik.values.student_id}
+                    value={formik.values.student_number}
                 />
-                {formik.errors.student_id ? <span className="label-text text-error">{formik.errors.student_id}</span> : null}
+                {formik.errors.student_number ? <span className="label-text text-error">{formik.errors.student_number}</span> : null}
             </div>
 
             <div className="form-control">
