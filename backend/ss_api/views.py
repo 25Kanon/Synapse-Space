@@ -5,11 +5,14 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
+import logging
 
+logger = logging.getLogger(__name__)
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
+        logger.debug(f"Received data: {request.data}")
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
@@ -20,6 +23,7 @@ class RegisterView(generics.GenericAPIView):
         except serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            logger.error(f"Error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
