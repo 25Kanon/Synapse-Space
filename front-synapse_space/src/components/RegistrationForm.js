@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import DOMPurify from 'dompurify';
 import { ErrorMessage, useFormik } from 'formik';
 import axios from 'axios';
 import * as yup from 'yup';
@@ -49,15 +50,23 @@ export default function RegistrationForm() {
             confirmPassword: '',
         },
         validationSchema: validationSchema,
-        onSubmit: values => {
-            const { confirmPassword, ...submittedValues } = values;
+        onSubmit: async(values) => {
+            const sanitizedValues = {
+                student_id: DOMPurify.sanitize(values.student_id),
+                first_name: DOMPurify.sanitize(values.first_name),
+                last_name: DOMPurify.sanitize(values.last_name),
+                email: DOMPurify.sanitize(values.email),
+                username: DOMPurify.sanitize(values.username),
+                password: DOMPurify.sanitize(values.password),
+                confirmPassword: DOMPurify.sanitize(values.confirmPassword),
+            };
+            const { confirmPassword, ... submittedValues } = sanitizedValues;
             console.log(JSON.stringify(submittedValues));
             axios.post('http://127.0.0.1:8000/api/auth/register/', submittedValues)
                 .then(response => {
                     const username = response.data.Student.username;
                     setSuccessMessage(`Account created successfully! Welcome, ${username}!`);
-
-                    ;
+                    
                 })
                 .catch(error => {
                     if (error.response) {
