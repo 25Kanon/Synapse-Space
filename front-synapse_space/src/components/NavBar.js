@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/NavBar.css';
-import dropdownImage from '../assets/sampleprofile.png'; 
+import dropdownImage from '../assets/sampleprofile1.png'; 
 import App from '../App';
 import Settings from './Settings';
 
