@@ -1,0 +1,54 @@
+.navbar { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px 20px; 
+    background-color: #282c34; 
+    color: white; 
+}
+
+.navbar-left { 
+    cursor: pointer; 
+    font-size: 24px; 
+}
+
+.navbar-center input { 
+    padding: 5px; 
+    font-size: 16px; 
+}
+
+.navbar-right select { 
+    padding: 5px; 
+    font-size: 16px; 
+}
+
+.dropdown { 
+    position: relative; 
+}
+
+.dropdown-image { 
+    cursor: pointer; /* Changes cursor to pointer */ 
+    width: 40px; /* Replace with your desired width */
+    height: 40px; /* Replace with your desired height */
+    object-fit: cover; /* Maintains aspect ratio */
+}
+
+.dropdown-menu { 
+    position: absolute; 
+    top: 100%; /* Position it below the image */ 
+    right: 0; 
+    color: black; 
+    background-color: white; 
+    border: 1px solid #ddd; 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+    z-index: 1000; /* Ensure it's on top of other elements */ 
+}
+
+.dropdown-menu div { 
+    padding: 10px; 
+    cursor: pointer; 
+}
+
+.dropdown-menu div:hover { 
+    background-color: #f0f0f0; /* Highlight on hover */ 
+}
