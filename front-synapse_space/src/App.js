@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import PrivateRoute from './utils/PrivateRoute';
+import PublicRoute from './utils/PublicRoute';
+import Home from './pages/Home';
 import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
-import './App.css';
 
+import './App.css';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -24,15 +28,19 @@ function App() {
   };
 
   return (
-    <div>
-      <Router>
-        <Routes>
-          <Route path="/" element={<UserLogin/>} />
-          <Route path="/register" element={<UserRegister/>} />
-        </Routes>
-      </Router>
-    </div>
-  );
+    <Router>
+        <AuthProvider>
+            <Routes>
+                <Route path="/" element={<PrivateRoute />}>
+                    <Route path="/" element={<Home />} />
+                </Route>
+                <Route path="/login" element={<PublicRoute />}>
+                    <Route path="/login" element={<UserLogin/>} />
+                </Route>
+            </Routes>
+        </AuthProvider>
+    </Router>
+);
 }
 
 export default App;
