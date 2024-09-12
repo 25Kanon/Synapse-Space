@@ -1,4 +1,14 @@
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
+from django.contrib.auth import authenticate, get_user_model
+from django.utils.translation import gettext_lazy as _
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
 from .models import Student
+
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
 class UserSerializer(serializers.ModelSerializer):
@@ -29,7 +39,71 @@ class RegisterSerializer(serializers.ModelSerializer):
             last_name=validated_data['last_name']
         )
         return student
-class LoginSerializer(serializers.Serializer):
+
+class CustomTokenObtainPairSerializer(serializers.Serializer):
+    username_or_email = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        username_or_email = data.get('username_or_email')
+        password = data.get('password')
+
+        if username_or_email and password:
+            user = self.authenticate_user(username_or_email, password)
+            if user:
+                data = self.get_token_data(user)
+            else:
+                raise serializers.ValidationError(_('Invalid credentials'))
+        else:
+            raise serializers.ValidationError(_("Must include 'username_or_email' and 'password'"))
+
+        return data
+
+    def authenticate_user(self, username_or_email, password):
+        """
+        Authenticate the user by either username or email.
+        """
+        user = authenticate(username=username_or_email, password=password)
+
+        if not user:
+            UserModel = get_user_model()
+            try:
+                user_obj = UserModel.objects.get(email=username_or_email)
+                user = authenticate(username=user_obj.username, password=password)
+            except UserModel.DoesNotExist:
+                return None
+
+        return user
+
+    def get_token_data(self, user):
+        """
+        Generate token pair with additional custom claims if needed.
+        """
+        refresh = self.get_token(user)
+        data = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': str(refresh.access_token['username'])
+        }
+
+        # Add any custom claims to the access token here
+        # Example: refresh.access_token['attribute'] = "value"
+
+        return data
+
+    @classmethod
+    def get_token(cls, user):
+        """
+        Override this method to add custom claims to the token.
+        """
+        token = RefreshToken.for_user(user)
+        token['username'] = user.username
+
+        # Add custom claims here if required in the future
+        # Example: token['custom_claim'] = "custom_value"
+
+        return token
+class LoginSerializer(TokenObtainPairSerializer):
     username_or_email = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
@@ -53,7 +127,9 @@ class LoginSerializer(serializers.Serializer):
                 raise serializers.ValidationError("Invalid credentials")
         else:
             raise serializers.ValidationError("Must include 'username_or_email' and 'password'")
+
         return data
+
 
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
