@@ -8,18 +8,18 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-from .models import Student
+from .models import User
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Student
+        model = User
         fields = ['id', 'student_number', 'username', 'first_name', 'last_name', 'registration_form', 'email', 'password', 'profile_pic', 'interests', 'bio']
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Student
+        model = User
         fields = ['student_number', 'first_name', 'last_name', 'email', 'username', 'password']
         extra_kwargs = {
             'student_number': {'required': True},
@@ -31,7 +31,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        student = Student.objects.create_user(
+        user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
@@ -39,7 +39,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name']
         )
-        return student
+        return user
 
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     username_or_email = serializers.CharField()

@@ -23,9 +23,9 @@ class RegisterView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
-            student = serializer.save()
+            user = serializer.save()
             return Response({
-                "Student": UserSerializer(student, context=self.get_serializer_context()).data,
+                "user": UserSerializer(user, context=self.get_serializer_context()).data,
             })
         except serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)

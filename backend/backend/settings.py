@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'ss_api',
     'rest_framework_simplejwt.token_blacklist',
 ]
-AUTH_USER_MODEL = 'ss_api.Student'
+AUTH_USER_MODEL = 'ss_api.User'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

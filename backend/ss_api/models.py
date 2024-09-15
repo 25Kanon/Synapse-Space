@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
 
 
-class Student(AbstractUser):
+class User(AbstractUser):
     # Add any additional fields here
     student_number = models.IntegerField(unique=True, null=False)
     first_name = models.CharField(max_length=200, null=False, blank=False)
