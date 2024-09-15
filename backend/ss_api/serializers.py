@@ -1,6 +1,7 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework import serializers
 from django.contrib.auth import authenticate, get_user_model
 from django.utils.translation import gettext_lazy as _
@@ -83,7 +84,8 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         data = {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'user': str(refresh.access_token['username'])
+            'user': str(refresh.access_token['username']),
+            'student_number': str(refresh.access_token['student_number'])
         }
 
         # Add any custom claims to the access token here
@@ -98,36 +100,15 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         """
         token = RefreshToken.for_user(user)
         token['username'] = user.username
+        token['student_number'] = user.student_number
 
         # Add custom claims here if required in the future
         # Example: token['custom_claim'] = "custom_value"
 
         return token
-class LoginSerializer(TokenObtainPairSerializer):
-    username_or_email = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-
-    def validate(self, data):
-        username_or_email = data.get('username_or_email')
-        password = data.get('password')
-
-        if username_or_email and password:
-            user = authenticate(username=username_or_email, password=password)
-            if not user:
-                UserModel = get_user_model()
-                try:
-                    user_obj = UserModel.objects.get(email=username_or_email)
-                    user = authenticate(username=user_obj.username, password=password)
-                except UserModel.DoesNotExist:
-                    pass
-
-            if user:
-                data['user'] = user
-            else:
-                raise serializers.ValidationError("Invalid credentials")
-        else:
-            raise serializers.ValidationError("Must include 'username_or_email' and 'password'")
-
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
         return data
 
 
