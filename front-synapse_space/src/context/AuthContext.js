@@ -38,6 +38,29 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    let refreshUserToken =() => {
+        console.log('Refreshing token');
+        axios.post('http://127.0.0.1:8000/api/auth/token/refresh/', {
+            'refresh': localStorage.getItem('refresh_token')
+            
+        }).then(response => {
+            const { access, refresh } = response.data;
+            localStorage.setItem('access_token', access);
+            localStorage.setItem('refresh_token', refresh);
+            setAuthToken(access);
+        }).catch(error => {
+            console.error('Token refresh error', error);
+            setError('Token refresh failed. Please login again.');
+        });
+        console.log('Refresh token', localStorage.getItem('refresh_token'))
+    }
+    let logoutUser = () => {
+        setAuthToken(null);
+        setUser(null);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+    }
+
     // Fetch user data if authenticated
     useEffect(() => {
         if (authToken) {
@@ -48,12 +71,17 @@ export const AuthProvider = ({ children }) => {
         setLoading(false); // Set loading to false once user data is fetched
     }, [authToken]);
 
-    let logoutUser = () => {
-        setAuthToken(null);
-        setUser(null);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-    }
+    // Refresh token if it is expired
+    useEffect(() => {
+        let interval = setInterval(()=>{
+            if (authToken){
+                refreshUserToken();
+            }
+        }, 5000 * 6 * 10) // Refresh token every 5 minutes
+        return () => clearInterval();
+    }, [authToken, loading]);
+
+
 
     let contextData = {
         loginUser,
