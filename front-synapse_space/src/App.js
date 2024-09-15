@@ -37,6 +37,9 @@ function App() {
                 <Route path="/login" element={<PublicRoute />}>
                     <Route path="/login" element={<UserLogin/>} />
                 </Route>
+                <Route path="/register" element={<PublicRoute />}>
+                        <Route path="/register" element={<UserRegister />} />
+                        </Route>  
             </Routes>
         </AuthProvider>
     </Router>

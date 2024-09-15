@@ -50,7 +50,7 @@ export default function RegistrationForm() {
             confirmPassword: '',
         },
         validationSchema: validationSchema,
-        onSubmit: async(values) => {
+        onSubmit: async (values) => {
             const sanitizedValues = {
                 student_number: DOMPurify.sanitize(values.student_number),
                 first_name: DOMPurify.sanitize(values.first_name),
@@ -62,27 +62,34 @@ export default function RegistrationForm() {
             };
             const { confirmPassword, ...submittedValues } = sanitizedValues;
             console.log(JSON.stringify(submittedValues));
-            axios.post('http://127.0.0.1:8000/api/auth/register/', submittedValues)
-                .then(response => {
-                    const username = response.data.Student.username;
-                    setSuccessMessage(`Account created successfully! Welcome, ${username}!`);
-                    
-                })
-                .catch(error => {
+
+            const registerUser = async () => {
+                try {
+                    const response = await axios.post('http://127.0.0.1:8000/api/auth/register/', submittedValues);
+                    const username = response.data.user.username;
+                    console.log('Account created successfully:', response.data);
+                    setSuccessMessage.log(`Account created successfully! Welcome, ${username}!`);
+                } catch (error) {
                     if (error.response) {
                         setErrorMessage(JSON.stringify(error.response.data));
                         console.error('An error occurred:', error.response.data);
                     } else {
-                        setErrorMessage(('An error occurred: ' + error.message));
-                        console.error('An error occurred:', error.response.data);
+                        setErrorMessage('An unexpected error occurred.');
+                        console.error('An unexpected error occurred:', error.response.data);
                     }
-                });
+                }
+            };
+
+            registerUser();
         },
     });
 
     return (
 
+
         <form className="card-body max-w-xl mx-8 flex-col" onSubmit={formik.handleSubmit}>
+            {successMessage && <SuccessAlert text={successMessage} />}
+            {errorMessage && <ErrorAlert text={errorMessage} />}
 
             <h2 className="card-title justify-center">Welcome Back!</h2>
             <h3 className="flex justify-center">Create an account</h3>
@@ -193,6 +200,7 @@ export default function RegistrationForm() {
             </div>
 
             <button type="submit" className="btn btn-primary mt-4">Submit</button>
+
         </form>
     );
 }
