@@ -11,7 +11,7 @@ root.render(
   <React.StrictMode>
       <App />
       <Router>
-        <Settings />
+        {/* <Settings /> */}
       </Router>
   </React.StrictMode>
 );
