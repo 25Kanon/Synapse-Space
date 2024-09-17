@@ -8,6 +8,7 @@ import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
 
 import './App.css';
+import Community from './pages/Community/Community';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -29,21 +30,24 @@ function App() {
 
   return (
     <Router>
-        <AuthProvider>
-            <Routes>
-                <Route path="/" element={<PrivateRoute />}>
-                    <Route path="/" element={<Home />} />
-                </Route>
-                <Route path="/login" element={<PublicRoute />}>
-                    <Route path="/login" element={<UserLogin/>} />
-                </Route>
-                <Route path="/register" element={<PublicRoute />}>
-                        <Route path="/register" element={<UserRegister />} />
-                        </Route>  
-            </Routes>
-        </AuthProvider>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<PrivateRoute />}>
+            <Route path="/" element={<Home />} />
+          </Route>
+          <Route path="/login" element={<PublicRoute />}>
+            <Route path="/login" element={<UserLogin />} />
+          </Route>
+          <Route path="/register" element={<PublicRoute />}>
+            <Route path="/register" element={<UserRegister />} />
+          </Route>
+          <Route path="/community" element={<PrivateRoute />}>
+            <Route path="/community" element={<Community />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </Router>
-);
+  );
 }
 
 export default App;
