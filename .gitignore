@@ -15,3 +15,5 @@ front-synapse_space/yarn-error.log*
 front-synapse_space/src/.env
 env/
 backend/.env
+**/__pycache__/
+*.pyc
