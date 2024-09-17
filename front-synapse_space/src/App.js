@@ -9,6 +9,7 @@ import UserRegister from './pages/UserRegister';
 
 import './App.css';
 import Community from './pages/Community/Community';
+import SearchCommunity from './pages/Community/SearchCommunity';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -43,6 +44,9 @@ function App() {
           </Route>
           <Route path="/community" element={<PrivateRoute />}>
             <Route path="/community" element={<Community />} />
+          </Route>
+          <Route path="/search" element={<PrivateRoute />}>
+            <Route path="/search" element={<SearchCommunity />} />
           </Route>
         </Routes>
       </AuthProvider>
