@@ -15,4 +15,13 @@ class User(AbstractUser):
     interests = ArrayField(models.CharField(max_length=200), blank=True, null=True)
     bio = models.TextField(null=True, blank=True)
     pass
+
+class Community(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    rules = models.TextField()
+    keyword = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
 # Create your models here.

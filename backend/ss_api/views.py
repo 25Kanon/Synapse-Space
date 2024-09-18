@@ -1,10 +1,6 @@
 from rest_framework import generics, permissions, status, serializers
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
-from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer
+from .models import Community
+from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, CommunitySerializer
 from rest_framework_simplejwt.views import TokenRefreshView
 
 import logging
@@ -61,3 +57,8 @@ class LogoutView(APIView):
             return Response({"detail": "Logout successful."}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommunityCreateView(generics.CreateAPIView):
+    queryset = Community.objects.all()
+    serializer_class = CommunitySerializer
