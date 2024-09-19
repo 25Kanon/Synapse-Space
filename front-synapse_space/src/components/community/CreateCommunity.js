@@ -5,6 +5,7 @@ const CreateCommunity = () => {
     const [description, setDescription] = useState('');
     const [rules, setRules] = useState('');
     const [keyword, setKeyword] = useState('');
+    const API_URL = process.env.REACT_APP_API_BASE_URI;
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -18,7 +19,7 @@ const CreateCommunity = () => {
         };
 
         try {
-            const response = await fetch('http://localhost:8000/community', {
+            const response = await fetch(`${API_URL}/community/create$`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

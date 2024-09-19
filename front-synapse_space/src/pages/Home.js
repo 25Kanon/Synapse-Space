@@ -1,6 +1,8 @@
 import React, {useContext} from "react";
 import AuthContext from "../context/AuthContext";
 
+import Sidebar from "../components/Sidebar";
+
 export default function Home() {
     const { user } = useContext(AuthContext);
 
@@ -14,10 +16,19 @@ export default function Home() {
         ); 
     }
     return (
-        <div>
-            <div class="hero bg-base-200 min-h-screen">
-                <h1 class="text-5xl font-bold text-center">Synapse Space--- {user.username}</h1>
+        <div class="container flex mx-auto border-2 border-secondary m-2">
+            <div class="flex-auto">
+                <Sidebar />
             </div>
+            <div class="flex-auto">
+                <div class="hero bg-base-200 w-max">
+                    asdasd
+                </div>
+            </div>
+            <div class="flex-end">
+                <Sidebar />
+            </div>
+            
         </div>
     );
 }

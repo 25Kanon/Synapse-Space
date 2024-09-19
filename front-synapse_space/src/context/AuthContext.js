@@ -18,11 +18,12 @@ export const AuthProvider = ({ children }) => {
 
     // Check if the user is authenticated by checking if the token exists
     const isAuthenticated = !!authToken;
+    const API_URL = process.env.REACT_APP_API_BASE_URI;
 
     let loginUser = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
+            const response = await axios.post(`${API_URL}/api/auth/login/$`, {
                 'username_or_email': e.target.username_or_email.value,
                 'password': e.target.password.value,
             });
@@ -40,7 +41,7 @@ export const AuthProvider = ({ children }) => {
 
     let refreshUserToken =() => {
         console.log('Refreshing token');
-        axios.post('http://127.0.0.1:8000/api/auth/token/refresh/', {
+        axios.post(`${API_URL}/api/auth/token/refresh/$`, {
             'refresh': localStorage.getItem('refresh_token')
             
         }).then(response => {

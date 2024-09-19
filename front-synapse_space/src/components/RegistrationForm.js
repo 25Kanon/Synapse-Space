@@ -38,6 +38,7 @@ const validationSchema = yup.object({
 export default function RegistrationForm() {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const API_URL = process.env.REACT_APP_API_BASE_URI;
 
     const formik = useFormik({
         initialValues: {
@@ -65,7 +66,7 @@ export default function RegistrationForm() {
 
             const registerUser = async () => {
                 try {
-                    const response = await axios.post('http://127.0.0.1:8000/api/auth/register/', submittedValues);
+                    const response = await axios.post(`${API_URL}/api/auth/register/$`, submittedValues);
                     const username = response.data.user.username;
                     console.log('Account created successfully:', response.data);
                     setSuccessMessage.log(`Account created successfully! Welcome, ${username}!`);

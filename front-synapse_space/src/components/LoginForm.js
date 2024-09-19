@@ -3,7 +3,6 @@ import AuthContext from '../context/AuthContext';
 
 export default function LoginForm() {
     let { loginUser } = useContext(AuthContext);
-
     return (
         <form className="card-body max-w-sm mx-8 flex-col" onSubmit={loginUser}>
             <div className="form-control">
