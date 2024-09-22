@@ -1,8 +1,4 @@
-import ThemeSwitch from "../components/ThemeSwitch";
 import LoginMethod  from "../components/LoginMethod";  
-import ReactDOM from 'react-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faGoogle } from '@fortawesome/free-brands-svg-icons'
 import bannerLogin from '../assets/bannerLogin.png'
 
 

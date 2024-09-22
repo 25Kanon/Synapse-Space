@@ -6,9 +6,8 @@ import PublicRoute from './utils/PublicRoute';
 import Home from './pages/Home';
 import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
-
 import './App.css';
-import Community from './pages/Community/Community';
+import  Create from './pages/Community/Create';
 import SearchCommunity from './pages/Community/SearchCommunity';
 
 function App() {
@@ -36,14 +35,14 @@ function App() {
           <Route path="/" element={<PrivateRoute />}>
             <Route path="/" element={<Home />} />
           </Route>
-          <Route path="/login" element={<PublicRoute />}>
+          <Route path="/" element={<PublicRoute />}>
             <Route path="/login" element={<UserLogin />} />
           </Route>
-          <Route path="/register" element={<PublicRoute />}>
+          <Route path="/" element={<PublicRoute />}>
             <Route path="/register" element={<UserRegister />} />
           </Route>
           <Route path="/community" element={<PrivateRoute />}>
-            <Route path="/community" element={<Community />} />
+            <Route path="/community/create" element={<Create />} />
           </Route>
           <Route path="/search" element={<PrivateRoute />}>
             <Route path="/search" element={<SearchCommunity />} />
