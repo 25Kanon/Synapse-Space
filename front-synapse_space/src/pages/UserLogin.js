@@ -5,8 +5,8 @@ import bannerLogin from '../assets/bannerLogin.png'
 export default function UserLogin() {
     return (
         <div>
-            <div class="hero bg-base-200 min-h-screen">
-                <div className="card card-side bg-base-100 shadow-xl p-5 ">
+            <div class="hero bg-base-200 min-h-screen ">
+                <div className="card card-side bg-base-100 shadow-xl p-5 flex flex-row ">
                     <LoginMethod />
                     <figure>
                         <img src={bannerLogin} alt="Movie" />

@@ -31,7 +31,7 @@ export default function LoginMethod() {
     }else{
         return (
             <div>
-                <div className="card-body max-w-sm py-0 flex-col ">
+                <div className="">
                     <h2 className="card-title justify-start">Welcome Back!</h2>
                     <div className="card-actions py-10 flex-col justify-center">
                         <button class="btn btn-primary  text-center w-full">
