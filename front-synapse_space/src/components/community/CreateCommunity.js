@@ -1,6 +1,13 @@
 import React from 'react';
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
+import axios from 'axios';
+import ErrorAlert from '../ErrorAlert';
+import SuceessAlert from '../SuccessAlert';
 const CreateCommunity = () => {
+    let [error, setError] = useState(null); 
+    let [success, setSuccess] = useState(null);
+
     const [communityName, setCommunityName] = useState('');
     const [description, setDescription] = useState('');
     const [rules, setRules] = useState('');
@@ -8,41 +15,38 @@ const CreateCommunity = () => {
     const API_URL = process.env.REACT_APP_API_BASE_URI;
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
 
         const data = {
-            user: {
-                name: communityName,
-                description: description,
-                rules: rules,
-                keyword: keyword,
-            },
+            name: DOMPurify.sanitize(communityName),
+            description: DOMPurify.sanitize(description),
+            rules: DOMPurify.sanitize(rules),
+            keyword: DOMPurify.sanitize(keyword),
         };
 
         try {
-            const response = await fetch(`${API_URL}/community/create$`, {
-                method: 'POST',
+            const response = await axios.post(`${API_URL}api/community/create/`, data, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data),
             });
 
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Community created:', result);
-                // You can handle success here, like showing a success message
+            if (response.status === 200||201) {
+                setSuccess('Community created successfully');
             } else {
-                console.error('Failed to create community');
-                // You can handle errors here, like showing an error message
+                setError('Failed to create community');
             }
         } catch (error) {
-            console.error('Error:', error);
+            setError('Error creating community:', error);
+            console.error('An error occurred:', error);
         }
-    }
+    };
 
     return (
         < main className="flex-grow p-10 flex justify-center items-center" >
             <div className="bg-gray-800 p-10 rounded-lg shadow-lg w-full max-w-3xl">
+            {error && <ErrorAlert text={error} />}
+            {success && <SuceessAlert text={success} />}
                 <h1 className="text-3xl font-bold mb-8">Create Community</h1>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="flex justify-center">
@@ -57,6 +61,7 @@ const CreateCommunity = () => {
                         <input
                             type="text"
                             id="communityName"
+                            value={communityName}
                             className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter community name"
                             onChange={(e) => setCommunityName(e.target.value)}
@@ -69,6 +74,7 @@ const CreateCommunity = () => {
                         <input
                             type="text"
                             id="description"
+                            value={description}
                             className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500"
                             placeholder="Describe your community"
                             onChange={(e) => setDescription(e.target.value)}
@@ -81,6 +87,7 @@ const CreateCommunity = () => {
                         <textarea
                             id="rules"
                             className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500"
+                            value={rules}
                             placeholder="Enter community rules"
                             rows="4"
                             onChange={(e) => setRules(e.target.value)}
@@ -93,6 +100,7 @@ const CreateCommunity = () => {
                         <input
                             type="text"
                             id="keyword"
+                            value={keyword}
                             className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter keywords"
                             onChange={(e) => setKeyword(e.target.value)}

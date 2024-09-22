@@ -2,8 +2,6 @@ import { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import ErrorAlert from '../components/ErrorAlert'; 
-
 
 const AuthContext = createContext();
 export default AuthContext;
@@ -12,18 +10,15 @@ export const AuthProvider = ({ children }) => {
     let [authToken, setAuthToken] = useState(() => localStorage.getItem('access_token') || null);
     let [user, setUser] = useState(null);
     let [loading, setLoading] = useState(true);
-    let navigate = useNavigate();
     let [error, setError] = useState(null);
+    let navigate = useNavigate();
 
-
-    // Check if the user is authenticated by checking if the token exists
     const isAuthenticated = !!authToken;
-    const API_URL = process.env.REACT_APP_API_BASE_URI;
 
     let loginUser = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${API_URL}/api/auth/login/$`, {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/login/`, {
                 'username_or_email': e.target.username_or_email.value,
                 'password': e.target.password.value,
             });
@@ -31,19 +26,27 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('access_token', access);
             localStorage.setItem('refresh_token', refresh);
             setAuthToken(access);
+            const decodedUser = jwtDecode(access);
+            setUser(decodedUser);
             console.log('Login successful', access, refresh);
-            navigate('/');
+            setError(null); // Clear any previous error messages
+            navigate('/'); // Redirect to the home page after successful login
         } catch (error) {
-            console.error('Login error', error);
-            setError('Login failed. Please check your credentials and try again.');
+            if (error.response) {
+                setError('Login failed. Please check your credentials and try again.');
+                console.error('An error occurred:', error.response.data);
+            } else {
+                setError('An unexpected error occurred.');
+                console.error('An unexpected error occurred:', error);
+            }
         }
     }
 
-    let refreshUserToken =() => {
+    let refreshUserToken = () => {
         console.log('Refreshing token');
-        axios.post(`${API_URL}/api/auth/token/refresh/$`, {
+        axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/token/refresh/`, {
             'refresh': localStorage.getItem('refresh_token')
-            
+
         }).then(response => {
             const { access, refresh } = response.data;
             localStorage.setItem('access_token', access);
@@ -55,30 +58,40 @@ export const AuthProvider = ({ children }) => {
         });
         console.log('Refresh token', localStorage.getItem('refresh_token'))
     }
-    let logoutUser = () => {
-        setAuthToken(null);
-        setUser(null);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+
+    let logoutUser = async () => {
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/logout/`, { 'refresh': localStorage.getItem('refresh_token')}, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            });
+            setAuthToken(null);
+            setUser(null);
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Optionally, handle the error (e.g., show a notification to the user)
+        }
     }
 
     // Fetch user data if authenticated
     useEffect(() => {
         if (authToken) {
-            // You could fetch user details here if needed, using the token.
             const decodedUser = jwtDecode(authToken);
             setUser(decodedUser);
         }
-        setLoading(false); // Set loading to false once user data is fetched
+        setLoading(false);
     }, [authToken]);
 
-    // Refresh token if it is expired
+    // Refresh token every 5 minutes
     useEffect(() => {
-        let interval = setInterval(()=>{
-            if (authToken){
+        let interval = setInterval(() => {
+            if (authToken) {
                 refreshUserToken();
             }
-        }, 5000 * 6 * 10) // Refresh token every 5 minutes
+        }, 5000 * 6 * 10) 
         return () => clearInterval();
     }, [authToken, loading]);
 
@@ -90,6 +103,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         user,
         loading,
+        error, // Include error in context data
     }
 
     return (

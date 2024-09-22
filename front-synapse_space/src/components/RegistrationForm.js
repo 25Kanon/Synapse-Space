@@ -66,7 +66,7 @@ export default function RegistrationForm() {
 
             const registerUser = async () => {
                 try {
-                    const response = await axios.post(`${API_URL}/api/auth/register/$`, submittedValues);
+                    const response = await axios.post(`${API_URL}/api/auth/register/`, submittedValues);
                     const username = response.data.user.username;
                     console.log('Account created successfully:', response.data);
                     setSuccessMessage.log(`Account created successfully! Welcome, ${username}!`);

@@ -1,10 +1,14 @@
 import React, { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import ErrorAlert from './ErrorAlert';
 
 export default function LoginForm() {
-    let { loginUser } = useContext(AuthContext);
+    let { loginUser, error } = useContext(AuthContext);
+
     return (
         <form className="card-body max-w-sm mx-8 flex-col" onSubmit={loginUser}>
+            {error && <ErrorAlert text={error} />}
+            
             <div className="form-control">
                 <label className="label">
                     <span className="label-text">Email or Username</span>
