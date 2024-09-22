@@ -63,7 +63,8 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/logout/`, { 'refresh': localStorage.getItem('refresh_token')}, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
                 }
             });
             setAuthToken(null);
@@ -91,8 +92,8 @@ export const AuthProvider = ({ children }) => {
             if (authToken) {
                 refreshUserToken();
             }
-        }, 5000 * 6 * 10) 
-        return () => clearInterval();
+        }, 300000);
+        return () => clearInterval(interval);
     }, [authToken, loading]);
 
 
