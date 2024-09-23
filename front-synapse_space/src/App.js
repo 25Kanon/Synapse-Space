@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import './App.css';
 import PrivateRoute from './utils/PrivateRoute';
 import PublicRoute from './utils/PublicRoute';
 import Home from './pages/Home';
 import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
-import './App.css';
-import  Create from './pages/Community/Create';
+import Create from './pages/Community/Create';
 import SearchCommunity from './pages/Community/SearchCommunity';
+import Community from './pages/Community/Community';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -40,6 +41,9 @@ function App() {
           </Route>
           <Route path="/" element={<PublicRoute />}>
             <Route path="/register" element={<UserRegister />} />
+          </Route>
+          <Route path="/community" element={<PrivateRoute />}>
+            <Route path="/community/:id" element={<Community />} />
           </Route>
           <Route path="/community" element={<PrivateRoute />}>
             <Route path="/community/create" element={<Create />} />

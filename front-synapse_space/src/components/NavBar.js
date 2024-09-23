@@ -1,18 +1,31 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import App from '../App';
-import Settings from './Settings';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faMessage, faChevronDown } from '@fortawesome/free-solid-svg-icons'
 import AuthContext from '../context/AuthContext';
 const NavBar = () => {
     const navigate = useNavigate();
-    const [dropdownOpen, setDropdownOpen] = useState(false);
     const { user, logoutUser } = useContext(AuthContext);
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 0) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
 
     return (
-        <nav class="top-0 z-50 w-full ">
+        <nav className={`fixed top-0 z-40 w-full ${scrolled ? 'bg-base-200' : ''}`}>
             <div class="px-3 py-3 lg:px-5 lg:pl-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center justify-start rtl:justify-end">
@@ -51,7 +64,7 @@ const NavBar = () => {
                                     </p>
 
                                 </summary>
-                                <ul class="menu dropdown-content bg-base-100 rounded-box z-[52] w-52 p-2 shadow">
+                                <ul class="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
                                     <li><a>Item 1</a></li>
                                     <li> <button onClick={logoutUser} class="btn btn-logout">Logout</button></li>
                                 </ul>

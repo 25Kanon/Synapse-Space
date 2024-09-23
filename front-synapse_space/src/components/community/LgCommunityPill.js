@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
+import axios from 'axios';
 
-const LgCommunityPill = ({ communityName }) => {
+const LgCommunityPill = ({ communityName, communityID }) => {
     const navigate = useNavigate();
 
     const getInitials = (name) => {
@@ -10,7 +11,7 @@ const LgCommunityPill = ({ communityName }) => {
     };
 
     return (
-        <button onClick={() => navigate(`/`)} className="flex items-center w-full p-2 rounded-full group mt-3   hover:bg-gray-100 dark:hover:bg-gray-700">
+        <button onClick={() => navigate(`/community/${communityID}`)} className="flex items-center w-full p-2 rounded-full group mt-3   hover:bg-gray-100 dark:hover:bg-gray-700">
             <div className="avatar placeholder">
                 <div className="bg-neutral text-neutral-content w-5 rounded-full">
                     <span className="text-xs">{getInitials(communityName)}</span>
@@ -23,6 +24,7 @@ const LgCommunityPill = ({ communityName }) => {
 
 LgCommunityPill.propTypes = {
     communityName: PropTypes.string.isRequired,
+    communityID: PropTypes.number.isRequired,
 };
 
 export default LgCommunityPill;

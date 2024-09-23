@@ -53,7 +53,7 @@ const CreateCommunity = () => {
     };
 
     return (
-        < main className="p-5 sm:mx-64 flex justify-center items-center" >
+        < main className="p-5 mt-20 sm:mx-64 flex justify-center items-center" >
 
             <div className=" bg-base-200 p-10 rounded-lg shadow-lg w-full max-w-3xl">
                 {error && <ErrorAlert text={error} />}
