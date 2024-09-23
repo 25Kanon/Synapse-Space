@@ -69,14 +69,14 @@ export default function RegistrationForm() {
                     const response = await axios.post(`${API_URL}/api/auth/register/`, submittedValues);
                     const username = response.data.user.username;
                     console.log('Account created successfully:', response.data);
-                    setSuccessMessage.log(`Account created successfully! Welcome, ${username}!`);
+                    setSuccessMessage(`Account created successfully! Welcome, ${username}!`);
                 } catch (error) {
                     if (error.response) {
                         setErrorMessage(JSON.stringify(error.response.data));
                         console.error('An error occurred:', error.response.data);
                     } else {
                         setErrorMessage('An unexpected error occurred.');
-                        console.error('An unexpected error occurred:', error.response.data);
+                        console.error('An unexpected error occurred:', error.message);
                     }
                 }
             };
