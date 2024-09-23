@@ -5,6 +5,7 @@ import AuthContext from '../context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHome, faUserGroup, faCompass, faBarsStaggered } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom";
+import LgCommunityPill from './community/LgCommunityPill';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -61,11 +62,9 @@ const Sidebar = () => {
             <div class="divider divider-start text-sm mt-5"><FontAwesomeIcon icon={faBarsStaggered}></FontAwesomeIcon>Communities</div>
           </li>
           {memberships.map((membership) => (
+           
             <li key={membership.id}>
-              <button onClick={() => navigate(`/community/${membership.id}`)} className="flex items-center w-full p-2 rounded-full group mt-3 bg-white text-neutral hover:bg-gray-100 dark:hover:bg-gray-700">
-                <FontAwesomeIcon icon={faBarsStaggered} />
-                <span className="ms-3">{membership.community_name}</span>
-              </button>
+              <LgCommunityPill communityName= {membership.community_name}/>
             </li>
           ))}
         </ul>
