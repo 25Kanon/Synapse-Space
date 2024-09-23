@@ -1,12 +1,13 @@
 import React, { useContext } from "react";
 import AuthContext from "../context/AuthContext";
 
+import ErrorAlert  from "../components/ErrorAlert";
 import Sidebar from "../components/Sidebar";
 import NavBar from "../components/NavBar"
 import FriendsList from "../components/FriendsList"
 
 export default function Home() {
-    const { user } = useContext(AuthContext);
+    const { user, error  } = useContext(AuthContext);
 
     if (!user) {
         return (
@@ -19,7 +20,7 @@ export default function Home() {
     }
     return (
         <>
-
+            {error && <ErrorAlert text={error} />}
             <NavBar></NavBar>
             <Sidebar></Sidebar>
             <FriendsList></FriendsList>

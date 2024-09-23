@@ -73,7 +73,10 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('refresh_token');
         } catch (error) {
             console.error('Logout failed:', error);
-            // Optionally, handle the error (e.g., show a notification to the user)
+            setError('Invalid access token')
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            window.location.reload();
         }
     }
 
@@ -86,21 +89,29 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, [authToken]);
 
-    // Refresh token every 5 minutes
+    // Refresh token when near expiration
     useEffect(() => {
-        let interval = setInterval(() => {
-            if (authToken) {
-                console.log('Refreshing token at:', new Date().toISOString());
+        const checkTokenExpiration = () => {
+            const accessToken = localStorage.getItem('access_token');
+            if (!accessToken) {
+                return;
+            }
+
+            const decodedToken = jwtDecode(accessToken);
+            const currentTime = Date.now() / 1000;
+            const tokenExpirationTime = decodedToken.exp;
+            console.log('Token expiration time:', tokenExpirationTime);
+
+            if (tokenExpirationTime < currentTime) {
+                logoutUser();
+            } else if (tokenExpirationTime - currentTime < 60) {
                 refreshUserToken();
             }
-        }, 300000); // 5 minutes
-    
-        console.log('Setting interval at:', new Date().toISOString());
-    
-        return () => {
-            console.log('Clearing interval at:', new Date().toISOString());
-            clearInterval(interval);
         };
+
+        const intervalId = setInterval(checkTokenExpiration, 60000); // Check every minute
+
+        return () => clearInterval(intervalId); 
     }, [authToken, loading]);
 
 
