@@ -21,7 +21,14 @@ class Community(models.Model):
     description = models.TextField()
     rules = models.TextField()
     keyword = models.CharField(max_length=255)
-
+    owned_by = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
     def __str__(self):
         return self.name
+
+class Membership(models.Model):
+    user = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
+    community = models.ForeignKey(Community, to_field='id', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.community.name}"
 # Create your models here.

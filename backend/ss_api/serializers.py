@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-from .models import User, Community
+from .models import User, Community, Membership
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -121,7 +121,12 @@ class LogoutSerializer(serializers.Serializer):
             raise serializers.ValidationError("Refresh token is required")
         return data
 
-class CommunitySerializer(serializers.ModelSerializer):
+class CreateCommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
-        fields = ['id', 'name', 'description', 'rules', 'keyword']
+        fields = ['id', 'name', 'description', 'rules', 'keyword', 'owned_by']
+
+class CreateMembership(serializers.ModelSerializer):
+    class Meta:
+        model = Membership
+        fields = ['user', 'community']
