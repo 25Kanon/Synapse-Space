@@ -90,10 +90,17 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         let interval = setInterval(() => {
             if (authToken) {
+                console.log('Refreshing token at:', new Date().toISOString());
                 refreshUserToken();
             }
-        }, 300000);
-        return () => clearInterval(interval);
+        }, 300000); // 5 minutes
+    
+        console.log('Setting interval at:', new Date().toISOString());
+    
+        return () => {
+            console.log('Clearing interval at:', new Date().toISOString());
+            clearInterval(interval);
+        };
     }, [authToken, loading]);
 
 
