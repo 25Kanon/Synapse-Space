@@ -1,12 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
-
+import axios from 'axios';
+import AuthContext from '../context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHome, faUserGroup, faCompass, faBarsStaggered } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const [memberships, setMemberships] = useState([]);
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchMemberships = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URI}/api/auth/memberships/`, {
+          params: {
+            student_number: user.student_number
+          },
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          }
+        });
+        setMemberships(response.data);
+      } catch (error) {
+        console.error('Error fetching memberships:', error);
+      }
+    };
+
+    fetchMemberships();
+  }, []);
 
   return (
     <aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 pt-20 transition-transform -translate-x-full  sm:translate-x-0  " style={{ height: 95 + '%' }} aria-label="Sidebar">
@@ -37,6 +60,14 @@ const Sidebar = () => {
           <li>
             <div class="divider divider-start text-sm mt-5"><FontAwesomeIcon icon={faBarsStaggered}></FontAwesomeIcon>Communities</div>
           </li>
+          {memberships.map((membership) => (
+            <li key={membership.id}>
+              <button onClick={() => navigate(`/community/${membership.id}`)} className="flex items-center w-full p-2 rounded-full group mt-3 bg-white text-neutral hover:bg-gray-100 dark:hover:bg-gray-700">
+                <FontAwesomeIcon icon={faBarsStaggered} />
+                <span className="ms-3">{membership.community_name}</span>
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
     </aside>

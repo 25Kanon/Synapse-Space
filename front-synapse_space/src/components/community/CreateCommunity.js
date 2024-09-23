@@ -9,7 +9,7 @@ import SuceessAlert from '../SuccessAlert';
 const CreateCommunity = () => {
     let [error, setError] = useState(null);
     let [success, setSuccess] = useState(null);
-    const { user, logoutUser } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
 
     const [communityName, setCommunityName] = useState('');
     const [description, setDescription] = useState('');

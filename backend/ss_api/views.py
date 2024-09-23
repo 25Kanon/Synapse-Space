@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions, status, serializers
 from .models import Community, Membership
-from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership
+from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,MembershipSerializer
 from rest_framework_simplejwt.views import TokenRefreshView
 
 import logging
@@ -67,3 +67,11 @@ class CommunityCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         community = serializer.save()
         Membership.objects.create(user=self.request.user, community=community)
+
+class MembershipListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MembershipSerializer
+
+    def get_queryset(self):
+        student_number = self.request.query_params.get('student_number')
+        return Membership.objects.filter(user__student_number=student_number)

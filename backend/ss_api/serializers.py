@@ -130,3 +130,10 @@ class CreateMembership(serializers.ModelSerializer):
     class Meta:
         model = Membership
         fields = ['user', 'community']
+
+class MembershipSerializer(serializers.ModelSerializer):
+    community_name = serializers.CharField(source='community.name', read_only=True)
+
+    class Meta:
+        model = Membership
+        fields = ['user', 'community', 'community_name']
