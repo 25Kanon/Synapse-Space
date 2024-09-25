@@ -47,8 +47,8 @@ const CreateCommunity = () => {
                 setError('Failed to create community');
             }
         } catch (error) {
-            setError('Error creating community:', error);
-            console.error('An error occurred:', error);
+            setError('Error creating community:', error.response.data);
+            console.error('An error occurred:', error.response.data);
         }
     };
 
@@ -87,7 +87,7 @@ const CreateCommunity = () => {
                             type="text"
                             id="communityName"
                             value={communityName}
-                            className="w-full p-3 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-3 rounded-lg border text-black border-gray-600 focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter community name"
                             onChange={(e) => setCommunityName(e.target.value)}
                         />
@@ -100,7 +100,7 @@ const CreateCommunity = () => {
                             type="text"
                             id="description"
                             value={description}
-                            className="w-full p-3 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-3 rounded-lg border text-black border-gray-600 focus:ring-2 focus:ring-blue-500"
                             placeholder="Describe your community"
                             onChange={(e) => setDescription(e.target.value)}
                         />
@@ -111,7 +111,7 @@ const CreateCommunity = () => {
                         </label>
                         <textarea
                             id="rules"
-                            className="w-full p-3  rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-3  rounded-lg border text-black border-gray-600 focus:ring-2 focus:ring-blue-500"
                             value={rules}
                             placeholder="Enter community rules"
                             rows="4"
@@ -126,7 +126,7 @@ const CreateCommunity = () => {
                             type="text"
                             id="keyword"
                             value={keyword}
-                            className="w-full p-3  rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-3  rounded-lg border text-black border-gray-600 focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter keywords"
                             onChange={(e) => setKeyword(e.target.value)}
                         />
