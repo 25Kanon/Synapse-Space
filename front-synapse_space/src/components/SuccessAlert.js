@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-const SuccessAlert = ({ text }) => {
+const SuccessAlert = ({ text, classExtensions }) => {
     const [visible, setVisible] = useState(true);
 
     if (!visible) return null;
 
     return (
-        <div role="alert" className="alert alert-success" id="alert-success">
+        <div role="alert" className={`alert alert-success ${classExtensions}`} id="alert-success">        
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
@@ -33,6 +33,7 @@ const SuccessAlert = ({ text }) => {
 
 SuccessAlert.propTypes = {
     text: PropTypes.string.isRequired,
+    classExtensions: PropTypes.string,
 };
 
 export default SuccessAlert;

@@ -80,7 +80,7 @@ class MembershipListView(generics.ListAPIView):
         return Membership.objects.filter(user__student_number=student_number)
 
 class CommunityDetailView(generics.RetrieveAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = CommunitySerializer
     queryset = Community.objects.all()
     lookup_field = 'id'

@@ -20,7 +20,7 @@ export default function Create() {
     }
     return (
         <>
-        {error && <ErrorAlert text={error} />}
+        {error && <ErrorAlert text={error}  classExtensions="fixed z-50" />}
             <NavBar/>
             <Sidebar/>
             <FriendsList/>

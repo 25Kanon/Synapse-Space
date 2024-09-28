@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-const ErrorAlert = ({ text }) => {
+const ErrorAlert = ({ text, classExtensions }) => {
     const [visible, setVisible] = useState(true);
 
     if (!visible) return null;
     return (
 
 
-        <div role="alert" className="alert alert-error">
+       
+        <div role="alert" className={`alert alert-error ${classExtensions}`} id="alert-error">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
@@ -34,6 +35,7 @@ const ErrorAlert = ({ text }) => {
 
 ErrorAlert.propTypes = {
     text: PropTypes.string.isRequired,
+    classExtensions: PropTypes.string,
 };
 
 export default ErrorAlert;

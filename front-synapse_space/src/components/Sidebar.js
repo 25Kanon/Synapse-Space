@@ -61,13 +61,14 @@ const Sidebar = () => {
         <div class="divider divider-start text-sm mt-5"><FontAwesomeIcon icon={faBarsStaggered}></FontAwesomeIcon>Communities</div>
       </li>
     </ul>
-    <div class="px-3 pb-1 rounded-lg h-full">
+    <div class="px-3 pb-1 rounded-lg overflow-y-auto h-full">
       <ul class="font-medium overflow-y-auto h-full">
         {memberships.map((membership) => (
-          <li key={membership.id}>
+          <li className='py-2' key={membership.id}>
             <LgCommunityPill communityID={membership.community} communityName={membership.community_name} />
           </li>
         ))}
+        
       </ul>
       
     </div>
