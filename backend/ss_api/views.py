@@ -154,6 +154,14 @@ class MembershipListView(generics.ListAPIView):
         student_number = self.request.query_params.get('student_number')
         return Membership.objects.filter(user__student_number=student_number)
 
+class CommunityMembersListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MembershipSerializer
+
+    def get_queryset(self):
+        community_id = self.kwargs.get('community_id')
+        return Membership.objects.filter(community__id=community_id).select_related('user')
+
 class CommunityDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CommunitySerializer

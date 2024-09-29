@@ -5,7 +5,7 @@ import axios from "axios";
 import ErrorAlert from "../../components/ErrorAlert";
 import Sidebar from "../../components/Sidebar";
 import NavBar from "../../components/NavBar"
-import FriendsList from "../../components/FriendsList"
+import MembersList from "../../components/community/MembersList";
 import Banner from '../../components/community/Banner';
 import MainContentContainer from "../../components/MainContentContainer";
 
@@ -49,10 +49,10 @@ export default function Community() {
     }
     return (
         <>
-            {error && <ErrorAlert text={error} />}
-            <NavBar />
+            {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
+            <NavBar  />
             <Sidebar />
-            <FriendsList />
+            <MembersList />
 
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />

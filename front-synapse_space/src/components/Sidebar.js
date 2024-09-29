@@ -66,7 +66,6 @@ const Sidebar = () => {
         {memberships.map((membership) => (
           <li className='my-2' key={membership.community}>
             <LgCommunityPill communityID={membership.community} communityName={membership.community_name} commAvatar={membership.community_avatar} />
-            {console.log(membership)}
           </li>
         ))}
         

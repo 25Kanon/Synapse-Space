@@ -133,12 +133,13 @@ class CreateMembership(serializers.ModelSerializer):
         fields = ['user', 'community']
 
 class MembershipSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
     community_name = serializers.CharField(source='community.name', read_only=True)
     community_avatar = serializers.CharField(source='community.imgURL', read_only=True)
 
     class Meta:
         model = Membership
-        fields = ['user', 'community', 'community_name', 'community_avatar']
+        fields = ['username','community', 'community_name', 'community_avatar']
 
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
