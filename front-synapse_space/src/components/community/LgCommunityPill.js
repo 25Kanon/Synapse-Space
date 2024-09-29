@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
 import axios from 'axios';
 
-const LgCommunityPill = ({ communityName, communityID }) => {
+const LgCommunityPill = ({ communityName, communityID, commAvatar}) => {
     const navigate = useNavigate();
 
     const getInitials = (name) => {
@@ -14,7 +14,11 @@ const LgCommunityPill = ({ communityName, communityID }) => {
         <button onClick={() => navigate(`/community/${communityID}`)} className="flex items-center w-full p-2 rounded-full group mt-3   hover:bg-gray-100 dark:hover:bg-gray-700">
             <div className="avatar placeholder">
                 <div className="bg-neutral text-neutral-content w-5 rounded-full">
-                    <span className="text-xs">{getInitials(communityName)}</span>
+                {commAvatar ? (
+                                <img src={commAvatar} alt={`avatar-${communityName}`} />
+                            ) : (
+                                <h2 className="text-xs font-bold">{getInitials(communityName)}</h2>
+                            )}
                 </div>
             </div>
             <span className="ms-3">{communityName}</span>

@@ -55,7 +55,7 @@ export default function Community() {
             <FriendsList />
 
             <MainContentContainer>
-                <Banner communityName={communityDetails.name} />
+                <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
             </MainContentContainer>
         </>
     );

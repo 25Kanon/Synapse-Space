@@ -1,6 +1,3 @@
-// Remove this line if you are defining createImage yourself
-// import { createImage, getCroppedImg } from "canvas-utils";
-
 export const createImage = (url) =>
     new Promise((resolve, reject) => {
       const image = new Image();

@@ -13,9 +13,9 @@ const Banner = ({ communityName, commAvatar, commBanner }) => {
         <>
             <div class="px-3 pb-4  bg-base-200 my-3 rounded-lg">
                 <div class="rounded-t-lg h-32 overflow-hidden">
-                    <div className="bg-neutral text-neutral-content h-32 rounded-full">
+                    <div className="bg-neutral text-neutral-content rounded h-32">
                             {commBanner ? (
-                                <img class="object-cover object-top w-full" src={`${commBanner}`} alt={`Banner-${communityName}`} />
+                                <img class="object-cover object-top h-full w-full" src={`${commBanner}`} alt={`Banner-${communityName}`} />
                             ) : (
                                <></>
                             )}

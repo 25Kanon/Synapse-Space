@@ -18,10 +18,13 @@ class User(AbstractUser):
 
 class Community(models.Model):
     name = models.CharField(max_length=255)
+    imgURL = models.CharField(max_length=255, blank=True, null=True)
+    bannerURL = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
     rules = models.TextField()
     keyword = models.CharField(max_length=255)
     owned_by = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
+
     def __str__(self):
         return self.name
 

@@ -124,7 +124,8 @@ class LogoutSerializer(serializers.Serializer):
 class CreateCommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
-        fields = ['id', 'name', 'description', 'rules', 'keyword', 'owned_by']
+        fields = ['id', 'name', 'description', 'rules', 'keyword', 'owned_by', 'imgURL', 'bannerURL']
+
 
 class CreateMembership(serializers.ModelSerializer):
     class Meta:
@@ -133,12 +134,13 @@ class CreateMembership(serializers.ModelSerializer):
 
 class MembershipSerializer(serializers.ModelSerializer):
     community_name = serializers.CharField(source='community.name', read_only=True)
+    community_avatar = serializers.CharField(source='community.imgURL', read_only=True)
 
     class Meta:
         model = Membership
-        fields = ['user', 'community', 'community_name']
+        fields = ['user', 'community', 'community_name', 'community_avatar']
 
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
-        fields = ['id', 'name', 'description', 'rules', 'keyword', 'owned_by']  
+        fields = ['id','bannerURL','imgURL','name', 'description', 'rules', 'keyword', 'owned_by']

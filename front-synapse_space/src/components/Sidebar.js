@@ -33,9 +33,9 @@ const Sidebar = () => {
   }, []);
 
   return (
-<aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 pt-20 transition-transform -translate-x-full sm:translate-x-0 lg:block hidden" style={{ height: '95%' }} aria-label="Sidebar">
-  <div class="h-full px-3 pb-4 overflow-y-clip bg-base-200 my-3 rounded-lg py-2">
-    <ul class="space-y-2 font-medium">
+<aside id="logo-sidebar" class="fixed  top-0 left-0 z-40 w-64 pt-20 transition-transform -translate-x-full sm:translate-x-0 lg:block hidden" style={{ height: '95%' }} aria-label="Sidebar">
+  <div class="h-full px-3 overflow-y-auto  pb-3 rounded-lg my-2">
+    <ul class="space-y-2 bg-base-100 font-medium fixed  z-40">
       <li>
         <button onClick={() => navigate('/')} class="flex items-center w-full p-2 rounded-full group mt-3 bg-white dark:text-neutral hover:bg-gray-100 dark:hover:bg-gray-700">
           <FontAwesomeIcon icon={faHome} />
@@ -61,11 +61,12 @@ const Sidebar = () => {
         <div class="divider divider-start text-sm mt-5"><FontAwesomeIcon icon={faBarsStaggered}></FontAwesomeIcon>Communities</div>
       </li>
     </ul>
-    <div class="px-3 pb-1 rounded-lg overflow-y-auto h-full">
-      <ul class="font-medium overflow-y-auto h-full">
+    <div class="px-3 py-8 rounded-lg mt-40">
+      <ul class="font-medium">
         {memberships.map((membership) => (
-          <li className='py-2' key={membership.id}>
-            <LgCommunityPill communityID={membership.community} communityName={membership.community_name} />
+          <li className='my-2' key={membership.community}>
+            <LgCommunityPill communityID={membership.community} communityName={membership.community_name} commAvatar={membership.community_avatar} />
+            {console.log(membership)}
           </li>
         ))}
         
