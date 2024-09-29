@@ -8,6 +8,7 @@ import NavBar from "../../components/NavBar"
 import MembersList from "../../components/community/MembersList";
 import Banner from '../../components/community/Banner';
 import MainContentContainer from "../../components/MainContentContainer";
+import CreatePost from "../../components/community/CreatePost";
 
 export default function Community() {
     const { user, error } = useContext(AuthContext);
@@ -50,12 +51,13 @@ export default function Community() {
     return (
         <>
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
-            <NavBar  />
+            <NavBar />
             <Sidebar />
             <MembersList />
-
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
+                <CreatePost userName={user.username} community={communityDetails.id}/>
+
             </MainContentContainer>
         </>
     );

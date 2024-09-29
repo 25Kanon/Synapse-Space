@@ -34,8 +34,8 @@ const Sidebar = () => {
 
   return (
 <aside id="logo-sidebar" class="fixed  top-0 left-0 z-40 w-64 pt-20 transition-transform -translate-x-full sm:translate-x-0 lg:block hidden" style={{ height: '95%' }} aria-label="Sidebar">
-  <div class="h-full px-3 overflow-y-auto  pb-3 rounded-lg my-2">
-    <ul class="space-y-2 bg-base-100 font-medium fixed  z-40">
+  <div class="h-full px-3 overflow-y-auto bg-base-200   pb-3 rounded-lg my-2">
+    <ul class="space-y-2 bg-base-200 font-medium fixed  z-40">
       <li>
         <button onClick={() => navigate('/')} class="flex items-center w-full p-2 rounded-full group mt-3 bg-white dark:text-neutral hover:bg-gray-100 dark:hover:bg-gray-700">
           <FontAwesomeIcon icon={faHome} />

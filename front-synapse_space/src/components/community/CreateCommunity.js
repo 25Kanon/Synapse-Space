@@ -8,6 +8,7 @@ import Banner from "./Banner";
 import AvatarCropper from "../avatarCropper";
 import BannerCropper from "./BannerCropper";
 
+
 const CreateCommunity = () => {
     let [error, setError] = useState(null);
     let [success, setSuccess] = useState(null);

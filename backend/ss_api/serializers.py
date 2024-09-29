@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-from .models import User, Community, Membership
+from .models import User, Community, Membership, Post
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -145,3 +145,21 @@ class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
         fields = ['id','bannerURL','imgURL','name', 'description', 'rules', 'keyword', 'owned_by']
+
+class CreatePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'created_by', 'posted_in']
+        read_only_fields = ['created_by']
+
+    def create(self, validated_data):
+        return Post.objects.create(**validated_data)
+
+
+
+class ImageUploadSerializer(serializers.Serializer):
+    image = serializers.ImageField()
+
+    def validate_image(self, value):
+        # Add any validation you want here (e.g., file size, format)
+        return value

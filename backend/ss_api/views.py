@@ -1,10 +1,12 @@
 import os
+from datetime import datetime, timedelta
+
 from dotenv import load_dotenv
 from rest_framework import generics, permissions, status, serializers
-from .models import Community, Membership
+from .models import Community, Membership, Post
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,
-                          MembershipSerializer, CommunitySerializer)
+                          MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 import logging
@@ -98,8 +100,8 @@ class CommunityCreateView(generics.CreateAPIView):
         return f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
 
     def perform_create(self, serializer):
-        blob_service_client = BlobServiceClient(account_url='https://cdnsynapsespace.blob.core.windows.net/', credential='xmA87nHDNUzzw9RjQIwoMzO+2MTAvXTzg35CN5B/ojYTbvJyY5iCTon149f4V7hke3aZSGdOiri3+ASt5I2L9w==')
-        container_client = blob_service_client.get_container_client('synapsespace-storage')
+        blob_service_client = BlobServiceClient(account_url=self.account_url, credential='xmA87nHDNUzzw9RjQIwoMzO+2MTAvXTzg35CN5B/ojYTbvJyY5iCTon149f4V7hke3aZSGdOiri3+ASt5I2L9w==')
+        container_client = blob_service_client.get_container_client(self.container_name)
 
         img_url = None
         banner_url = None
@@ -167,3 +169,60 @@ class CommunityDetailView(generics.RetrieveAPIView):
     serializer_class = CommunitySerializer
     queryset = Community.objects.all()
     lookup_field = 'id'
+
+class PostCreateView(generics.CreateAPIView):
+    # permission_classes = [IsAuthenticated]
+    queryset = Post.objects.all()
+    serializer_class = CreatePostSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by=request.user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class ImageUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def __init__(self):
+        self.account_url = os.getenv('AZURE_BLOB_ACCOUNT_URL')
+        self.credential = os.getenv('AZURE_BLOB_CREDENTIAL')
+        self.account_name = os.getenv('AZURE_BLOB_ACCOUNT_NAME')
+        self.account_key = os.getenv('AZURE_BLOB_ACCOUNT_KEY')
+        self.container_name = 'synapsespace-storage'
+
+    def generate_presigned_url(self, blob_name):
+        blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
+        container_client = blob_service_client.get_container_client(self.container_name)
+
+        sas_token = generate_blob_sas(
+            account_name=self.account_name,
+            container_name=self.container_name,
+            blob_name=blob_name,
+            account_key=self.account_key,
+            permission=BlobSasPermissions(read=True, write=True),  # Ensure read and write permissions
+            expiry=datetime.utcnow() + timedelta(hours=1)
+        )
+
+        return f"https://{blob_service_client.account_name}.blob.core.windows.net/{self.container_name}/{blob_name}?{sas_token}"
+
+    def post(self, request):
+        serializer = ImageUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            image = serializer.validated_data['image']
+            blob_name = f"images/{datetime.utcnow().isoformat()}_{image.name}"
+
+            # Upload to Azure Blob Storage
+            blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
+            blob_client = blob_service_client.get_blob_client(container=self.container_name, blob=blob_name)
+
+            blob_client.upload_blob(image, overwrite=True)
+
+            # Generate the URL
+            url = self.generate_presigned_url(blob_name)
+
+            return Response({'url': url}, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

@@ -28,6 +28,12 @@ class Community(models.Model):
     def __str__(self):
         return self.name
 
+class Post(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    posted_in = models.ForeignKey(Community, on_delete=models.CASCADE)
 class Membership(models.Model):
     user = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
     community = models.ForeignKey(Community, to_field='id', on_delete=models.CASCADE)
