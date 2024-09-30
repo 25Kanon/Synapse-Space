@@ -6,7 +6,7 @@ from rest_framework import generics, permissions, status, serializers
 from .models import Community, Membership, Post
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,
-                          MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer)
+                          MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer, CommunityPostSerializer)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 import logging
@@ -225,4 +225,11 @@ class ImageUploadView(APIView):
             return Response({'url': url}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class getCommunityPosts(generics.ListAPIView):
+    serializer_class = CommunityPostSerializer
+
+    def get_queryset(self):
+        community_id = self.kwargs.get('community_id')
+        return Post.objects.filter(posted_in_id=community_id)
 

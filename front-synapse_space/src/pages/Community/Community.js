@@ -9,6 +9,7 @@ import MembersList from "../../components/community/MembersList";
 import Banner from '../../components/community/Banner';
 import MainContentContainer from "../../components/MainContentContainer";
 import CreatePost from "../../components/community/CreatePost";
+import CommunityPost from "../../components/community/CommunityPost";
 
 export default function Community() {
     const { user, error } = useContext(AuthContext);
@@ -56,8 +57,9 @@ export default function Community() {
             <MembersList />
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
-                <CreatePost userName={user.username} community={communityDetails.id}/>
-
+                <CreatePost userName={user.username} community={communityDetails.id} />
+                <CommunityPost userName={user.username} community={communityDetails.id} />
+               
             </MainContentContainer>
         </>
     );

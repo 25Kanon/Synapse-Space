@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView, MembershipListView, CommunityDetailView, CommunityMembersListView, PostCreateView, ImageUploadView
+from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView, MembershipListView,
+                    CommunityDetailView, CommunityMembersListView, PostCreateView, ImageUploadView, getCommunityPosts)
 
 
 urlpatterns = [
@@ -16,4 +17,5 @@ urlpatterns = [
     path('community/<int:community_id>/members/', CommunityMembersListView.as_view(), name='community-members-list'),
     path('community/post', PostCreateView.as_view(), name='community-members-list'),
     path('community/upload/image', ImageUploadView.as_view(), name='community-members-list'),
+    path('community/<int:community_id>/posts/', getCommunityPosts.as_view(), name='community-posts-list'),
 ]

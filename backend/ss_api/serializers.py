@@ -163,3 +163,8 @@ class ImageUploadSerializer(serializers.Serializer):
     def validate_image(self, value):
         # Add any validation you want here (e.g., file size, format)
         return value
+
+class CommunityPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'posted_in']
