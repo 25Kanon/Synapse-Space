@@ -5,3 +5,4 @@ djangorestframework
 djangorestframework-simplejwt
 psycopg2-binary
 Pillow
+gunicorn uvicorn
