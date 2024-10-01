@@ -32,12 +32,30 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
     posted_in = models.ForeignKey(Community, on_delete=models.CASCADE)
+    
+    
+
 class Membership(models.Model):
     user = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
     community = models.ForeignKey(Community, to_field='id', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.user.username} - {self.community.name}"
-# Create your models here.
+
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class SavedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class LikedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView, MembershipListView,
-                    CommunityDetailView, CommunityMembersListView, PostCreateView, ImageUploadView, getCommunityPosts)
+                    CommunityDetailView, CommunityMembersListView, PostCreateView, 
+                    ImageUploadView, getCommunityPosts, UserProfileView, 
+                    UserActivitiesView,)
 
 
 urlpatterns = [
@@ -10,6 +12,10 @@ urlpatterns = [
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('auth/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/memberships/', MembershipListView.as_view(), name='membership-list'),
+
+     # User Profile URLs
+    path('profile/', UserProfileView.as_view(), name='user-profile'),
+    path('activities/', UserActivitiesView.as_view(), name='user-activities'),
 
     # Community URLs
     path('community/create/', CommunityCreateView.as_view(), name='community-create'),

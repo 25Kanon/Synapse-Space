@@ -8,7 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-from .models import User, Community, Membership, Post
+from .models import (User, Community, Membership, 
+                     Post, Comment, SavedPost, LikedPost,)
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -164,7 +165,33 @@ class ImageUploadSerializer(serializers.Serializer):
         # Add any validation you want here (e.g., file size, format)
         return value
 
+
 class CommunityPostSerializer(serializers.ModelSerializer):
+    created_by_username = serializers.SerializerMethodField()
+
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'posted_in']
+        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in']
+
+    def get_created_by_username(self, obj):
+        return obj.created_by.username  
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['content', 'created_at']
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['comment', 'created_at']
+
+class SavedPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedPost
+        fields = ['post', 'created_at']
+
+class LikedPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LikedPost
+        fields = ['post', 'created_at']

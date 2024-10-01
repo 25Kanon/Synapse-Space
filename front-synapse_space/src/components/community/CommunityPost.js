@@ -60,17 +60,17 @@ const CommunityPost = ({ userName, community }) => {
             {success && <SuccessAlert message={success} />}
 
             {posts.map((post) => (
-                <div key={post.id} className="card card-compact border border-solid rounded w-full shadow-xl my-2">
+                <div key={post.id} className="w-full my-2 border border-solid rounded shadow-xl card card-compact">
                     <div className="card-body">
-                        <div className="h-5 flex items-center">
-                            <div className="avatar mx-2">
-                                <div className="h-7 rounded-full">
+                        <div className="flex items-center h-5">
+                            <div className="mx-2 avatar">
+                                <div className="rounded-full h-7">
                                     <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="User avatar" />
                                 </div>
                             </div>
 
-                            <p className="text-sm font-semibold flex items-center">
-                                {post.username}
+                            <p className="flex items-center text-sm font-semibold">
+                                {post.created_by_username} 
                             </p>
                         </div>
                         <h2 className="card-title">{post.title}</h2>
@@ -81,7 +81,7 @@ const CommunityPost = ({ userName, community }) => {
                                 __html: DOMPurify.sanitize(marked(post.content)),
                             }}
                         />
-
+                    
                         
                     </div>
                 </div>

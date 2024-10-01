@@ -100,7 +100,7 @@ class CommunityCreateView(generics.CreateAPIView):
         return f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
 
     def perform_create(self, serializer):
-        blob_service_client = BlobServiceClient(account_url=self.account_url, credential='xmA87nHDNUzzw9RjQIwoMzO+2MTAvXTzg35CN5B/ojYTbvJyY5iCTon149f4V7hke3aZSGdOiri3+ASt5I2L9w==')
+        blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
         container_client = blob_service_client.get_container_client(self.container_name)
 
         img_url = None
@@ -232,4 +232,53 @@ class getCommunityPosts(generics.ListAPIView):
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
         return Post.objects.filter(posted_in_id=community_id)
+    
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        user_data = UserSerializer(user).data
+        return Response(user_data)
+
+    def put(self, request):
+        user = request.user
+        data = request.data
+
+        # Update profile picture and registration form if provided
+        if 'profile_pic' in request.FILES:
+            user.profile_pic = request.FILES['profile_pic']
+
+        # Update other fields
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name = data.get('last_name', user.last_name)
+        user.program = data.get('program', user.program)
+        user.bio = data.get('bio', user.bio)
+        user.interests = data.get('interests', user.interests)
+
+        user.save()
+
+        user_data = UserProfileSerializer(user).data
+        return Response(user_data)
+
+class UserActivitiesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        posts = Post.objects.filter(user=user).order_by('created_at')
+        comments = Comment.objects.filter(user=user).order_by('created_at')
+        saved_posts = SavedPost.objects.filter(user=user).order_by('created_at')
+        liked_posts = LikedPost.objects.filter(user=user).order_by('created_at')
+
+        activities = {
+            'posts': PostSerializer(posts, many=True).data,
+            'comments': CommentSerializer(comments, many=True).data,
+            'saved_posts': SavedPostSerializer(saved_posts, many=True).data,
+            'liked_posts': LikedPostSerializer(liked_posts, many=True).data
+        }
+
+        return Response(activities)
 

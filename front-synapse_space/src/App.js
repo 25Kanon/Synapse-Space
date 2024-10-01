@@ -7,6 +7,7 @@ import PublicRoute from './utils/PublicRoute';
 import Home from './pages/Home';
 import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
+import ProfilePage from './pages/Profile/ProfilePage';
 import Create from './pages/Community/Create';
 import SearchCommunity from './pages/Community/SearchCommunity';
 import Community from './pages/Community/Community';
@@ -35,6 +36,12 @@ function App() {
         <Routes>
           <Route path="/" element={<PrivateRoute />}>
             <Route path="/" element={<Home />} />
+          </Route>
+          <Route path="/profile" element={<PrivateRoute />}>
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
+          <Route path="/activities" element={<PrivateRoute />}>
+            <Route path="/activities" element={<ProfilePage />} />
           </Route>
           <Route path="/" element={<PublicRoute />}>
             <Route path="/login" element={<UserLogin />} />
