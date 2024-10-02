@@ -12,7 +12,7 @@ import Create from './pages/Community/Create';
 import SearchCommunity from './pages/Community/SearchCommunity';
 import Community from './pages/Community/Community';
 import DiscoverCommunity from './pages/Community/DiscoverCommunity';
-import { MembershipsProvider } from 'context/MembershipContext';
+import { MembershipsProvider } from './context/MembershipContext';
 
 function App() {
   const [theme, setTheme] = useState(() => {

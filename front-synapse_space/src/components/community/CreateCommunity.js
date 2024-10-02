@@ -7,7 +7,7 @@ import SuccessAlert from "../SuccessAlert";
 import Banner from "./Banner";
 import AvatarCropper from "../avatarCropper";
 import BannerCropper from "./BannerCropper";
-import { useMemberships } from "context/MembershipContext";
+import { useMemberships } from "../../context/MembershipContext";
 
 
 const CreateCommunity = () => {

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHome, faUserGroup, faCompass, faBarsStaggered } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom";
 import LgCommunityPill from './community/LgCommunityPill';
-import { useMemberships } from 'context/MembershipContext';
+import { useMemberships } from '../context/MembershipContext';
 
 const Sidebar = () => {
   const navigate = useNavigate();

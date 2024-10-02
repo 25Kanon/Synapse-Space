@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
-import { useMemberships } from 'context/MembershipContext';
+import { useMemberships } from '../../context/MembershipContext';
 import { useLocation } from 'react-router-dom';
 const Search = () => {
     const [communities, setCommunities] = useState([]);
