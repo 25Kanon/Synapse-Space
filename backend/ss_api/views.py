@@ -284,6 +284,7 @@ class UserActivitiesView(APIView):
         return Response(activities)
 
 class CommunityListView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         search_query = request.query_params.get('search', None)  # Get the search query parameter
 
