@@ -31,7 +31,7 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                 setHasOverflow(prev => ({ ...prev, [postId]: true }));
             }
         }
-    }, [postContent, postId]); // Runs whenever postContent or postId changes
+    }, [postContent, postId, community]); // Runs whenever postContent or postId changes
 
     const toggleExpand = () => {
         setExpandedPosts(prev => ({
@@ -47,7 +47,7 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
         <div key={postId} className="w-full my-5 border border-solid rounded shadow-xl card card-compact">
             <div
                 ref={el => (cardBodyRefs.current[postId] = el)} // Store the ref for each post using postId as the key
-                className={`card-body ${isExpanded ? 'max-h-none' : 'max-h-48 overflow-clip'}`}
+                className={`card-body ${isExpanded ? 'max-h-none' : 'max-h-48 overflow-hidden'}`}
             >
                 <div className="flex items-center h-5">
                     <div className="mx-2 avatar">

@@ -39,7 +39,7 @@ export default function Community() {
         if (communityDetails) {
             fetchPosts();
         }
-    }, [communityDetails]);
+    }, [communityDetails, posts]);
 
 
     useEffect(() => {
