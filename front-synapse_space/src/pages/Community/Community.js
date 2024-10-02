@@ -4,7 +4,7 @@ import AuthContext from "../../context/AuthContext";
 import axios from "axios";
 import ErrorAlert from "../../components/ErrorAlert";
 import Sidebar from "../../components/Sidebar";
-import NavBar from "../../components/NavBar"
+import NavBar from "../../components/NavBar";
 import MembersList from "../../components/community/MembersList";
 import Banner from '../../components/community/Banner';
 import MainContentContainer from "../../components/MainContentContainer";
@@ -39,7 +39,7 @@ export default function Community() {
         if (communityDetails) {
             fetchPosts();
         }
-    }, [communityDetails, posts]);
+    }, [id]);
 
 
     useEffect(() => {

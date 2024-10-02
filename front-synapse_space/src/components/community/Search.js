@@ -1,115 +1,105 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
+import { useMemberships } from 'context/MembershipContext';
+import { useLocation } from 'react-router-dom';
 const Search = () => {
-    const communities = [
-        {
-            name: 'No-Code',
-            description: "It's easier than ever to build powerful apps and websites without code.",
-            members: '19,364 members',
-            date: 'Nov \'19',
-            image: 'path/to/no-code-image',
-        },
-        {
-            name: 'Bubble No Code Developers',
-            description: 'Share tips and progress on products built on Bubble!',
-            members: '19,364 members',
-            date: 'Nov \'19',
-            image: 'path/to/bubble-no-code-image',
-        },
-        {
-            name: 'Low Code',
-            description: 'Talking about the middle ground between code and no-code',
-            members: '19,364 members',
-            date: 'Nov \'19',
-            image: 'path/to/low-code-image',
-        },
-    ];
+    const [communities, setCommunities] = useState([]);
+    const { memberships, addMembership } = useMemberships();
+    const location = useLocation();
+    const { query } = location.state || {}; // Access the search query
+    useEffect(() => {
+        axios.get(`${process.env.REACT_APP_API_BASE_URI}/api/community?search=` + query,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            })
+            .then(response => {
+                setCommunities(response.data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }, [query]);
 
-    const users = [
-        {
-            username: 'nocodelife',
-            displayName: 'Nocode Life',
-            avatar: 'path/to/avatar1',
-        },
-        {
-            username: 'nocodeeco',
-            displayName: 'Torrence Mays',
-            avatar: 'path/to/avatar2',
-        },
-        {
-            username: 'gurunocode',
-            displayName: 'Sakura Blossom',
-            avatar: 'path/to/avatar3',
-        },
-        {
-            username: 'naenocodevis',
-            displayName: 'Naevis',
-            avatar: 'path/to/avatar4',
-        },
-        {
-            username: 'purrnocode',
-            displayName: 'Catto',
-            avatar: 'path/to/avatar5',
-        },
-    ];
+    // Function to handle joining a community
+    const handleJoin = async (communityId) => {
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_BASE_URI}/api/community/${communityId}/join/`,
+                {}, // Adjust this as per your API requirements
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    }
+                }
+            );
+
+            // Update memberships state
+            if (response.status === 201 && response.data.membership) {
+                addMembership(response.data.membership);
+            }
+        } catch (error) {
+            console.error('Error joining community:', error);
+        }
+    };
 
     const [searchTerm, setSearchTerm] = useState('');
     return (
-        <main className="flex-grow p-6">
-            <div className="space-y-6">
-                <h1 className="text-3xl font-bold">Explore your space.</h1>
-                <p className="text-gray-400">Search for and join communities that fit your passions.</p>
+        <div className="flex flex-wrap">
+            {communities.map((community, index) => {
 
-                {/* Search bar */}
-                <div className="flex space-x-2">
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="flex-grow px-4 py-2 bg-gray-800 rounded-lg"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <button className="bg-blue-500 px-4 py-2 rounded-lg">Search</button>
-                </div>
+                // Check if the community ID is in memberships
 
-                {/* Community Results */}
-                <div>
-                    <h2 className="text-2xl font-semibold mb-4">3 communities for "{searchTerm}"</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                        {communities.map((community, index) => (
-                            <div key={index} className="bg-gray-800 rounded-lg p-4 shadow-lg">
-                                <div className="flex items-center justify-center h-40 bg-gray-700 rounded-lg mb-4">
-                                    {/* Image Placeholder */}
-                                    <img src={community.image} alt={community.name} className="w-full h-full object-cover rounded-lg" />
+                const isJoined = memberships.some(membership => membership.community === community.id);
+                return (
+                    <div key={index} className="p-6">
+                        {/* DaisyUI Card */}
+                        <div className="card w-96 bg-base-100 shadow-xl">
+                            <figure>
+                                <img
+                                    className="rounded-t-lg"
+                                    src={community.bannerUrl || 'https://via.placeholder.com/150'}
+                                    alt={community.name}
+                                />
+                            </figure>
+                            <div className="card-body">
+                                <div className="flex items-center mb-2">
+                                    <div className="avatar mr-2">
+                                        <div className="rounded-full h-7 w-7">
+                                            <img
+                                                src={community.imgUrl || 'https://via.placeholder.com/50'}
+                                                alt={community.name}
+                                                className="rounded-full h-7 w-7"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-sm font-semibold">
+                                        {community.name}
+                                    </p>
                                 </div>
-                                <h3 className="text-xl font-bold">{community.name}</h3>
-                                <p className="text-gray-400">{community.description}</p>
-                                <p className="text-sm text-gray-500">{community.members}</p>
-                                <p className="text-sm text-gray-500">{community.date}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Users Related to the Search */}
-                <div>
-                    <h2 className="text-2xl font-semibold mb-4">656 users for "{searchTerm}"</h2>
-                    <div className="flex space-x-4">
-                        {users.map((user, index) => (
-                            <div key={index} className="text-center">
-                                <div className="h-16 w-16 rounded-full bg-gray-700 overflow-hidden mb-2">
-                                    {/* Avatar Placeholder */}
-                                    <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
+                                <h5 className="card-title text-2xl font-bold tracking-tight text-gray-900">{community.name}</h5>
+                                <p className="mb-3 font-normal text-gray-700" dangerouslySetInnerHTML={{
+                                    __html: DOMPurify.sanitize(marked(community.description))
+                                }} />
+                                <p className="text-sm text-gray-400 mt-2">{community.name} members • {community.date}</p>
+                                <div className="card-actions justify-end">{isJoined ? (
+                                    <span className="text-sm text-green-500">Joined</span>
+                                ) : (
+                                    <button className="btn btn-primary" onClick={() => handleJoin(community.id)}>Join</button>
+                                )}
                                 </div>
-                                <p>{user.displayName}</p>
-                                <p className="text-gray-400 text-sm">@{user.username}</p>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </main>
+                        </div>
+                    </div>)
+            }
+
+            )}
+        </div>
     );
+
 }
 
 export default Search;

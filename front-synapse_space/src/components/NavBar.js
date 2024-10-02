@@ -7,6 +7,7 @@ const NavBar = () => {
     const navigate = useNavigate();
     const { user, logoutUser } = useContext(AuthContext);
     const [scrolled, setScrolled] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(''); // State to hold search input
 
     useEffect(() => {
         const handleScroll = () => {
@@ -23,6 +24,13 @@ const NavBar = () => {
         };
     }, []);
 
+    // Function to handle search submission
+    const handleSearchSubmit = (e) => {
+        e.preventDefault(); // Prevent default form submission
+        if (searchQuery) {
+            navigate('/search', { state: { query: searchQuery } }); // Navigate to search page with query
+        }
+    };
 
     return (
         <nav className={`fixed top-0 z-40 w-full ${scrolled ? 'bg-base-200' : ''}`}>
@@ -32,18 +40,21 @@ const NavBar = () => {
 
                         <a href="https://flowbite.com" class="flex ms-2 md:me-24">
                             <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 me-3" alt="FlowBite Logo" />
-                            <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Flowbite</span>
+                            <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Synapse Space</span>
                         </a>
                     </div>
-                    <div>
+                    {/* Search form */}
+                    <form onSubmit={handleSearchSubmit}>
                         <input
                             type="text"
                             placeholder="search"
                             className="input input-bordered max-w-xs w-auto"
                             name="search"
                             required
+                            value={searchQuery} // Bind the search input to state
+                            onChange={(e) => setSearchQuery(e.target.value)} // Update state on input change
                         />
-                    </div>
+                    </form>
 
                     <div class="flex items-center justify-center ms-3 bg-base-200 px-3 rounded-full my-auto h-auto dropdown-left sm:block hidden">
                         <div class="flex items-center py-1 px-2">

@@ -12,46 +12,46 @@ module.exports = {
     themes: [
       {
         dark: {
-          
+
           "primary": "#22C0BD",
-                    
+
           "secondary": "#737878",
-                    
+
           "accent": "#E7E7E7",
-                    
+
           "neutral": "#043130",
-                    
+
           "base-100": "#043130",
-                    
+
           "info": "#22C0BD",
-                    
+
           "success": "#248100",
-                    
+
           "warning": "#facc15",
-                    
+
           "error": "#dc2626",
-          },
-          light: {
-          
-            "primary": "#22C0BD",
-                      
-            "secondary": "#737878",
-                      
-            "accent": "#043130",
-                      
-            "neutral": "E7E7E7",
-                      
-            "base-100": "#E7E7E7",
-                      
-            "info": "#22C0BD",
-                      
-            "success": "#248100",
-                      
-            "warning": "#facc15",
-                      
-            "error": "#dc2626",
-          },
-          
+        },
+        light: {
+
+          "primary": "#22C0BD",
+
+          "secondary": "#737878",
+
+          "accent": "#043130",
+
+          "neutral": "E7E7E7",
+
+          "base-100": "#E7E7E7",
+
+          "info": "#22C0BD",
+
+          "success": "#248100",
+
+          "warning": "#facc15",
+
+          "error": "#dc2626",
+        },
+
       },
     ],// false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
     darkTheme: "dark", // name of one of the included themes for dark mode

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 from rest_framework import generics, permissions, status, serializers
+from django.db.models import Q  # Import Q for complex queries
 from .models import Community, Membership, Post
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,
@@ -282,3 +283,39 @@ class UserActivitiesView(APIView):
 
         return Response(activities)
 
+class CommunityListView(APIView):
+    def get(self, request, format=None):
+        search_query = request.query_params.get('search', None)  # Get the search query parameter
+
+        if search_query:
+            communities = Community.objects.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(keyword__icontains=search_query)  # Ensure your model has a 'keywords' field
+            )
+        else:
+            communities = Community.objects.all()  # If no search query, get all communities
+
+        serializer = CommunitySerializer(communities, many=True)
+        return Response(serializer.data)
+    
+class JoinCommunityView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        community_id = self.kwargs.get('community_id')  # Get community ID from URL parameters
+
+        # Check if the community exists
+        try:
+            community = Community.objects.get(id=community_id)
+        except Community.DoesNotExist:
+            return Response({"error": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create initial membership
+        membership, created = Membership.objects.get_or_create(user=request.user, community=community)
+
+        if created:
+            serializer = MembershipSerializer(membership)
+            return Response({"message": "Successfully joined the community.", "membership": serializer.data}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message": "You are already a member of this community."}, status=status.HTTP_200_OK)
