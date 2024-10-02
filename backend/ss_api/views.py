@@ -282,3 +282,28 @@ class UserActivitiesView(APIView):
 
         return Response(activities)
 
+class CommunityListView(APIView):
+    def get(self, request, format=None):
+        communities = Community.objects.all()
+        serializer = CommunitySerializer(communities, many=True)
+        return Response(serializer.data)
+    
+class JoinCommunityView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        community_id = self.kwargs.get('community_id')  # Get community ID from URL parameters
+
+        # Check if the community exists
+        try:
+            community = Community.objects.get(id=community_id)
+        except Community.DoesNotExist:
+            return Response({"error": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create initial membership
+        membership, created = Membership.objects.get_or_create(user=request.user, community=community)
+
+        if created:
+            return Response({"message": "Successfully joined the community."}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message": "You are already a member of this community."}, status=status.HTTP_200_OK)

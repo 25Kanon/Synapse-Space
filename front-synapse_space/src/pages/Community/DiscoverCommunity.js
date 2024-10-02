@@ -1,12 +1,12 @@
 import React, { useContext } from "react";
 import AuthContext from "../../context/AuthContext";
-import Search from '../../components/community/Search';
+import Discover from '../../components/community/Discover';
 import ErrorAlert from "../../components/ErrorAlert";
 import Sidebar from "../../components/Sidebar";
 import NavBar from "../../components/NavBar";
 import FriendsList from "../../components/FriendsList";
 import MainContentContainer from "../../components/MainContentContainer";
-export default function SearchCommunity() {
+export default function DiscoverCommunity() {
     const { user, error } = useContext(AuthContext);
 
     if (!user) {
@@ -22,13 +22,13 @@ export default function SearchCommunity() {
     return (
         <>
             {error && <ErrorAlert text={error} />}
+            <Discover />
             <NavBar />
             <Sidebar />
             <FriendsList />
 
             <MainContentContainer>
-
-                <Search />
+                
             </MainContentContainer>
         </>
 
