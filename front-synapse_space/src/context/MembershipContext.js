@@ -9,8 +9,10 @@ const MembershipsContext = createContext();
 export const MembershipsProvider = ({ children }) => {
     const [memberships, setMemberships] = useState([]);
     const { user } = useContext(AuthContext);
-    const fetchMemberships = async (studentNumber, token) => {
+    const fetchMemberships = async () => {
         try {
+            const token = localStorage.getItem('access_token');
+            const studentNumber = user.student_number;
             const response = await axios.get(`${process.env.REACT_APP_API_BASE_URI}/api/auth/memberships/`, {
                 params: {
                     student_number: studentNumber
@@ -28,15 +30,12 @@ export const MembershipsProvider = ({ children }) => {
     const addMembership = (newMembership) => {
         setMemberships((prevMemberships) => [...prevMemberships, newMembership]);
     };
-    const token = localStorage.getItem('access_token');
     useEffect(() => {
-        if (user) {
-            const studentNumber = user.student_number; // Assuming you store the student number in localStorage
-            if (token && studentNumber) {
-                fetchMemberships(studentNumber, token);
-            }
+        if (user) {// Assuming you store the student number in localStorage
+            fetchMemberships();
+
         }
-    }, [user, token]);
+    }, [user]);
     return (
         <MembershipsContext.Provider value={{ memberships, fetchMemberships, addMembership }}>
             {children}

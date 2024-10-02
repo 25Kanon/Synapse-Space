@@ -7,6 +7,7 @@ import SuccessAlert from "../SuccessAlert";
 import Banner from "./Banner";
 import AvatarCropper from "../avatarCropper";
 import BannerCropper from "./BannerCropper";
+import { useMemberships } from "context/MembershipContext";
 
 
 const CreateCommunity = () => {
@@ -23,7 +24,7 @@ const CreateCommunity = () => {
     const [rules, setRules] = useState("");
     const [keyword, setKeyword] = useState("");
     const [imageSrc, setImageSrc] = useState(null);
-
+    const { fetchMemberships } = useMemberships();
 
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
@@ -69,7 +70,7 @@ const CreateCommunity = () => {
                 console.error("Error converting avatar URL to Blob:", error);
             });
     };
-    
+
     const handleBannerCropBlob = (croppedImgUrl) => {
         // Convert the blob URL to a Blob object
         fetch(croppedImgUrl)
@@ -81,28 +82,28 @@ const CreateCommunity = () => {
                 console.error("Error converting banner URL to Blob:", error);
             });
     };
-    
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         const formData = new FormData();
         formData.append("name", DOMPurify.sanitize(communityName));
         formData.append("description", DOMPurify.sanitize(description));
         formData.append("rules", DOMPurify.sanitize(rules));
         formData.append("keyword", DOMPurify.sanitize(keyword));
         formData.append("owned_by", `${user.student_number}`);
-    
+
         if (communityAvatar) {
             // Assuming `communityAvatar` is a Blob or File object after cropping
             formData.append("img", communityAvatarBlob, "avatar.png");
         }
-    
+
         if (communityBanner) {
             // Assuming `communityBanner` is a Blob or File object after cropping
             formData.append("banner", communityBannerBlob, "banner.png");
         }
-    
+
         try {
             const response = await axios.post(`${API_URL}/api/community/create/`, formData, {
                 headers: {
@@ -110,7 +111,7 @@ const CreateCommunity = () => {
                     "Content-Type": "multipart/form-data",
                 },
             });
-    
+
             if (response.status === 201) {
                 setCommunityName("");
                 setDescription("");
@@ -120,6 +121,9 @@ const CreateCommunity = () => {
                 setCommunityBanner(null);
                 setSuccess("Community created successfully");
                 console.log("Community created successfully");
+
+                // refetch memberships after creating community
+                fetchMemberships();
             } else {
                 setError("Failed to create community");
             }
@@ -128,7 +132,7 @@ const CreateCommunity = () => {
             console.error("An error occurred:", error);
         }
     };
-    
+
 
     return (
         <main className="p-5 mt-20 sm:mx-64 flex justify-center items-center">
@@ -154,28 +158,28 @@ const CreateCommunity = () => {
 
                     <div className="flex flex-row justify-center gap-3">
                         <div>
-                        <label className="block text-sm font-bold mb-2" htmlFor="commImg">
-                            Community Avatar</label>
-                        <input
-                            type="file"
-                            id="commImg"
-                            onChange={handleAvatarChange}
-                            class="file-input file-input-bordered file-input-accent w-full max-w-xs"
-                            accept="image/png, image/jpeg"
-                        />
+                            <label className="block text-sm font-bold mb-2" htmlFor="commImg">
+                                Community Avatar</label>
+                            <input
+                                type="file"
+                                id="commImg"
+                                onChange={handleAvatarChange}
+                                class="file-input file-input-bordered file-input-accent w-full max-w-xs"
+                                accept="image/png, image/jpeg"
+                            />
 
                         </div>
-                        
+
                         <div>
-                        <label className="block text-sm font-bold mb-2" htmlFor="commBanner">
-                            Community Banner</label>
-                        <input
-                            type="file"
-                            id="commBanner"
-                            onChange={handleBannerChange}
-                            class="file-input file-input-bordered file-input-accent w-full max-w-xs"
-                            accept="image/png, image/jpeg"
-                        />
+                            <label className="block text-sm font-bold mb-2" htmlFor="commBanner">
+                                Community Banner</label>
+                            <input
+                                type="file"
+                                id="commBanner"
+                                onChange={handleBannerChange}
+                                class="file-input file-input-bordered file-input-accent w-full max-w-xs"
+                                accept="image/png, image/jpeg"
+                            />
                         </div>
                     </div>
 
@@ -224,7 +228,7 @@ const CreateCommunity = () => {
                             Community Keyword
                             <p class="text-xs font-light mb-2">Seperate keywords with comma ","</p>
                         </label>
-                       
+
                         <input
                             type="text"
                             id="keyword"

@@ -304,6 +304,7 @@ class JoinCommunityView(generics.CreateAPIView):
         membership, created = Membership.objects.get_or_create(user=request.user, community=community)
 
         if created:
-            return Response({"message": "Successfully joined the community."}, status=status.HTTP_201_CREATED)
+            serializer = MembershipSerializer(membership)
+            return Response({"message": "Successfully joined the community.", "membership": serializer.data}, status=status.HTTP_201_CREATED)
         else:
             return Response({"message": "You are already a member of this community."}, status=status.HTTP_200_OK)

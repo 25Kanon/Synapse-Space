@@ -24,6 +24,6 @@ urlpatterns = [
     path('community/post', PostCreateView.as_view(), name='community-members-list'),
     path('community/upload/image', ImageUploadView.as_view(), name='community-members-list'),
     path('community/<int:community_id>/posts/', getCommunityPosts.as_view(), name='community-posts-list'),
+    path('community/<int:community_id>/join/', JoinCommunityView.as_view(), name='join-community'),
     path('community', CommunityListView.as_view(), name='community-list'),
-    path('api/community/<int:community_id>/join/', JoinCommunityView.as_view(), name='join-community'),
 ]

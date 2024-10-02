@@ -27,7 +27,7 @@ const Search = () => {
     const handleJoin = async (communityId) => {
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_API_BASE_URI}/api/commmunity/${communityId}/join`,
+                `${process.env.REACT_APP_API_BASE_URI}/api/community/${communityId}/join/`,
                 {}, // Adjust this as per your API requirements
                 {
                     headers: {
@@ -37,7 +37,9 @@ const Search = () => {
             );
 
             // Update memberships state
-            addMembership(response.data);
+            if (response.status === 201 && response.data.membership) {
+                addMembership(response.data.membership);
+            }
         } catch (error) {
             console.error('Error joining community:', error);
         }
