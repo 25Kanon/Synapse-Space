@@ -171,7 +171,7 @@ class CommunityDetailView(generics.RetrieveAPIView):
     lookup_field = 'id'
 
 class PostCreateView(generics.CreateAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = Post.objects.all()
     serializer_class = CreatePostSerializer
 

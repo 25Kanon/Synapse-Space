@@ -150,12 +150,7 @@ class CommunitySerializer(serializers.ModelSerializer):
 class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'created_by', 'posted_in']
-        read_only_fields = ['created_by']
-
-    def create(self, validated_data):
-        return Post.objects.create(**validated_data)
-
+        fields = ['id', 'title', 'content', 'posted_in']
 
 
 class ImageUploadSerializer(serializers.Serializer):
