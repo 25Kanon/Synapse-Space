@@ -75,6 +75,7 @@ const CreatePost = ({ userName, community }) => {
         formData.append("title", DOMPurify.sanitize(title));
         formData.append("content", DOMPurify.sanitize(editorContent));
         formData.append("posted_in", community);
+        console.log('formData', formData);
 
         try {
             const response = await axios.post(`${API_URL}/api/community/post`, formData, {

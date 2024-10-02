@@ -52,7 +52,7 @@ const CommunityPost = ({ userName, community }) => {
         } else {
             console.error('Community is undefined');
         }
-    }, [community]);
+    }, [posts,community]);
 
     return (
         <>
@@ -60,7 +60,7 @@ const CommunityPost = ({ userName, community }) => {
             {success && <SuccessAlert message={success} />}
 
             {posts.map((post) => (
-                <div key={post.id} className="w-full my-2 border border-solid rounded shadow-xl card card-compact">
+                <div key={post.id} className="w-full my-5 border border-solid rounded shadow-xl card card-compact">
                     <div className="card-body">
                         <div className="flex items-center h-5">
                             <div className="mx-2 avatar">
