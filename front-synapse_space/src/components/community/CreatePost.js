@@ -18,6 +18,8 @@ import {
     InsertTable,
     imagePlugin,
     InsertImage,
+    diffSourcePlugin,
+    DiffSourceToggleWrapper,
 } from "@mdxeditor/editor";
 
 const API_URL = process.env.REACT_APP_API_BASE_URI;
@@ -28,7 +30,6 @@ const CreatePost = ({ userName, community }) => {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [editorContent, setEditorContent] = useState("");
     const [isFormVisible, setIsFormVisible] = useState(false);
-
 
 
     async function imageUploadHandler(image) {
@@ -58,6 +59,7 @@ const CreatePost = ({ userName, community }) => {
 
     const handleEditorChange = (markdown) => {
         setEditorContent(markdown);
+        console.log('markdown', markdown);  
     };
 
     useEffect(() => {
@@ -73,7 +75,7 @@ const CreatePost = ({ userName, community }) => {
     const handlePostClick = async () => {
         const formData = new FormData();
         formData.append("title", DOMPurify.sanitize(title));
-        formData.append("content", DOMPurify.sanitize(editorContent));
+        formData.append("content", editorContent);
         formData.append("posted_in", community);
         console.log('formData', formData);
 
@@ -81,7 +83,7 @@ const CreatePost = ({ userName, community }) => {
             const response = await axios.post(`${API_URL}/api/community/post`, formData, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'multipart/form-data',
                 },
             });
 
@@ -100,6 +102,7 @@ const CreatePost = ({ userName, community }) => {
             console.error('Error submitting post:', error);
             setError('Error submitting post' + error);
         }
+        
     };
 
     return (
@@ -113,7 +116,7 @@ const CreatePost = ({ userName, community }) => {
                 </button>
             </label>
             {isFormVisible && (
-                <form className="mx-auto">
+                <form className="m-5 bg-base-100 p-2 rounded">
                     <div className="mb-5">
                         <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title</label>
                         <input type="text" id="title" className="input input-bordered w-full" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -130,6 +133,10 @@ const CreatePost = ({ userName, community }) => {
                                         listsPlugin(),
                                         tablePlugin(),
                                         imagePlugin({ imageUploadHandler }),
+                                        diffSourcePlugin({
+                                            markdownSourceValue: editorContent,
+                                        }
+                                        ),
                                         toolbarPlugin({
                                             toolbarContents: () => (
                                                 <>
@@ -137,6 +144,7 @@ const CreatePost = ({ userName, community }) => {
                                                     <ListsToggle />
                                                     <InsertTable />
                                                     <InsertImage />
+                                                    <DiffSourceToggleWrapper />
                                                 </>
                                             ),
                                         }),

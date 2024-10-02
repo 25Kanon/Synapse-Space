@@ -12,14 +12,35 @@ import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
 
 export default function Community() {
+    const API_URL = process.env.REACT_APP_API_BASE_URI;
     const { user, error } = useContext(AuthContext);
     const { id } = useParams();
     const [communityDetails, setCommunityDetails] = useState([]);
+    const [posts, setPosts] = useState([]);
+    const [PostError, setPostError] = useState(null);
 
     const getInitials = (name) => {
         if (!name) return '';
         return name.split(' ').map(word => word[0]).join('');
     };
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/api/community/${id}/posts/`);
+                setPosts(response.data);
+                console.log(response);
+            } catch (err) {
+                setPostError(err.message);
+                console.error('Error fetching posts:', err);
+            }
+        };
+
+        if (communityDetails) {
+            fetchPosts();
+        }
+    }, [communityDetails]);
+
 
     useEffect(() => {
         const fetchCommunityDetails = async () => {
@@ -58,8 +79,14 @@ export default function Community() {
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
                 <CreatePost userName={user.username} community={communityDetails.id} />
-                <CommunityPost userName={user.username} community={communityDetails.id} />
-               
+                {posts.map((post) => {
+                    return <CommunityPost userName={post.created_by_username} community={communityDetails.id}
+                            postTitle={post.title} postContent={post.content} postId={post.id} />
+                    
+
+                })}
+
+
             </MainContentContainer>
         </>
     );

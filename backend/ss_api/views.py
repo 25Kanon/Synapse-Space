@@ -171,7 +171,7 @@ class CommunityDetailView(generics.RetrieveAPIView):
     lookup_field = 'id'
 
 class PostCreateView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     queryset = Post.objects.all()
     serializer_class = CreatePostSerializer
 
@@ -232,7 +232,7 @@ class getCommunityPosts(generics.ListAPIView):
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
         return Post.objects.filter(posted_in_id=community_id)
-    
+
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]

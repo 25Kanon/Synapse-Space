@@ -120,6 +120,7 @@ const CreateCommunity = () => {
                 setCommunityBanner(null);
                 setSuccess("Community created successfully");
                 console.log("Community created successfully");
+                window.location.href = `/community/${response.data.id}`;
             } else {
                 setError("Failed to create community");
             }
