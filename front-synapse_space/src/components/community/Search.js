@@ -24,6 +24,11 @@ const Search = () => {
             });
     }, [query]);
 
+    const getInitials = (name) => {
+        if (!name) return '';
+        return name.split(' ').map(word => word[0]).join('');
+    };
+
     // Function to handle joining a community
     const handleJoin = async (communityId) => {
         try {
@@ -55,33 +60,33 @@ const Search = () => {
 
                 const isJoined = memberships.some(membership => membership.community === community.id);
                 return (
-                    <div key={index} className="p-6">
+                    <div key={index} className="p-6 mx-auto">
                         {/* DaisyUI Card */}
-                        <div className="card w-96 bg-base-100 shadow-xl">
+                        <div className="card w-72 bg-base-100 shadow-xl">
                             <figure>
                                 <img
-                                    className="rounded-t-lg"
-                                    src={community.bannerUrl || 'https://via.placeholder.com/150'}
+                                    className="rounded-t-lg object-cover h-48 w-full"
+                                    src={community.bannerURL || 'https://via.placeholder.com/150'}
                                     alt={community.name}
                                 />
                             </figure>
                             <div className="card-body">
                                 <div className="flex items-center mb-2">
-                                    <div className="avatar mr-2">
-                                        <div className="rounded-full h-7 w-7">
-                                            <img
-                                                src={community.imgUrl || 'https://via.placeholder.com/50'}
-                                                alt={community.name}
-                                                className="rounded-full h-7 w-7"
-                                            />
+                                    <div className="avatar placeholder mr-2">
+                                        <div className="bg-base-200 text-neutral-content w-10 h-10 rounded-full">
+                                            {community.imgURL ? (
+                                                <img src={community.imgURL} alt={`avatar-${community.name}`} />
+                                            ) : (
+                                                <h2 className="text-xs font-bold">{getInitials(community.name)}</h2>
+                                            )}
                                         </div>
                                     </div>
                                     <p className="text-sm font-semibold">
                                         {community.name}
                                     </p>
                                 </div>
-                                <h5 className="card-title text-2xl font-bold tracking-tight text-gray-900">{community.name}</h5>
-                                <p className="mb-3 font-normal text-gray-700" dangerouslySetInnerHTML={{
+                                <h5 className="card-title text-2xl font-bold tracking-tight text-primary">{community.name}</h5>
+                                <p className="mb-3 font-normal text-secondary" dangerouslySetInnerHTML={{
                                     __html: DOMPurify.sanitize(marked(community.description))
                                 }} />
                                 <p className="text-sm text-gray-400 mt-2">{community.name} members • {community.date}</p>
