@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import { useParams } from 'react-router-dom';
 import AuthContext from "../../context/AuthContext";
 import axios from "axios";
@@ -17,19 +17,16 @@ export default function Community() {
     const { id } = useParams();
     const [communityDetails, setCommunityDetails] = useState([]);
     const [posts, setPosts] = useState([]);
-    const [PostError, setPostError] = useState(null);
+    const [postError, setPostError] = useState(null);
+    const [hasOverflow, setHasOverflow] = useState({});
 
-    const getInitials = (name) => {
-        if (!name) return '';
-        return name.split(' ').map(word => word[0]).join('');
-    };
+    const cardBodyRefs = useRef({}); // Object to store refs for each post
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
                 const response = await axios.get(`${API_URL}/api/community/${id}/posts/`);
                 setPosts(response.data);
-                console.log(response);
             } catch (err) {
                 setPostError(err.message);
                 console.error('Error fetching posts:', err);
@@ -41,12 +38,10 @@ export default function Community() {
         }
     }, [id]);
 
-
     useEffect(() => {
         const fetchCommunityDetails = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URI}/api/community/${id}`, {
-
+                const response = await axios.get(`${API_URL}/api/community/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
                     }
@@ -60,16 +55,27 @@ export default function Community() {
         fetchCommunityDetails();
     }, [id]);
 
+    // Check overflow for each post after they have been rendered
+    useEffect(() => {
+        Object.keys(cardBodyRefs.current).forEach(postId => {
+            const cardBody = cardBodyRefs.current[postId];
+            if (cardBody) {
+                const isOverflowing = cardBody.scrollHeight > cardBody.clientHeight;
+                setHasOverflow(prev => ({ ...prev, [postId]: isOverflowing }));
+            }
+        });
+    }, [posts]);
 
     if (!user) {
         return (
             <div>
-                <div class="hero bg-base-200 min-h-screen">
-                    <p class="text-center text-xl">Welcome to Synapse Space. Please login to continue.</p>
+                <div className="hero bg-base-200 min-h-screen">
+                    <p className="text-center text-xl">Welcome to Synapse Space. Please login to continue.</p>
                 </div>
             </div>
         );
     }
+
     return (
         <>
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
@@ -79,14 +85,18 @@ export default function Community() {
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
                 <CreatePost userName={user.username} community={communityDetails.id} />
-                {posts.map((post) => {
-                    return <CommunityPost userName={post.created_by_username} community={communityDetails.id}
-                            postTitle={post.title} postContent={post.content} postId={post.id} />
-                    
-
-                })}
-
-
+                {posts.map((post) => (
+                    <CommunityPost
+                        key={post.id}
+                        userName={post.created_by_username}
+                        community={communityDetails.id}
+                        postTitle={post.title}
+                        postContent={post.content}
+                        postId={post.id}
+                        hasOverflow={hasOverflow[post.id]}
+                        cardBodyRef={el => (cardBodyRefs.current[post.id] = el)}
+                    />
+                ))}
             </MainContentContainer>
         </>
     );

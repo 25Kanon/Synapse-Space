@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import '@mdxeditor/editor/style.css';
 import {
@@ -10,44 +10,24 @@ import {
     diffSourcePlugin
 } from "@mdxeditor/editor";
 
-const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId }) => {
+const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, hasOverflow, cardBodyRef }) => {
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [expandedPosts, setExpandedPosts] = useState({});
-    const [hasOverflow, setHasOverflow] = useState({});
-
-    const cardBodyRefs = useRef({}); // Object to store refs for each post
+    const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         setIsDarkMode(currentTheme === 'dark');
     }, []);
 
-    useEffect(() => {
-        if (cardBodyRefs.current[postId]) {
-            const cardBody = cardBodyRefs.current[postId];
-            const isOverflowing = cardBody.scrollHeight > cardBody.clientHeight;
-
-            if (isOverflowing) {
-                setHasOverflow(prev => ({ ...prev, [postId]: true }));
-            }
-        }
-    }, [postContent, postId, community]); // Runs whenever postContent or postId changes
-
     const toggleExpand = () => {
-        setExpandedPosts(prev => ({
-            ...prev,
-            [postId]: !prev[postId],
-        }));
+        setExpanded(prev => !prev);
     };
-
-    const isExpanded = expandedPosts[postId];
-    const hasContentOverflow = hasOverflow[postId];
 
     return (
         <div key={postId} className="w-full my-5 border border-solid rounded shadow-xl card card-compact">
             <div
-                ref={el => (cardBodyRefs.current[postId] = el)} // Store the ref for each post using postId as the key
-                className={`card-body ${isExpanded ? 'max-h-none' : 'max-h-48 overflow-hidden'}`}
+                ref={cardBodyRef}
+                className={`card-body ${expanded ? 'max-h-none' : 'max-h-48 overflow-hidden'}`}
             >
                 <div className="flex items-center h-5">
                     <div className="mx-2 avatar">
@@ -76,12 +56,12 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                     ]}
                 />
             </div>
-            {hasContentOverflow && (
+            {hasOverflow && (
                 <button
                     onClick={toggleExpand}
                     className="btn btn-link"
                 >
-                    {isExpanded ? 'See less' : 'See more'}
+                    {expanded ? 'See less' : 'See more'}
                 </button>
             )}
         </div>
@@ -93,6 +73,8 @@ CommunityPost.propTypes = {
     postTitle: PropTypes.string.isRequired,
     postContent: PropTypes.string.isRequired,
     postId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    hasOverflow: PropTypes.bool,
+    cardBodyRef: PropTypes.func.isRequired,
 };
 
 export default CommunityPost;
