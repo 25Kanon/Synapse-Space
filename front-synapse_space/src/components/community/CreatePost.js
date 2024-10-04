@@ -79,6 +79,15 @@ const CreatePost = ({ userName, community }) => {
         formData.append("posted_in", community);
         console.log('formData', formData);
 
+        if (!title.trim()) {
+            setError("Title is required");
+            return; // Stop execution if title is empty
+        }
+        if (!editorContent.trim()) {
+            setError("Content is required");
+            return; // Stop execution if content is empty
+        }
+
         try {
             const response = await axios.post(`${API_URL}/api/community/post`, formData, {
                 headers: {
@@ -102,7 +111,6 @@ const CreatePost = ({ userName, community }) => {
             console.error('Error submitting post:', error);
             setError('Error submitting post' + error);
         }
-        
     };
 
     return (
@@ -110,16 +118,16 @@ const CreatePost = ({ userName, community }) => {
             {error && <ErrorAlert text={error} />}
             {success && <SuccessAlert text={success} />}
 
-            <label className="input input-bordered flex items-center gap-2">
+            <label className="flex items-center gap-2 input input-bordered">
                 <button type="button" className="grow text-start" onClick={toggleFormVisibility}>
                     {`What's new, ${userName}`}
                 </button>
             </label>
             {isFormVisible && (
-                <form className="m-5 bg-base-100 p-2 rounded">
+                <form className="p-2 m-5 rounded bg-base-100">
                     <div className="mb-5">
                         <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title</label>
-                        <input type="text" id="title" className="input input-bordered w-full" value={title} onChange={(e) => setTitle(e.target.value)} />
+                        <input type="text" id="title" className="w-full input input-bordered" value={title} onChange={(e) => setTitle(e.target.value)} />
                     </div>
                     <span className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Body</span>
                     <div className="mb-5 border border-solid rounded">

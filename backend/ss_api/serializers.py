@@ -160,6 +160,19 @@ class ImageUploadSerializer(serializers.Serializer):
         # Add any validation you want here (e.g., file size, format)
         return value
 
+class CreatePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'posted_in']
+
+    def validate(self, data):
+        if not data.get('title'):
+            raise serializers.ValidationError("Title is required")
+        if not data.get('content'):
+            raise serializers.ValidationError("Content is required")
+        if not data.get('posted_in'):
+            raise serializers.ValidationError("A community must be selected")
+        return data
 
 class CommunityPostSerializer(serializers.ModelSerializer):
     created_by_username = serializers.SerializerMethodField()

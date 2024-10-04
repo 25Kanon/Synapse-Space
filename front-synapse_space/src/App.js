@@ -13,6 +13,7 @@ import SearchCommunity from './pages/Community/SearchCommunity';
 import Community from './pages/Community/Community';
 import DiscoverCommunity from './pages/Community/DiscoverCommunity';
 import { MembershipsProvider } from './context/MembershipContext';
+import CreatePost from 'components/community/CreatePost';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -57,6 +58,9 @@ function App() {
             </Route>
             <Route path="/community" element={<PrivateRoute />}>
               <Route path="/community/create" element={<Create />} />
+            </Route>
+            <Route path="/community" element={<PrivateRoute />}>
+              <Route path="/community/post" element={<CreatePost />} />
             </Route>
             <Route path="/search" element={<PrivateRoute />}>
               <Route path="/search" element={<SearchCommunity />} />
