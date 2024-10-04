@@ -89,7 +89,7 @@ export default function Community() {
                     <CommunityPost
                         key={post.id}
                         userName={post.created_by_username}
-                        community={communityDetails.id}
+                        community={post.posted_in}
                         postTitle={post.title}
                         postContent={post.content}
                         postId={post.id}
