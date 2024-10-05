@@ -54,59 +54,10 @@ class LoginView(generics.GenericAPIView):
         if 'message' in response_data and response_data['message'] == 'OTP required':
             # Respond with a message indicating OTP is required
 
-            return Response({'message': 'OTP required', 'user_id': response_data['user_id']}, status=status.HTTP_200_OK)
+            return Response({'message': 'OTP required'}, status=status.HTTP_200_OK)
 
         # If OTP is provided and valid, send the token response
         return Response(response_data, status=status.HTTP_200_OK)
-
-
-
-
-def send_otp(subject, body, to_email):
-    # Load environment variables
-    MAILGUN_API_KEY = os.getenv('MAILGUN_API_KEY')
-    MAILGUN_DOMAIN = os.getenv('MAILGUN_DOMAIN')
-
-    if not MAILGUN_API_KEY or not MAILGUN_DOMAIN:
-        raise ValueError("Mailgun API key and domain must be set in environment variables")
-
-    # Define the Mailgun API endpoint
-    MAILGUN_API_URL = f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages"
-
-    # Define the email parameters
-    email_data = {
-        "from": f"Your Name <mailgun@{MAILGUN_DOMAIN}>",
-        "to": to_email,
-        "subject": subject,
-        "text": body
-    }
-
-    # Make the POST request to the Mailgun API
-    response = requests.post(
-        MAILGUN_API_URL,
-        auth=("api", MAILGUN_API_KEY),
-        data=email_data
-    )
-
-    # Check for errors
-    if response.status_code != 200:
-        raise Exception(f"Failed to send email: {response.text}")
-
-    return response.json()
-
-
-# Example usage
-if __name__ == "__main__":
-    subject = "Test Email"
-    body = "This is a test email sent using Mailgun API."
-    to_email = "recipient@example.com"
-
-    try:
-        response = send_email(subject, body, to_email)
-        print("Email sent successfully:", response)
-    except Exception as e:
-        print("Error:", str(e))
-
 
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer

@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
+import React, {useContext, useState} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons'
 import {Link} from 'react-router-dom';
 import LoginForm from './LoginForm';
+import OTPform from "./OTPform";
+import AuthContext from "../context/AuthContext";
 
 
 export default function LoginMethod() {
@@ -31,8 +33,8 @@ export default function LoginMethod() {
     }else{
         return (
             <div>
-                <div className="">
-                    <h2 className="card-title justify-start">Welcome Back!</h2>
+                <div className="flex flex-col">
+                    <h2 className="card-title justify-start mb-5">Welcome Back!</h2>
                     <div className="card-actions py-10 flex-col justify-center">
                         <button class="btn btn-primary  text-center w-full">
                             <FontAwesomeIcon icon={faGoogle} />
@@ -48,7 +50,7 @@ export default function LoginMethod() {
                             By Signing in, you agree to the Terms of Use, Community Rules, and Privacy Policy
                         </p>
                     </article>
-                    <Link className="text-center text-xs text-gray-500 mt-4" to='/register'>
+                    <Link className="text-center justify-center text-xs text-gray-500 mt-4" to='/register'>
                         Don’t have an account? Sign up
                     </Link>
     

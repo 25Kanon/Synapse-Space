@@ -9,6 +9,8 @@ export default AuthContext;
 export const AuthProvider = ({ children }) => {
     let [authToken, setAuthToken] = useState(() => localStorage.getItem('access_token') || null);
     let [user, setUser] = useState(null);
+    let [loginData, setLoginData] = useState(null);
+    let [requireOTP, setRequireOTP] = useState(false);
     let [loading, setLoading] = useState(true);
     let [error, setError] = useState(null);
     let navigate = useNavigate();
@@ -18,19 +20,43 @@ export const AuthProvider = ({ children }) => {
     let loginUser = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/login/`, {
-                'username_or_email': e.target.username_or_email.value,
-                'password': e.target.password.value,
+            let data = {
+                username_or_email: null,
+                password: null,
+            };
+
+            if (requireOTP) {
+                data = loginData;
+                data.otp = e.target.otp.value;
+            } else {
+                data.username_or_email = e.target.username_or_email.value;
+                data.password = e.target.password.value;
+                setLoginData(data);
+            }
+
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/login/`, data, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
-            const { access, refresh } = response.data;
-            localStorage.setItem('access_token', access);
-            localStorage.setItem('refresh_token', refresh);
-            setAuthToken(access);
-            const decodedUser = jwtDecode(access);
-            setUser(decodedUser);
-            console.log('Login successful', access, refresh);
-            setError(null); // Clear any previous error messages
-            navigate('/'); // Redirect to the home page after successful login
+
+            if (response.data.message === "OTP required") {
+                console.log('OTP required');
+                setRequireOTP(true);
+                setLoginData(data);
+            } else {
+                const { access, refresh } = response.data;
+                localStorage.setItem('access_token', access);
+                localStorage.setItem('refresh_token', refresh);
+                setAuthToken(access);
+                const decodedUser = jwtDecode(access);
+                setUser(decodedUser);
+                console.log('Login successful', response.data);
+                setError(null);
+                setLoginData(null)
+                setRequireOTP(false)// Clear any previous error messages
+                navigate('/'); // Redirect to the home page after successful login
+            }
         } catch (error) {
             if (error.response) {
                 setError('Login failed. Please check your credentials and try again.');
@@ -40,7 +66,7 @@ export const AuthProvider = ({ children }) => {
                 console.error('An unexpected error occurred:', error);
             }
         }
-    }
+    };
 
     let refreshUserToken = () => {
         console.log('Refreshing token');
@@ -84,7 +110,12 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         if (authToken) {
             const decodedUser = jwtDecode(authToken);
+            const tokenExpirationTime = decodedUser.exp;
+            const currentTime = Date.now() / 1000;
+            if (tokenExpirationTime < currentTime)
+                logoutUser();
             setUser(decodedUser);
+
         }
         setLoading(false);
     }, [authToken]);
@@ -122,6 +153,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         user,
         loading,
+        requireOTP,
         error, // Include error in context data
     }
 

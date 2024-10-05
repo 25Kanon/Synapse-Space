@@ -101,7 +101,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             # Update the last OTP generation time for the user
             last_otp_generation[user.id] = time.time()
 
-            return {'message': 'OTP required', 'user_id': user.id, "otp": totp}
+            return {'message': 'OTP required'}
 
         totp = pyotp.TOTP(user.otp_secret, interval=300)
         if not totp.verify(otp):
