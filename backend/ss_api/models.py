@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
+import pyotp
 
 
 class User(AbstractUser):
@@ -14,6 +15,8 @@ class User(AbstractUser):
     profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     interests = ArrayField(models.CharField(max_length=200), blank=True, null=True)
     bio = models.TextField(null=True, blank=True)
+    otp_secret = models.CharField(max_length=32, default=pyotp.random_base32)
+
     pass
 
 class Community(models.Model):

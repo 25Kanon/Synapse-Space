@@ -8,3 +8,4 @@ Pillow
 gunicorn
 uvicorn
 whitenoise[brotli]
+azure-communication-email
