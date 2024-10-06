@@ -1,4 +1,3 @@
-// AvatarCropper.js
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "../utils/cropImg";
@@ -25,8 +24,8 @@ const AvatarCropper = ({ imageSrc, onCropComplete, cropShape }) => {
 
     return (
         <div>
-            <div class="card bg-base-100 w-96 shadow-xl">
-                <div class="card-body">
+            <div className="card bg-base-100 w-96 shadow-xl">
+                <div className="card-body">
                     <div className="relative w-full h-96">
                         <Cropper
                             image={imageSrc}

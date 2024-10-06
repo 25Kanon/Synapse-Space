@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect} from 'react';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom';
 import JoinCommuinityBtn from "./JoinCommuinityBtn";
 const Search = () => {
     const [communities, setCommunities] = useState([]);
-    const { memberships, addMembership } = useMemberships();
+    const { memberships} = useMemberships();
     const location = useLocation();
     const { query } = location.state || {}; // Access the search query
     useEffect(() => {
@@ -30,7 +30,6 @@ const Search = () => {
         return name.split(' ').map(word => word[0]).join('');
     };
 
-    const [searchTerm, setSearchTerm] = useState('');
     return (
         <div className="flex flex-wrap">
             {communities.map((community, index) => {

@@ -24,16 +24,37 @@ function App() {
   });
 
   useEffect(() => {
-    document.title = "Synapse Space";
+    // Set the initial theme based on user preference or system preference
     document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const handleThemeChange = (event) => {
-    const newTheme = event.target.checked ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
+  // Effect to listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemThemeChange = (e) => {
+      if (!localStorage.getItem('theme')) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Handle initial theme change based on local storage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      setTheme(systemTheme);
+    }
+  }, []);
 
   return (
     <Router>

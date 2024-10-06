@@ -33,7 +33,6 @@ export const MembershipsProvider = ({ children }) => {
     useEffect(() => {
         if (user) {// Assuming you store the student number in localStorage
             fetchMemberships();
-
         }
     }, [user]);
     return (

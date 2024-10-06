@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useContext } from "react";
+import React, { useState, useContext } from "react";
 import DOMPurify from "dompurify";
 import axios from "axios";
 import AuthContext from "../../context/AuthContext";
@@ -164,7 +164,7 @@ const CreateCommunity = () => {
                                 type="file"
                                 id="commImg"
                                 onChange={handleAvatarChange}
-                                class="file-input file-input-bordered file-input-accent w-full max-w-xs"
+                                className="file-input file-input-bordered file-input-accent w-full max-w-xs"
                                 accept="image/png, image/jpeg"
                             />
 
@@ -177,7 +177,7 @@ const CreateCommunity = () => {
                                 type="file"
                                 id="commBanner"
                                 onChange={handleBannerChange}
-                                class="file-input file-input-bordered file-input-accent w-full max-w-xs"
+                                className="file-input file-input-bordered file-input-accent w-full max-w-xs"
                                 accept="image/png, image/jpeg"
                             />
                         </div>
@@ -226,7 +226,7 @@ const CreateCommunity = () => {
                     <div>
                         <label className="block text-sm font-bold mb-2" htmlFor="keyword">
                             Community Keyword
-                            <p class="text-xs font-light mb-2">Seperate keywords with comma ","</p>
+                            <p className="text-xs font-light mb-2">Seperate keywords with comma ","</p>
                         </label>
 
                         <input

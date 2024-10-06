@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
-import axios from 'axios';
 
 const LgCommunityPill = ({ communityName, communityID, commAvatar}) => {
     const navigate = useNavigate();

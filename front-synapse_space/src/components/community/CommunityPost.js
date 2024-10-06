@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState} from "react";
 import PropTypes from 'prop-types';
 import '@mdxeditor/editor/style.css';
 import { Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import MarkdownIt from 'markdown-it';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faChevronDown} from "@fortawesome/free-solid-svg-icons";
+import {faChevronUp} from "@fortawesome/free-solid-svg-icons/faChevronUp";
 
 const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId }) => {
-    const [isDarkMode, setIsDarkMode] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
 
     const previewLength = 300; // Set the character limit for preview content
@@ -84,15 +86,19 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                         __html: getMarkdownText(contentToRender),
                     }}
                 />
-                {shouldTruncate && (
-                    <button
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        className="btn btn-link text-blue-600 hover:text-blue-800 mt-4"
-                    >
-                        {isExpanded ? 'See less' : 'See more'}
-                    </button>
-                )}
             </div>
+            {shouldTruncate && (
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="btn btn-link w-fit text-primary-600 hover:text-blue-800 mt-4 flex items-center"
+                >
+                    {isExpanded ? 'See less' : 'See more'}
+                    <span className="ms-3">
+            <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
+        </span>
+                </button>
+            )}
+
         </div>
     );
 };

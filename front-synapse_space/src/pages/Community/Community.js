@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect} from "react";
 import { useParams } from 'react-router-dom';
 import AuthContext from "../../context/AuthContext";
 import axios from "axios";
@@ -20,8 +20,6 @@ export default function Community() {
     const [communityDetails, setCommunityDetails] = useState([]);
     const [posts, setPosts] = useState([]);
     const [Error, setError] = useState(null);
-
-    const cardBodyRefs = useRef({}); // Object to store refs for each post
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -46,7 +44,7 @@ export default function Community() {
         if (communityDetails) {
             fetchPosts();
         }
-    }, [id, communityDetails, isMember]);
+    }, [id, communityDetails, isMember, API_URL]);
 
     useEffect(() => {
         const fetchCommunityDetails = async () => {
@@ -64,7 +62,7 @@ export default function Community() {
         };
 
         fetchCommunityDetails();
-    }, [id]);
+    }, [id, API_URL]);
 
 
     if (!user) {
@@ -80,6 +78,7 @@ export default function Community() {
         return (
             <>
                 {Error && <ErrorAlert text={Error} classExtensions="fixed z-50" />}
+                {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
                 <NavBar />
                 <Sidebar />
                 <MembersList id={id}/>

@@ -1,11 +1,9 @@
-
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons'
 import {Link} from 'react-router-dom';
 import LoginForm from './LoginForm';
-import OTPform from "./OTPform";
-import AuthContext from "../context/AuthContext";
+
 
 
 export default function LoginMethod() {
@@ -22,30 +20,39 @@ export default function LoginMethod() {
         return (
             <div>
                 <button type="button" onClick={handleBackButton} className="btn">
-                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" >
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+
                     </svg>
                     <span className="sr-only">Icon description</span>
                 </button>
-                <LoginForm />
-            </div >
+                <LoginForm/>
+            </div>
         );
-    }else{
+    } else {
         return (
             <div>
-                <div className="flex flex-col">
+            <div className="flex flex-col">
                     <h2 className="card-title justify-start mb-5">Welcome Back!</h2>
                     <div className="card-actions py-10 flex-col justify-center">
-                        <button class="btn btn-primary  text-center w-full">
+                        <button className="btn btn-primary  text-center w-full">
                             <FontAwesomeIcon icon={faGoogle} />
                             Login with Google
                         </button>
-                        <div class="divider">or</div>
-                        <button class="btn btn-wide w-full" onClick={handleLoginWithEmail}>
+                        <div className="divider">or</div>
+                        <button className="btn w-full" onClick={handleLoginWithEmail}>
                             Login with Email
                         </button>
                     </div>
-                    <article class="prose text-center max-w-sm text-sm justify-self-end self-center">
+                    <article className="prose text-center max-w-sm text-sm justify-self-end self-center">
                         <p>
                             By Signing in, you agree to the Terms of Use, Community Rules, and Privacy Policy
                         </p>

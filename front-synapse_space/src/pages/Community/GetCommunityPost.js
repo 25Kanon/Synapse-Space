@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect} from "react";
 import CommunityPost from "../../components/community/CommunityPost";
 import axios from "axios";
 import { useParams } from "react-router-dom";
@@ -13,9 +13,6 @@ const GetCommunityPost = () => {
     const { community_id, post_id } = useParams();
     const [post, setPost] = useState(null);
     const [error, setError] = useState(null);
-    const [hasOverflow, setHasOverflow] = useState({});
-
-    const cardBodyRefs = useRef({}); // Object to store refs for each post
 
     useEffect(() => {
         const getCommunityPost = async () => {
@@ -37,13 +34,6 @@ const GetCommunityPost = () => {
         getCommunityPost();
     }, [API_URL, community_id, post_id]);
 
-    useEffect(() => {
-        if (post && cardBodyRefs.current[post.id]) {
-            const cardBody = cardBodyRefs.current[post.id];
-            const isOverflowing = cardBody.scrollHeight > cardBody.clientHeight;
-            setHasOverflow({ [post.id]: isOverflowing });
-        }
-    }, [post]);
 
     return (
         <>
@@ -60,9 +50,6 @@ const GetCommunityPost = () => {
                         postTitle={post.title}
                         postContent={post.content}
                         postId={post.id}
-                        hasOverflow={false}
-                        isExpanded={true}
-                        cardBodyRef={(el) => (cardBodyRefs.current[post.id] = el)}
                     />
                 ) : (
                     <h2>Post does not exist</h2>

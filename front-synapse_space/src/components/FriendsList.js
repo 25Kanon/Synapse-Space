@@ -1,8 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faUserGroup, faCompass, faBarsStaggered } from '@fortawesome/free-solid-svg-icons'
 
 const FriendsList = () => {
   return (

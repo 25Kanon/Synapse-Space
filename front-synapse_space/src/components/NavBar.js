@@ -36,13 +36,13 @@ const NavBar = () => {
 
     return (
         <nav className={`fixed top-0 z-40 w-full ${scrolled ? 'bg-base-200' : ''}`}>
-            <div class="px-3 py-3 lg:px-5 lg:pl-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center justify-start rtl:justify-end">
+            <div className="px-3 py-3 lg:px-5 lg:pl-3">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-start rtl:justify-end">
 
-                        <a href="https://flowbite.com" class="flex ms-2 md:me-24">
-                            <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 me-3" alt="FlowBite Logo" />
-                            <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Synapse Space</span>
+                        <a href="https://flowbite.com" className="flex ms-2 md:me-24">
+                            <img src="https://flowbite.com/docs/images/logo.svg" className="h-8 me-3" alt="FlowBite Logo" />
+                            <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Synapse Space</span>
                         </a>
                     </div>
                     {/* Search form */}
@@ -58,18 +58,18 @@ const NavBar = () => {
                         />
                     </form>
 
-                    <div class="flex items-center justify-center ms-3 bg-base-200 px-3 rounded-full my-auto h-auto dropdown-left sm:block hidden">
-                        <div class="flex items-center py-1 px-2">
+                    <div className="flex items-center justify-center ms-3 bg-base-200 px-3 rounded-full my-auto h-auto dropdown-left sm:block hidden">
+                        <div className="flex items-center py-1 px-2">
                             <FontAwesomeIcon icon={faMessage} className='h-5 mr-5' />
                             <FontAwesomeIcon icon={faBell} className='h-5 ' />
-                            <details class="dropdown  dropdown-end dropdown-bottom z-50">
-                                <summary class="btn h-5 flex items-center">
-                                    <div class="avatar">
-                                        <div class="h-7 rounded-full">
-                                            <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+                            <details className="dropdown  dropdown-end dropdown-bottom z-50">
+                                <summary className="btn h-5 flex items-center">
+                                    <div className="avatar">
+                                        <div className="h-7 rounded-full">
+                                            <img alt={user.username} src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
                                         </div>
                                     </div>
-                                    <p class="text-sm font-semibold flex items-center">
+                                    <p className="text-sm font-semibold flex items-center">
                                         {user.username}
                                         <span>
                                             <FontAwesomeIcon icon={faChevronDown} className='ms-3' />
@@ -77,9 +77,9 @@ const NavBar = () => {
                                     </p>
 
                                 </summary>
-                                <ul class="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
+                                <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
                                     <li><Link to="/profile">Profile</Link></li>
-                                    <li> <button onClick={logoutUser} class="btn btn-logout">Logout</button></li>
+                                    <li> <button onClick={logoutUser} className="btn btn-logout">Logout</button></li>
                                 </ul>
                             </details>
                         </div>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
 import DOMPurify from 'dompurify';
-import { ErrorMessage, useFormik } from 'formik';
+import { useFormik } from 'formik';
 import axios from 'axios';
 import * as yup from 'yup';
 import SuccessAlert from './SuccessAlert';

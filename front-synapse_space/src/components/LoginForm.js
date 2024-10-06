@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import ErrorAlert from './ErrorAlert';
-import OTPform from './OTPform';
 
 export default function LoginForm() {
     let { loginUser, error} = useContext(AuthContext);
@@ -35,7 +34,7 @@ export default function LoginForm() {
                     required
                 />
                 <label className="label">
-                    <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
+                    <a href="/" className="label-text-alt link link-hover">Forgot password?</a>
                 </label>
             </div>
             <div className="form-control mt-6">

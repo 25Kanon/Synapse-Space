@@ -4,7 +4,7 @@ import ErrorAlert from "../ErrorAlert";
 import {useMemberships} from "../../context/MembershipContext";
 
 const JoinCommunityBtn = ({ communityId}) => {
-    const { memberships, addMembership } = useMemberships();
+    const {addMembership } = useMemberships();
     const [error, setError] = React.useState(null);
     const handleJoin = async () => {
         try {
@@ -31,7 +31,7 @@ const JoinCommunityBtn = ({ communityId}) => {
 
     return (
         <div>
-            {error && <ErrorAlert message={error} />}
+            {error && <ErrorAlert text={error} />}
             <button className="btn btn-primary" onClick={handleJoin}>Join</button>
         </div>
     );

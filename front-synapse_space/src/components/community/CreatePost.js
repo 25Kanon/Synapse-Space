@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DOMPurify from "dompurify";
 import axios from "axios";
-import AuthContext from "../../context/AuthContext";
 import ErrorAlert from "../ErrorAlert";
 import SuccessAlert from "../SuccessAlert";
 
@@ -46,7 +45,6 @@ const CreatePost = ({ userName, community }) => {
 
             if (!response.data || !response.data.url) {
                 setError('Invalid response from server');
-                throw new Error('Invalid response from server');
             }
 
             return response.data.url;

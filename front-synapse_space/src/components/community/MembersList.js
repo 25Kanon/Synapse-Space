@@ -1,7 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const MembersList = ({id}) => {
