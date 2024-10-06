@@ -20,7 +20,6 @@ export default function Community() {
     const [communityDetails, setCommunityDetails] = useState([]);
     const [posts, setPosts] = useState([]);
     const [Error, setError] = useState(null);
-    const [hasOverflow, setHasOverflow] = useState({});
 
     const cardBodyRefs = useRef({}); // Object to store refs for each post
 
@@ -67,16 +66,6 @@ export default function Community() {
         fetchCommunityDetails();
     }, [id]);
 
-    // Check overflow for each post after they have been rendered
-    useEffect(() => {
-        Object.keys(cardBodyRefs.current).forEach(postId => {
-            const cardBody = cardBodyRefs.current[postId];
-            if (cardBody) {
-                const isOverflowing = cardBody.scrollHeight > cardBody.clientHeight;
-                setHasOverflow(prev => ({ ...prev, [postId]: isOverflowing }));
-            }
-        });
-    }, [posts]);
 
     if (!user) {
         return (
@@ -132,8 +121,6 @@ export default function Community() {
                         postTitle={post.title}
                         postContent={post.content}
                         postId={post.id}
-                        hasOverflow={hasOverflow[post.id]}
-                        cardBodyRef={el => (cardBodyRefs.current[post.id] = el)}
                     />
                 ))}
             </MainContentContainer>
