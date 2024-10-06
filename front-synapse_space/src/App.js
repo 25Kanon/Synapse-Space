@@ -48,6 +48,7 @@ function App() {
   useEffect(() => {
     // Handle initial theme change based on local storage or system preference
     const savedTheme = localStorage.getItem('theme');
+    localStorage.removeItem('theme')
     if (savedTheme) {
       setTheme(savedTheme);
     } else {
