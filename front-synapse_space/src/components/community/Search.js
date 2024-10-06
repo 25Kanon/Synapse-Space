@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { useMemberships } from '../../context/MembershipContext';
 import { useLocation } from 'react-router-dom';
+import JoinCommuinityBtn from "./JoinCommuinityBtn";
 const Search = () => {
     const [communities, setCommunities] = useState([]);
     const { memberships, addMembership } = useMemberships();
@@ -27,28 +28,6 @@ const Search = () => {
     const getInitials = (name) => {
         if (!name) return '';
         return name.split(' ').map(word => word[0]).join('');
-    };
-
-    // Function to handle joining a community
-    const handleJoin = async (communityId) => {
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_BASE_URI}/api/community/${communityId}/join/`,
-                {}, // Adjust this as per your API requirements
-                {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                    }
-                }
-            );
-
-            // Update memberships state
-            if (response.status === 201 && response.data.membership) {
-                addMembership(response.data.membership);
-            }
-        } catch (error) {
-            console.error('Error joining community:', error);
-        }
     };
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -93,7 +72,7 @@ const Search = () => {
                                 <div className="card-actions justify-end">{isJoined ? (
                                     <span className="text-sm text-green-500">Joined</span>
                                 ) : (
-                                    <button className="btn btn-primary" onClick={() => handleJoin(community.id)}>Join</button>
+                                    <JoinCommuinityBtn communityId={community.id}/>
                                 )}
                                 </div>
                             </div>

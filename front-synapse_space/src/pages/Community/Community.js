@@ -10,15 +10,16 @@ import Banner from '../../components/community/Banner';
 import MainContentContainer from "../../components/MainContentContainer";
 import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
-import {useMemberships} from "../../context/MembershipContext";
+import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
 
 export default function Community() {
     const API_URL = process.env.REACT_APP_API_BASE_URI;
     const { user, error } = useContext(AuthContext);
     const { id } = useParams();
+    const [isMember, setIsMember] = useState(false);
     const [communityDetails, setCommunityDetails] = useState([]);
     const [posts, setPosts] = useState([]);
-    const [postError, setPostError] = useState(null);
+    const [Error, setError] = useState(null);
     const [hasOverflow, setHasOverflow] = useState({});
 
     const cardBodyRefs = useRef({}); // Object to store refs for each post
@@ -31,17 +32,22 @@ export default function Community() {
                         'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
                     },
                 });
+                setIsMember(true)
                 setPosts(response.data);
             } catch (err) {
-                setPostError(err.message);
-                console.error('Error fetching posts:', err);
+                if (err.response.status === 403) {
+                    setIsMember(false);
+                } else {
+                    setError(err.message);
+                    console.error('Error fetching posts:', err);
+                }
             }
         };
 
         if (communityDetails) {
             fetchPosts();
         }
-    }, [id, communityDetails]);
+    }, [id, communityDetails, isMember]);
 
     useEffect(() => {
         const fetchCommunityDetails = async () => {
@@ -53,6 +59,7 @@ export default function Community() {
                 });
                 setCommunityDetails(response.data);
             } catch (error) {
+                setError(`Error fetching community details: ${error.message}`);
                 console.error('Error fetching memberships:', error);
             }
         };
@@ -80,18 +87,42 @@ export default function Community() {
             </div>
         );
     }
-    // if (!isMember) {
-    //     return <div>Forbidden: You must be a member of this community to access this page.</div>;
-    // }
+    if (!isMember) {
+        return (
+            <>
+                {Error && <ErrorAlert text={Error} classExtensions="fixed z-50" />}
+                <NavBar />
+                <Sidebar />
+                <MembersList id={id}/>
+                <MainContentContainer>
+                    <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
+                    <div className="flex flex-col items-start 00 mx-10">
+                        <JoinCommuinityBtn communityId={communityDetails.id}/>
+                        <article className="prose prose-gray">
+                            <h2 className="heading-3">About {communityDetails.name}</h2>
+                            <p>{communityDetails.description}</p>
+                        </article>
+                        <div className="divider"/>
+                        <article className="prose prose-gray">
+                            <h2 className="heading-3">Rules</h2>
+                            <p>{communityDetails.rules}</p>
+                        </article>
+
+                    </div>
+                </MainContentContainer>
+            </>
+        );
+    }
 
     return (
         <>
-            {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
-            <NavBar />
-            <Sidebar />
+            {Error && <ErrorAlert text={Error} classExtensions="fixed z-50"/>}
+            <NavBar/>
+            <Sidebar/>
             <MembersList id={id}/>
             <MainContentContainer>
-                <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
+                <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL}
+                        commAvatar={communityDetails.imgURL}/>
                 <CreatePost userName={user.username} community={communityDetails.id} />
                 {posts.map((post) => (
                     <CommunityPost
