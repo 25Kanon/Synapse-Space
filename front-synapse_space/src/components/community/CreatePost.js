@@ -89,7 +89,7 @@ const CreatePost = ({ userName, community }) => {
         }
 
         try {
-            const response = await axios.post(`${API_URL}/api/community/post`, formData, {
+            const response = await axios.post(`${API_URL}/api/community/${community}/post`, formData, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
                     'Content-Type': 'multipart/form-data',

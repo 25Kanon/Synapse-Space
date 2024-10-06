@@ -9,6 +9,7 @@ import {
     imagePlugin,
     diffSourcePlugin
 } from "@mdxeditor/editor";
+import {Link} from "react-router-dom";
 
 const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, hasOverflow, cardBodyRef, isExpanded }) => {
     const [isDarkMode, setIsDarkMode] = useState(false);
@@ -43,7 +44,7 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                         {userName}
                     </p>
                 </div>
-                <h2 className="card-title">{postTitle}</h2>
+                <Link to={`/community/${community}/post/${postId}`}><h2 className="card-title">{postTitle}</h2></Link>
 
                 <MDXEditor
                     className={`editor z-40 ${isDarkMode ? "dark-theme dark-editor" : "light-theme light-editor"}`}

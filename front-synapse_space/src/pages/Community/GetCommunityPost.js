@@ -50,7 +50,7 @@ const GetCommunityPost = () => {
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
             <NavBar />
             <Sidebar />
-            <MembersList />
+            <MembersList id={community_id} />
             <MainContentContainer>
                 {post ? (
                     <CommunityPost

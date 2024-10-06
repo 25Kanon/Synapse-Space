@@ -12,6 +12,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer)
+from .permissions import IsCommunityMember
 from rest_framework_simplejwt.views import TokenRefreshView
 
 import logging
@@ -174,13 +175,12 @@ class CommunityMembersListView(generics.ListAPIView):
         return Membership.objects.filter(community__id=community_id).select_related('user')
 
 class CommunityDetailView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = CommunitySerializer
     queryset = Community.objects.all()
     lookup_field = 'id'
 
 class PostCreateView(generics.CreateAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
     queryset = Post.objects.all()
     serializer_class = CreatePostSerializer
 
@@ -192,7 +192,7 @@ class PostCreateView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ImageUploadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
 
     def __init__(self):
         self.account_url = os.getenv('AZURE_BLOB_ACCOUNT_URL')
@@ -236,6 +236,7 @@ class ImageUploadView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class getCommunityPosts(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsCommunityMember]
     serializer_class = CommunityPostSerializer
 
     def get_queryset(self):
@@ -244,6 +245,7 @@ class getCommunityPosts(generics.ListAPIView):
 
 
 class getCommunityPost(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated, IsCommunityMember]
     serializer_class = getCommunityPostSerializer
     queryset = Post.objects.all()
     lookup_field = 'id'  # Assuming 'id' is the primary key for Post

@@ -4,9 +4,8 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-const MembersList = () => {
+const MembersList = ({id}) => {
   const [members, setMembers] = useState([]);
-  const { id } = useParams();
   useEffect(() => {
 
     const fetchMembers = async () => {

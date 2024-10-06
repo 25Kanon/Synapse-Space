@@ -10,6 +10,7 @@ import Banner from '../../components/community/Banner';
 import MainContentContainer from "../../components/MainContentContainer";
 import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
+import {useMemberships} from "../../context/MembershipContext";
 
 export default function Community() {
     const API_URL = process.env.REACT_APP_API_BASE_URI;
@@ -25,7 +26,11 @@ export default function Community() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get(`${API_URL}/api/community/${id}/posts/`);
+                const response = await axios.get(`${API_URL}/api/community/${id}/posts/`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
+                    },
+                });
                 setPosts(response.data);
             } catch (err) {
                 setPostError(err.message);
@@ -36,7 +41,7 @@ export default function Community() {
         if (communityDetails) {
             fetchPosts();
         }
-    }, [id]);
+    }, [id, communityDetails]);
 
     useEffect(() => {
         const fetchCommunityDetails = async () => {
@@ -75,13 +80,16 @@ export default function Community() {
             </div>
         );
     }
+    // if (!isMember) {
+    //     return <div>Forbidden: You must be a member of this community to access this page.</div>;
+    // }
 
     return (
         <>
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
             <NavBar />
             <Sidebar />
-            <MembersList />
+            <MembersList id={id}/>
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
                 <CreatePost userName={user.username} community={communityDetails.id} />
