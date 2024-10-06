@@ -37,8 +37,6 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
     posted_in = models.ForeignKey(Community, on_delete=models.CASCADE)
-    
-    
 
 class Membership(models.Model):
     user = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)

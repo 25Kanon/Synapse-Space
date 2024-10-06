@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faMessage, faChevronDown } from '@fortawesome/free-solid-svg-icons'
 import AuthContext from '../context/AuthContext';
+import { Link } from 'react-router-dom';
+
 const NavBar = () => {
     const navigate = useNavigate();
     const { user, logoutUser } = useContext(AuthContext);
@@ -48,7 +50,7 @@ const NavBar = () => {
                         <input
                             type="text"
                             placeholder="search"
-                            className="input input-bordered max-w-xs w-auto"
+                            className="w-auto max-w-xs input input-bordered"
                             name="search"
                             required
                             value={searchQuery} // Bind the search input to state
@@ -58,8 +60,8 @@ const NavBar = () => {
 
                     <div class="flex items-center justify-center ms-3 bg-base-200 px-3 rounded-full my-auto h-auto dropdown-left sm:block hidden">
                         <div class="flex items-center py-1 px-2">
-                            <FontAwesomeIcon icon={faMessage} className='mr-5 h-5' />
-                            <FontAwesomeIcon icon={faBell} className=' h-5' />
+                            <FontAwesomeIcon icon={faMessage} className='h-5 mr-5' />
+                            <FontAwesomeIcon icon={faBell} className='h-5 ' />
                             <details class="dropdown  dropdown-end dropdown-bottom z-50">
                                 <summary class="btn h-5 flex items-center">
                                     <div class="avatar">
@@ -76,7 +78,7 @@ const NavBar = () => {
 
                                 </summary>
                                 <ul class="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
-                                    <li><a>Item 1</a></li>
+                                    <li><Link to="/profile">Profile</Link></li>
                                     <li> <button onClick={logoutUser} class="btn btn-logout">Logout</button></li>
                                 </ul>
                             </details>

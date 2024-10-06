@@ -226,13 +226,6 @@ class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
         fields = ['id','bannerURL','imgURL','name', 'description', 'rules', 'keyword', 'owned_by']
-
-class CreatePostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = ['id', 'title', 'content', 'posted_in']
-
-
 class ImageUploadSerializer(serializers.Serializer):
     image = serializers.ImageField()
 
