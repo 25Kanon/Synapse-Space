@@ -7,7 +7,7 @@ from rest_framework import generics, permissions, status, serializers
 from django.db.models import Q  # Import Q for complex queries
 from rest_framework.generics import get_object_or_404
 
-from .models import Community, Membership, Post
+from .models import Community, Membership, Post, LikedPost, Likes
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer,
@@ -255,7 +255,28 @@ class getCommunityPost(generics.RetrieveAPIView):
         post_id = self.kwargs.get('post_id')
         return get_object_or_404(Post, id=post_id, posted_in=community_id)
 
+class likePostView(APIView):
+    permission_classes = [IsAuthenticated, IsCommunityMember]
+    def post(self, request, community_id, post_id):
+        post = Post.objects.get(id=post_id)
+        user = request.user
+        like, created = Likes.objects.get_or_create(user=user, post=post)
+        if created:
+            return Response({"message": "Post liked successfully"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message": "Post already liked"}, status=status.HTTP_200_OK)
 
+class unlikePostView(APIView):
+    permission_classes = [IsAuthenticated, IsCommunityMember]
+    def post(self, request, community_id, post_id):
+        post = Post.objects.get(id=post_id)
+        user = request.user
+        like = Likes.objects.filter(user=user, post=post).first()
+        if like:
+            like.delete()
+            return Response({"message": "Post unliked successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Post not liked"}, status=status.HTTP_200_OK)
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 

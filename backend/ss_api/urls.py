@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView, MembershipListView,
                     CommunityDetailView, CommunityMembersListView, PostCreateView, 
                     ImageUploadView, getCommunityPosts, UserProfileView, 
-                    UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost)
+                    UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView, unlikePostView)
 
 
 urlpatterns = [
@@ -27,4 +27,6 @@ urlpatterns = [
     path('community/<int:community_id>/join/', JoinCommunityView.as_view(), name='join-community'),
     path('community', CommunityListView.as_view(), name='community-list'),
     path('community/<int:community_id>/post/<int:post_id>', getCommunityPost.as_view(), name='post-view'),
+    path('community/<int:community_id>/post/<int:post_id>/like', likePostView.as_view(), name='like-post'),
+    path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
 ]
