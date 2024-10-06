@@ -120,6 +120,7 @@ export default function Community() {
                         postTitle={post.title}
                         postContent={post.content}
                         postId={post.id}
+                        userID={user.user_id}
                     />
                 ))}
             </MainContentContainer>

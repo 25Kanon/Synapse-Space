@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, {useEffect, useState} from "react";
 import PropTypes from 'prop-types';
 import '@mdxeditor/editor/style.css';
 import { Link } from "react-router-dom";
@@ -6,11 +6,22 @@ import DOMPurify from "dompurify";
 import { marked } from "marked";
 import MarkdownIt from 'markdown-it';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faChevronDown} from "@fortawesome/free-solid-svg-icons";
+import {faChevronDown} from "@fortawesome/free-solid-svg-icons/faChevronDown";
+import {faThumbsUp} from "@fortawesome/free-regular-svg-icons/faThumbsUp";
+import { faThumbsUp as ThumbsUpIcon } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
 import {faChevronUp} from "@fortawesome/free-solid-svg-icons/faChevronUp";
+import Checkbox from '@mui/material/Checkbox';
 
-const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId }) => {
+
+import {faComment} from "@fortawesome/free-solid-svg-icons/faComment";
+import {FormControlLabel} from "@mui/material";
+import axios from "axios";
+
+const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, userID }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    const [likes, setLikes] = useState(0);
+    const API_URL = process.env.REACT_APP_API_BASE_URI;
 
     const previewLength = 300; // Set the character limit for preview content
 
@@ -60,8 +71,59 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
         return DOMPurify.sanitize(rawMarkup); // Sanitize the HTML
     };
 
+    useEffect(()=>{
+        const fetchLikeStatus = async () => {
+            try {
+                const likes = await axios.get(`${API_URL}/api/community/${community}/post/${postId}/likes`, {
+
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    }
+                });
+                if (likes.status === 200) {
+                    setLikes(likes.data);
+                    if (likes.data.some((like) => like.user === userID)) {
+                        setIsLiked(true);
+                    }
+                } else {
+                    console.error('Failed to fetch likes for the post');
+                }
+            } catch (error) {
+            }
+        };
+        fetchLikeStatus();
+
+    }, [community, postId, isLiked]);
+
+
+    const handleLikeChange = () => {
+        if (!isLiked) {
+            axios.post(`${API_URL}/api/community/${community}/post/${postId}/like`, { postId },{
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            })
+                .then(response => {
+                    if (response.status === 200 || response.status === 201) {
+                        setIsLiked(true);
+                    } else {
+                        console.error('Failed to like the item');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error occurred while liking the item:', error);
+                });
+        } else{
+        }
+    };
+
+    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+
+
+
+
     return (
-        <div key={postId} className="w-full my-5 border border-solid rounded shadow-xl card card-compact">
+        <div key={postId} className="w-full my-5 border border-solid shadow-xl card card-compact">
             <div className="card-body">
                 <div className="flex items-center h-5">
                     <div className="mx-2 avatar">
@@ -98,7 +160,22 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
         </span>
                 </button>
             )}
+            <div className="flex flex-row m-4 -gap-4">
 
+                <FormControlLabel
+                    name="likeBtn"
+                    value={likes.length}
+                    control={<Checkbox onChange={handleLikeChange}
+                                       checked={isLiked} {...label}
+                                       icon={<FontAwesomeIcon className="text-xl text-current text-secondary dark:text-neutral-300" icon={faThumbsUp}/>}
+                                       checkedIcon={<FontAwesomeIcon  className="text-xl" icon={ThumbsUpIcon} />} />}
+                    label={likes.length}
+                    labelPlacement="end"
+                />
+                <button className="btn btn-circle">
+                    <FontAwesomeIcon icon={faComment} className="text-current"/>
+                </button>
+            </div>
         </div>
     );
 };

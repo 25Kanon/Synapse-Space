@@ -260,7 +260,7 @@ class likePostView(APIView):
     def post(self, request, community_id, post_id):
         post = Post.objects.get(id=post_id)
         user = request.user
-        like, created = Likes.objects.get_or_create(user=user, post=post)
+        like, created = LikedPost.objects.get_or_create(user=user, post=post)
         if created:
             return Response({"message": "Post liked successfully"}, status=status.HTTP_201_CREATED)
         else:
@@ -278,12 +278,13 @@ class unlikePostView(APIView):
         else:
             return Response({"message": "Post not liked"}, status=status.HTTP_200_OK)
 
-class getLikedPostsView(APIView):
+class getPostLikesView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request):
-        user = request.user
-        liked_posts = Likes.objects.filter(user=user)
-        serializer = LikedPostSerializer(liked_posts, many=True)
+
+    def get(self, request, community_id, post_id):
+        post = get_object_or_404(Post, id=post_id, posted_in_id=community_id)
+        likes = Likes.objects.filter(post=post)
+        serializer = LikedPostSerializer(likes, many=True)
         return Response(serializer.data)
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]

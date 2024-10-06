@@ -60,6 +60,15 @@ class SavedPost(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 class LikedPost(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='liked_posts')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='liked_by')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'post'], name='unique_user_post_like')
+        ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        Likes.objects.get_or_create(user=self.user, post=self.post)
