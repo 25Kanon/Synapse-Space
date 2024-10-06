@@ -11,7 +11,7 @@ from .models import Community, Membership, Post, LikedPost, Likes
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer,
-                          CommunityPostSerializer, getCommunityPostSerializer)
+                          CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer)
 from .permissions import IsCommunityMember
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -277,6 +277,14 @@ class unlikePostView(APIView):
             return Response({"message": "Post unliked successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Post not liked"}, status=status.HTTP_200_OK)
+
+class getLikedPostsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        liked_posts = Likes.objects.filter(user=user)
+        serializer = LikedPostSerializer(liked_posts, many=True)
+        return Response(serializer.data)
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 

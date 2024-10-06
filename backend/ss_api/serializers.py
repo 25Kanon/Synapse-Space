@@ -284,4 +284,4 @@ class SavedPostSerializer(serializers.ModelSerializer):
 class LikedPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = LikedPost
-        fields = ['post', 'created_at']
+        fields = ['user', 'post', 'created_at']
