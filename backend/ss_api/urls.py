@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView, MembershipListView,
                     CommunityDetailView, CommunityMembersListView, PostCreateView, 
                     ImageUploadView, getCommunityPosts, UserProfileView, 
-                    UserActivitiesView, CommunityListView, JoinCommunityView)
+                    UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost)
 
 
 urlpatterns = [
@@ -21,9 +21,10 @@ urlpatterns = [
     path('community/create/', CommunityCreateView.as_view(), name='community-create'),
     path('community/<int:id>/', CommunityDetailView.as_view(), name='community-detail'),
     path('community/<int:community_id>/members/', CommunityMembersListView.as_view(), name='community-members-list'),
-    path('community/post', PostCreateView.as_view(), name='community-members-list'),
-    path('community/upload/image', ImageUploadView.as_view(), name='community-members-list'),
+    path('community/post', PostCreateView.as_view(), name='community-create-post'),
+    path('community/upload/image', ImageUploadView.as_view(), name='community-upload-image'),
     path('community/<int:community_id>/posts/', getCommunityPosts.as_view(), name='community-posts-list'),
     path('community/<int:community_id>/join/', JoinCommunityView.as_view(), name='join-community'),
     path('community', CommunityListView.as_view(), name='community-list'),
+    path('community/<int:community_id>/post/<int:post_id>', getCommunityPost.as_view(), name='post-view'),
 ]

@@ -11,8 +11,10 @@ import ProfilePage from './pages/Profile/ProfilePage';
 import Create from './pages/Community/Create';
 import SearchCommunity from './pages/Community/SearchCommunity';
 import Community from './pages/Community/Community';
+import GetCommunityPost from "./pages/Community/GetCommunityPost";
 import DiscoverCommunity from './pages/Community/DiscoverCommunity';
 import { MembershipsProvider } from './context/MembershipContext';
+
 
 
 function App() {
@@ -55,6 +57,9 @@ function App() {
             </Route>
             <Route path="/community" element={<PrivateRoute />}>
               <Route path="/community/:id" element={<Community />} />
+            </Route>
+            <Route path="/community" element={<PrivateRoute />}>
+              <Route path="/community/:community_id/post/:post_id" element={<GetCommunityPost />} />
             </Route>
             <Route path="/community" element={<PrivateRoute />}>
               <Route path="/community/create" element={<Create />} />

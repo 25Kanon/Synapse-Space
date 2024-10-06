@@ -5,10 +5,13 @@ from django.contrib.sites import requests
 from dotenv import load_dotenv
 from rest_framework import generics, permissions, status, serializers
 from django.db.models import Q  # Import Q for complex queries
+from rest_framework.generics import get_object_or_404
+
 from .models import Community, Membership, Post
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,
-                          MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer, CommunityPostSerializer)
+                          MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer,
+                          CommunityPostSerializer, getCommunityPostSerializer)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 import logging
@@ -238,6 +241,17 @@ class getCommunityPosts(generics.ListAPIView):
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
         return Post.objects.filter(posted_in_id=community_id)
+
+
+class getCommunityPost(generics.RetrieveAPIView):
+    serializer_class = getCommunityPostSerializer
+    queryset = Post.objects.all()
+    lookup_field = 'id'  # Assuming 'id' is the primary key for Post
+
+    def get_object(self):
+        community_id = self.kwargs.get('community_id')
+        post_id = self.kwargs.get('post_id')
+        return get_object_or_404(Post, id=post_id, posted_in=community_id)
 
 
 class UserProfileView(APIView):

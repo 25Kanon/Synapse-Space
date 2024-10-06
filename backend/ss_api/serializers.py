@@ -262,7 +262,16 @@ class CommunityPostSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in']
 
     def get_created_by_username(self, obj):
-        return obj.created_by.username  
+        return obj.created_by.username
+
+class getCommunityPostSerializer(serializers.ModelSerializer):
+    created_by_username = serializers.SerializerMethodField()
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in']
+
+    def get_created_by_username(self, obj):
+        return obj.created_by.username
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:

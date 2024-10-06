@@ -10,13 +10,17 @@ import {
     diffSourcePlugin
 } from "@mdxeditor/editor";
 
-const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, hasOverflow, cardBodyRef }) => {
+const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, hasOverflow, cardBodyRef, isExpanded }) => {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         setIsDarkMode(currentTheme === 'dark');
+
+        if (isExpanded) {
+            setExpanded(true);
+        }
     }, []);
 
     const toggleExpand = () => {
