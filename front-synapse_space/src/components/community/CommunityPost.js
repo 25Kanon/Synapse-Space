@@ -97,24 +97,22 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
 
 
     const handleLikeChange = () => {
-        if (!isLiked) {
-            axios.post(`${API_URL}/api/community/${community}/post/${postId}/like`, { postId },{
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        const url = `${API_URL}/api/community/${community}/post/${postId}/${isLiked ? 'unlike' : 'like'}`;
+        axios.post(url, { postId }, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            }
+        })
+            .then(response => {
+                if (response.status === 200 || response.status === 201) {
+                    setIsLiked(!isLiked);
+                } else {
+                    console.error('Failed to change like status');
                 }
             })
-                .then(response => {
-                    if (response.status === 200 || response.status === 201) {
-                        setIsLiked(true);
-                    } else {
-                        console.error('Failed to like the item');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error occurred while liking the item:', error);
-                });
-        } else{
-        }
+            .catch(error => {
+                console.error('Error occurred while changing like status:', error);
+            });
     };
 
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };

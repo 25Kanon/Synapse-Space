@@ -30,4 +30,5 @@ urlpatterns = [
     path('community/<int:community_id>/post/<int:post_id>/likes', getPostLikesView.as_view(), name='post-likes'),
     path('community/<int:community_id>/post/<int:post_id>/like', likePostView.as_view(), name='like-post'),
     path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
+    path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
 ]
