@@ -12,15 +12,17 @@ import { faThumbsUp as ThumbsUpIcon } from "@fortawesome/free-solid-svg-icons/fa
 import {faChevronUp} from "@fortawesome/free-solid-svg-icons/faChevronUp";
 import Checkbox from '@mui/material/Checkbox';
 
-
+import { CommentSection } from 'react-comments-section';
 import {faComment} from "@fortawesome/free-solid-svg-icons/faComment";
 import {FormControlLabel} from "@mui/material";
 import axios from "axios";
+import 'react-comments-section/dist/index.css';
 
-const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, userID }) => {
+const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, userID, showComments }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
+    const [comment, setComment] = useState([]);
     const API_URL = process.env.REACT_APP_API_BASE_URI;
 
     const previewLength = 300; // Set the character limit for preview content
@@ -117,65 +119,104 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
 
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
+    const onSubmitComment = (comment) => {
+        console.log('this comment was posted!', comment);
+    };
+
 
 
 
     return (
-        <div key={postId} className="w-full my-5 border border-solid shadow-xl card card-compact">
-            <div className="card-body">
-                <div className="flex items-center h-5">
-                    <div className="mx-2 avatar">
-                        <div className="rounded-full h-7">
-                            <img
-                                src={userAvatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
-                                alt="User avatar"
+        <>
+            <div key={postId} className="w-full my-5 border border-solid shadow-xl card card-compact">
+                <div className="card-body">
+                    <div className="flex items-center h-5">
+                        <div className="mx-2 avatar">
+                            <div className="rounded-full h-7">
+                                <img
+                                    src={userAvatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
+                                    alt="User avatar"
+                                />
+                            </div>
+                        </div>
+                        <p className="flex items-center text-sm font-semibold">
+                            {userName}
+                        </p>
+                    </div>
+                    <Link to={`/community/${community}/post/${postId}`}>
+                        <h2 className="card-title">{postTitle}</h2>
+                    </Link>
+
+                    <article
+                        className="prose prose-lg"
+                        dangerouslySetInnerHTML={{
+                            __html: getMarkdownText(contentToRender),
+                        }}
+                    />
+                </div>
+                {shouldTruncate && (
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="btn btn-link w-fit text-primary-600 hover:text-blue-800 mt-4 flex items-center"
+                    >
+                        {isExpanded ? 'See less' : 'See more'}
+                        <span className="ms-3">
+            <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown}/>
+        </span>
+                    </button>
+                )}
+                <div className="flex flex-row m-4 -gap-4">
+
+                    <FormControlLabel
+                        name="likeBtn"
+                        value={likes.length}
+                        control={<Checkbox onChange={handleLikeChange}
+                                           checked={isLiked} {...label}
+                                           icon={<FontAwesomeIcon
+                                               className="text-xl text-current text-secondary dark:text-neutral-300"
+                                               icon={faThumbsUp}/>}
+                                           checkedIcon={<FontAwesomeIcon className="text-xl" icon={ThumbsUpIcon}/>}/>}
+                        label={likes.length}
+                        labelPlacement="end"
+                    />
+                    <button className="btn btn-circle">
+                        <FontAwesomeIcon icon={faComment} className="text-current"/>
+                    </button>
+                </div>
+                <div className="divider"></div>
+                {/*comments*/}
+                {showComments && (
+                    <div className="card">
+                        <div className="card-body">
+                            <CommentSection
+                                currentUser={{
+                                    currentUserId: '01a',
+                                    currentUserImg: `https://ui-avatars.com/api/name=${userName}`,
+                                    currentUserProfile: 'https://www.linkedin.com/in/riya-negi-8879631a9/',
+                                    currentUserFullName: `${userName}`,
+                                }}
+                                advancedInput={true}
+                                commentData={comment}
+                                titleStyle={{'display': 'none'}}
+                                onSubmitAction={(comment) => onSubmitComment(comment)}
+                                placeholder={"Write a comment..."}
+                                hrStyle={{'display': 'none'}}
+                                inputStyle={{}}  // Empty because we'll use Tailwind in className
+                                formStyle={{'backgroundColor': 'inherit'}}  // Same here
+                                submitBtnStyle={{}}
+                                cancelBtnStyle={{}}
+                                overlayStyle={{}}
+                                imgStyle={{}}
+                                replyInputStyle={{}}
                             />
+
                         </div>
                     </div>
-                    <p className="flex items-center text-sm font-semibold">
-                        {userName}
-                    </p>
-                </div>
-                <Link to={`/community/${community}/post/${postId}`}>
-                    <h2 className="card-title">{postTitle}</h2>
-                </Link>
-
-                <article
-                    className="prose prose-lg"
-                    dangerouslySetInnerHTML={{
-                        __html: getMarkdownText(contentToRender),
-                    }}
-                />
+                )}
             </div>
-            {shouldTruncate && (
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="btn btn-link w-fit text-primary-600 hover:text-blue-800 mt-4 flex items-center"
-                >
-                    {isExpanded ? 'See less' : 'See more'}
-                    <span className="ms-3">
-            <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
-        </span>
-                </button>
-            )}
-            <div className="flex flex-row m-4 -gap-4">
-
-                <FormControlLabel
-                    name="likeBtn"
-                    value={likes.length}
-                    control={<Checkbox onChange={handleLikeChange}
-                                       checked={isLiked} {...label}
-                                       icon={<FontAwesomeIcon className="text-xl text-current text-secondary dark:text-neutral-300" icon={faThumbsUp}/>}
-                                       checkedIcon={<FontAwesomeIcon  className="text-xl" icon={ThumbsUpIcon} />} />}
-                    label={likes.length}
-                    labelPlacement="end"
-                />
-                <button className="btn btn-circle">
-                    <FontAwesomeIcon icon={faComment} className="text-current"/>
-                </button>
-            </div>
-        </div>
-    );
+        </>
+    )
+        ;
 };
 
 CommunityPost.propTypes = {
@@ -185,6 +226,7 @@ CommunityPost.propTypes = {
     postTitle: PropTypes.string.isRequired,
     postContent: PropTypes.string.isRequired,
     postId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    showComments: PropTypes.bool
 };
 
 export default CommunityPost;

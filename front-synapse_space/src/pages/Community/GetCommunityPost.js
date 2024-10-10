@@ -50,6 +50,7 @@ const GetCommunityPost = () => {
                         postTitle={post.title}
                         postContent={post.content}
                         postId={post.id}
+                        showComments={true}
                     />
                 ) : (
                     <h2>Post does not exist</h2>
