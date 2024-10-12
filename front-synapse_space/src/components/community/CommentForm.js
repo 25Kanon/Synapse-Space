@@ -24,7 +24,7 @@ const CommentForm = ({ onSubmit, initialValue = '' }) => {
           value={formData.content}
           onChange={handleChange}
           placeholder="Write a comment..."
-          className="w-full p-2 border rounded-lg resize-none"
+          className="w-full textarea textarea-bordered p-2 rounded-lg resize-none"
           rows={3}
       />
             <button
