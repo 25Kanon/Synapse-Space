@@ -1,3 +1,171 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Editor.js custom styles */
+.codex-editor__redactor {
+    padding-bottom: 100px !important;
+}
+
+/* Style for the add button */
+.ce-toolbar__plus {
+    @apply bg-primary text-primary-content rounded-full transition-colors duration-200;
+}
+
+.ce-toolbar__plus:hover {
+    @apply bg-primary-content text-primary;
+}
+
+/* Style for the settings button */
+.ce-toolbar__settings-btn {
+    @apply bg-secondary text-secondary-content rounded-full transition-colors duration-200;
+}
+
+.ce-toolbar__settings-btn:hover {
+    @apply bg-secondary-content text-secondary;
+}
+
+/* Ensure toolbar is properly positioned */
+.ce-toolbar {
+    @apply left-0 right-0;
+}
+
+/* Style for the toolbox */
+.ce-toolbox__button,
+.ce-inline-toolbar__dropdown {
+    @apply bg-base-100 text-base-content border border-base-300 rounded transition-colors duration-200;
+}
+
+.ce-toolbox__button:hover,
+.ce-inline-toolbar__dropdown:hover {
+    @apply bg-base-200;
+}
+
+/* Style for inline toolbar */
+.ce-inline-toolbar {
+    @apply bg-base-100 border border-base-300 rounded shadow;
+}
+
+.ce-inline-tool {
+    @apply text-base-content transition-colors duration-200;
+}
+
+.ce-inline-tool:hover {
+    @apply bg-base-200;
+}
+
+/* Style for block tunes */
+.ce-block__content:hover .ce-toolbar__actions {
+    @apply bg-base-200 rounded;
+}
+
+.ce-block-settings__button {
+    @apply text-base-content transition-colors duration-200;
+}
+
+.ce-block-settings__button:hover {
+    @apply bg-base-300;
+}
+
+/* Style for the conversion toolbar */
+.ce-conversion-toolbar {
+    @apply bg-base-100 border border-base-300 rounded shadow;
+}
+
+.ce-conversion-tool {
+    @apply text-base-content transition-colors duration-200;
+}
+
+.ce-conversion-tool:hover {
+    @apply bg-base-200;
+}
+
+/* Style for the placeholder */
+.ce-paragraph[data-placeholder]:empty::before {
+    @apply text-base-content opacity-50;
+}
+
+/* Style for inline code */
+.cdx-inline-code {
+    @apply bg-base-300 text-base-content px-1 py-0.5 rounded font-mono text-sm;
+}
+
+/* Style for marker */
+.cdx-marker {
+    @apply bg-yellow-200 text-base-content;
+}
+
+/* Styles for headings in the editor */
+.ce-header {
+    @apply font-bold;
+}
+
+.ce-header[contenteditable][data-placeholder]:empty::before {
+    @apply text-base-content opacity-50;
+}
+
+h1.ce-header {
+    @apply text-4xl;
+}
+
+h2.ce-header {
+    @apply text-3xl;
+}
+
+h3.ce-header {
+    @apply text-2xl;
+}
+
+h4.ce-header {
+    @apply text-xl;
+}
+
+
+.ce-paragraph {
+    @apply my-2;
+}
+
+.cdx-list {
+    @apply pl-6;
+}
+
+.cdx-list__item {
+    @apply my-1;
+}
+
+.cdx-checklist__item {
+    @apply flex items-center my-1;
+}
+
+.cdx-checklist__item-checkbox {
+    @apply mr-2;
+}
+
+.cdx-quote {
+    @apply border-l-4 border-primary pl-4 italic my-4;
+}
+
+.ce-code {
+    @apply bg-base-300 p-4 rounded-lg overflow-x-auto my-4 font-mono;
+}
+
+.cdx-warning {
+    @apply bg-warning text-warning-content p-4 rounded-lg my-4;
+}
+
+.tc-table {
+    @apply w-full border-collapse border border-base-300;
+}
+
+.tc-row {
+    @apply border-b border-base-300;
+}
+
+.tc-cell {
+    @apply border border-base-300 p-2;
+}

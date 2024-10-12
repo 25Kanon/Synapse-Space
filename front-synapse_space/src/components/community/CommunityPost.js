@@ -2,73 +2,20 @@ import React, {useEffect, useState} from "react";
 import PropTypes from 'prop-types';
 import '@mdxeditor/editor/style.css';
 import { Link } from "react-router-dom";
-import DOMPurify from "dompurify";
-import { marked } from "marked";
-import MarkdownIt from 'markdown-it';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faChevronDown} from "@fortawesome/free-solid-svg-icons/faChevronDown";
 import {faThumbsUp} from "@fortawesome/free-regular-svg-icons/faThumbsUp";
 import { faThumbsUp as ThumbsUpIcon } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
-import {faChevronUp} from "@fortawesome/free-solid-svg-icons/faChevronUp";
 import Checkbox from '@mui/material/Checkbox';
 import {faComment} from "@fortawesome/free-solid-svg-icons/faComment";
 import {FormControlLabel} from "@mui/material";
 import axios from "axios";
 import CommentSection from './CommentSection';
+import StyledOutput from "./StyledOutput";
 
 const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, userID, showComments }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
     const API_URL = process.env.REACT_APP_API_BASE_URI;
-
-    const previewLength = 300; // Set the character limit for preview content
-
-    const md = new MarkdownIt();
-
-    marked.setOptions({
-        breaks: true, // Allow line breaks
-        gfm: true, // Use GitHub Flavored Markdown
-    });
-
-    // Truncate Markdown content while preserving tag integrity
-    const truncateMarkdown = (markdown, maxLength) => {
-        const tokens = md.parse(markdown, {});
-        let truncatedText = '';
-        let currentLength = 0;
-
-        for (let token of tokens) {
-            if (currentLength >= maxLength) break;
-
-            if (token.type === 'inline' && token.children) {
-                for (let child of token.children) {
-                    if (currentLength + child.content.length > maxLength) {
-                        truncatedText += child.content.slice(0, maxLength - currentLength);
-                        currentLength = maxLength;
-                        break;
-                    } else {
-                        truncatedText += child.content;
-                        currentLength += child.content.length;
-                    }
-                }
-            } else {
-                truncatedText += token.content;
-                currentLength += token.content.length;
-            }
-        }
-
-        return truncatedText;
-    };
-
-    // Get truncated or full Markdown content
-    const contentToRender = isExpanded ? postContent : truncateMarkdown(postContent, previewLength);
-    const shouldTruncate = postContent.length > previewLength;
-
-    // Convert Markdown to sanitized HTML
-    const getMarkdownText = (text) => {
-        const rawMarkup = marked(text);
-        return DOMPurify.sanitize(rawMarkup); // Sanitize the HTML
-    };
 
     useEffect(()=>{
         const fetchLikeStatus = async () => {
@@ -137,24 +84,12 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                         <h2 className="card-title">{postTitle}</h2>
                     </Link>
 
-                    <article
-                        className="prose prose-lg"
-                        dangerouslySetInnerHTML={{
-                            __html: getMarkdownText(contentToRender),
-                        }}
-                    />
+                    <article className="prose text-overflow: ellipsis">
+                        <StyledOutput data={JSON.parse(postContent)} />
+                    </article>
+
                 </div>
-                {shouldTruncate && (
-                    <button
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        className="btn btn-link w-fit text-primary-600 hover:text-blue-800 mt-4 flex items-center"
-                    >
-                        {isExpanded ? 'See less' : 'See more'}
-                        <span className="ms-3">
-            <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown}/>
-        </span>
-                    </button>
-                )}
+
                 <div className="flex flex-row m-4 -gap-4">
 
                     <FormControlLabel

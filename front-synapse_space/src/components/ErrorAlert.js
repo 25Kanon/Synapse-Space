@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const ErrorAlert = ({ text, classExtensions }) => {
     const [visible, setVisible] = useState(true);
 
+    useEffect(() => {
+        setVisible(true);
+    }, [text]);
+
     if (!visible) return null;
     return (
-
-
-       
         <div role="alert" className={`alert alert-error ${classExtensions}`} id="alert-error">
             <svg
                 xmlns="http://www.w3.org/2000/svg"

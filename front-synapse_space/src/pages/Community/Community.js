@@ -11,6 +11,7 @@ import MainContentContainer from "../../components/MainContentContainer";
 import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
 import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
+import StyledOutput from "../../components/community/StyledOutput";
 
 export default function Community() {
     const API_URL = process.env.REACT_APP_API_BASE_URI;
@@ -122,7 +123,9 @@ export default function Community() {
                         postId={post.id}
                         userID={user.user_id}
                     />
+
                 ))}
+
             </MainContentContainer>
         </>
     );
