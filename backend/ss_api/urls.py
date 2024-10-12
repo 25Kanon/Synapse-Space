@@ -1,8 +1,11 @@
 from django.urls import path
-from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView, MembershipListView,
-                    CommunityDetailView, CommunityMembersListView, PostCreateView, 
-                    ImageUploadView, getCommunityPosts, UserProfileView, 
-                    UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView, unlikePostView, getPostLikesView)
+from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView,
+                    MembershipListView,
+                    CommunityDetailView, CommunityMembersListView, PostCreateView,
+                    ImageUploadView, getCommunityPosts, UserProfileView,
+                    UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
+                    unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
+                    CommentDeleteView, PostCommentsView)
 
 
 urlpatterns = [
@@ -31,4 +34,10 @@ urlpatterns = [
     path('community/<int:community_id>/post/<int:post_id>/like', likePostView.as_view(), name='like-post'),
     path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
     path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
+    path('comments/', CommentCreateView.as_view(), name='comment-create'),
+    path('posts/<int:post_id>/comments/', PostCommentsView.as_view(), name='post-comments'),
+    path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
+    path('comments/<int:pk>/update/', CommentUpdateView.as_view(), name='comment-update'),
+    path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
+
 ]

@@ -11,18 +11,15 @@ import {faThumbsUp} from "@fortawesome/free-regular-svg-icons/faThumbsUp";
 import { faThumbsUp as ThumbsUpIcon } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
 import {faChevronUp} from "@fortawesome/free-solid-svg-icons/faChevronUp";
 import Checkbox from '@mui/material/Checkbox';
-
-import { CommentSection } from 'react-comments-section';
 import {faComment} from "@fortawesome/free-solid-svg-icons/faComment";
 import {FormControlLabel} from "@mui/material";
 import axios from "axios";
-import 'react-comments-section/dist/index.css';
+import CommentSection from './CommentSection';
 
 const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, userID, showComments }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
-    const [comment, setComment] = useState([]);
     const API_URL = process.env.REACT_APP_API_BASE_URI;
 
     const previewLength = 300; // Set the character limit for preview content
@@ -119,13 +116,6 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
 
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
-    const onSubmitComment = (comment) => {
-        console.log('this comment was posted!', comment);
-    };
-
-
-
-
     return (
         <>
             <div key={postId} className="w-full my-5 border border-solid shadow-xl card card-compact">
@@ -183,34 +173,10 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                         <FontAwesomeIcon icon={faComment} className="text-current"/>
                     </button>
                 </div>
-                <div className="divider"></div>
                 {/*comments*/}
                 {showComments && (
-                    <div className="card">
-                        <div className="card-body">
-                            <CommentSection
-                                currentUser={{
-                                    currentUserId: '01a',
-                                    currentUserImg: `https://ui-avatars.com/api/name=${userName}`,
-                                    currentUserProfile: 'https://www.linkedin.com/in/riya-negi-8879631a9/',
-                                    currentUserFullName: `${userName}`,
-                                }}
-                                advancedInput={true}
-                                commentData={comment}
-                                titleStyle={{'display': 'none'}}
-                                onSubmitAction={(comment) => onSubmitComment(comment)}
-                                placeholder={"Write a comment..."}
-                                hrStyle={{'display': 'none'}}
-                                inputStyle={{}}  // Empty because we'll use Tailwind in className
-                                formStyle={{'backgroundColor': 'inherit'}}  // Same here
-                                submitBtnStyle={{}}
-                                cancelBtnStyle={{}}
-                                overlayStyle={{}}
-                                imgStyle={{}}
-                                replyInputStyle={{}}
-                            />
-
-                        </div>
+                    <div className="m-5">
+                        <CommentSection postID={postId}/>
                     </div>
                 )}
             </div>
