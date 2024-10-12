@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.contrib.sites import requests
 from dotenv import load_dotenv
@@ -7,11 +7,12 @@ from rest_framework import generics, permissions, status, serializers
 from django.db.models import Q  # Import Q for complex queries
 from rest_framework.generics import get_object_or_404
 
-from .models import Community, Membership, Post, LikedPost, Likes
+from .models import Community, Membership, Post, LikedPost, Likes, Comment
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
-                          CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership ,
+                          CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer,
-                          CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer)
+                          CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
+                          CreateCommentSerializer)
 from .permissions import IsCommunityMember
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -286,6 +287,39 @@ class getPostLikesView(APIView):
         likes = Likes.objects.filter(post=post)
         serializer = LikedPostSerializer(likes, many=True)
         return Response(serializer.data)
+
+class CommentCreateView(generics.CreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CreateCommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+class CommentDetailView(generics.RetrieveAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class PostCommentsView(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        post_id = self.kwargs['post_id']
+        return Comment.objects.filter(post_id=post_id, parent=None)
+class CommentUpdateView(generics.UpdateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_update(self, serializer):
+        serializer.save(updated_at=timezone.now())
+
+class CommentDeleteView(generics.DestroyAPIView):
+    queryset = Comment.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
