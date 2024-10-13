@@ -5,7 +5,7 @@ from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView,
                     ImageUploadView, getCommunityPosts, UserProfileView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
-                    CommentDeleteView, PostCommentsView)
+                    CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView)
 
 
 urlpatterns = [
@@ -26,6 +26,8 @@ urlpatterns = [
     path('community/<int:community_id>/members/', CommunityMembersListView.as_view(), name='community-members-list'),
     path('community/<int:community_id>/post', PostCreateView.as_view(), name='community-create-post'),
     path('community/upload/image', ImageUploadView.as_view(), name='community-upload-image'),
+    path('generate-signed-url/', GenerateSignedUrlView.as_view(), name='generate-signed-url'),
+    path('move-image/',     MoveImageView.as_view(), name='move-image'),
     path('community/<int:community_id>/posts/', getCommunityPosts.as_view(), name='community-posts-list'),
     path('community/<int:community_id>/join/', JoinCommunityView.as_view(), name='join-community'),
     path('community', CommunityListView.as_view(), name='community-list'),

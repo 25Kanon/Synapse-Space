@@ -28,11 +28,6 @@ const CreatePost = ({ userName, community }) => {
     const handlePostClick = async () => {
         setSuccess(null);
         setError(null);
-        const formData = new FormData();
-        formData.append("title", DOMPurify.sanitize(title));
-        formData.append("content", JSON.stringify(editorContent));
-        formData.append("posted_in", community);
-        console.log('Editor Content:', editorContent); // Log the editor content
 
         if (!title.trim()) {
             setError("Title is required");
@@ -44,6 +39,14 @@ const CreatePost = ({ userName, community }) => {
         }
 
         try {
+            // Move images to permanent storage and update URLs
+            const updatedContent = await moveImagesToPermanentStorage(editorContent);
+
+            const formData = new FormData();
+            formData.append("title", DOMPurify.sanitize(title));
+            formData.append("content", JSON.stringify(updatedContent));
+            formData.append("posted_in", community);
+
             const response = await axios.post(`${API_URL}/api/community/${community}/post`, formData, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
@@ -54,18 +57,32 @@ const CreatePost = ({ userName, community }) => {
             if (response.status === 200 || response.status === 201) {
                 setTitle('');
                 setEditorContent('');
-                console.log('Post submitted successfully');
                 setSuccess('Post submitted successfully');
                 toggleFormVisibility();
-
             } else {
-                console.error('Error submitting post: ', response.statusText);
                 setError('Error submitting post' + response.statusText);
             }
         } catch (error) {
-            console.error('Error submitting post:', error);
             setError('Error submitting post' + error);
         }
+    };
+
+    const moveImagesToPermanentStorage = async (content) => {
+        const updatedBlocks = await Promise.all(content.blocks.map(async (block) => {
+            if (block.type === 'image') {
+                const tempUrl = block.data.file.url;
+                const response = await axios.post(`${API_URL}/api/move-image/`, { tempUrl }, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
+                    },
+                });
+                if (response.status === 200) {
+                    block.data.file.url = response.data.newUrl;
+                }
+            }
+            return block;
+        }));
+        return { ...content, blocks: updatedBlocks };
     };
 
     return (
@@ -88,7 +105,7 @@ const CreatePost = ({ userName, community }) => {
                     <div className="mb-5">
                         <RichTextEditor setEditorContent={setEditorContent} />
                     </div>
-                    <input type="button" className="btn btn-outline" value="Post" onClick={handlePostClick} />
+                    <button type="button" className="btn btn-primary" onClick={handlePostClick}>Post</button>
                 </form>
             )}
         </>

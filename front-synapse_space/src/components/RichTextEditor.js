@@ -13,9 +13,46 @@ import Warning from "@editorjs/warning";
 import Delimiter from "@editorjs/delimiter";
 import InlineCode from "@editorjs/inline-code";
 import Marker from "@editorjs/marker";
+import axios from "axios";
 
 const RichTextEditor = ({ onChange, setEditorContent }) => {
     const editorRef = useRef(null);
+    const API_URL = process.env.REACT_APP_API_BASE_URI;
+
+    async function uploadFile(file) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await axios.post(`${API_URL}/api/generate-signed-url/`, formData, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                if (response.status === 200) {
+                    resolve({
+                        success: 1,
+                        file: {
+                            url: response.data.signedUrl
+                        }
+                    });
+                } else {
+                    reject({
+                        success: 0,
+                        message: response.data.error || 'Failed to upload file'
+                    });
+                }
+            } catch (error) {
+                reject({
+                    success: 0,
+                    message: error.response?.data?.error || 'An error occurred while uploading the file'
+                });
+            }
+        });
+    }
 
     useEffect(() => {
         if (!editorRef.current) {
@@ -49,15 +86,7 @@ const RichTextEditor = ({ onChange, setEditorContent }) => {
                         config: {
                             uploader: {
                                 uploadByFile(file) {
-                                    return new Promise(resolve => {
-                                        const objectUrl = URL.createObjectURL(file);
-                                        resolve({
-                                            success: 1,
-                                            file: {
-                                                url: objectUrl
-                                            }
-                                        });
-                                    });
+                                    return uploadFile(file);
                                 }
                             }
                         }

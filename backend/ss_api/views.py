@@ -1,11 +1,13 @@
 import os
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlparse, unquote
 
-from django.contrib.sites import requests
+import requests
 from dotenv import load_dotenv
 from rest_framework import generics, permissions, status, serializers
 from django.db.models import Q  # Import Q for complex queries
 from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import Community, Membership, Post, LikedPost, Likes, Comment
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
@@ -181,7 +183,7 @@ class CommunityDetailView(generics.RetrieveAPIView):
     lookup_field = 'id'
 
 class PostCreateView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [permissions.IsAuthenticated, IsCommunityMember]
     queryset = Post.objects.all()
     serializer_class = CreatePostSerializer
 
@@ -192,15 +194,78 @@ class PostCreateView(generics.CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+
+logger = logging.getLogger(__name__)
+
+class GenerateSignedUrlView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.account_url = os.getenv('AZURE_BLOB_ACCOUNT_URL')
+        self.credential = os.getenv('AZURE_BLOB_CREDENTIAL')
+        self.account_name = os.getenv('AZURE_BLOB_ACCOUNT_NAME')
+        self.account_key = os.getenv('AZURE_BLOB_ACCOUNT_KEY')
+        self.container_name = 'synapsespace-storage'
+
+    def post(self, request):
+        file = request.FILES.get('file')
+        if not file:
+            return Response({"error": "File is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        blob_name = f"temp/{datetime.utcnow().isoformat()}_{file.name}"
+        try:
+            # Step 2: Upload the file to Azure Blob Storage
+            self.upload_to_azure(blob_name, file)
+
+            # Step 3: Generate a signed URL for the uploaded file
+            signed_url = self.generate_presigned_url(blob_name)
+            return Response({"signedUrl": signed_url}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error processing the request: {str(e)}")
+            return Response({"error": "Could not process the request"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def upload_to_azure(self, blob_name, file):
+        try:
+            blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
+            container_client = blob_service_client.get_container_client(self.container_name)
+
+            # Upload the file to Azure
+            blob_client = container_client.get_blob_client(blob_name)
+            blob_client.upload_blob(file, overwrite=True)
+
+        except Exception as e:
+            logger.error(f"Error uploading file to Azure Blob Storage: {str(e)}")
+            raise e
+
+    def generate_presigned_url(self, blob_name):
+        try:
+            sas_token = generate_blob_sas(
+                account_name=self.account_name,
+                container_name=self.container_name,
+                blob_name=blob_name,
+                account_key=self.account_key,
+                permission=BlobSasPermissions(read=True, write=True),
+                expiry=datetime.utcnow() + timedelta(hours=1)
+            )
+
+            signed_url = f"https://{self.account_name}.blob.core.windows.net/{self.container_name}/{blob_name}?{sas_token}"
+            return signed_url
+
+        except Exception as e:
+            logger.error(f"Error generating signed URL: {str(e)}")
+            raise e
 class ImageUploadView(APIView):
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated]
 
     def __init__(self):
         self.account_url = os.getenv('AZURE_BLOB_ACCOUNT_URL')
         self.credential = os.getenv('AZURE_BLOB_CREDENTIAL')
         self.account_name = os.getenv('AZURE_BLOB_ACCOUNT_NAME')
         self.account_key = os.getenv('AZURE_BLOB_ACCOUNT_KEY')
-        self.container_name = 'synapsespace-storage'
+        self.container_name = 'synapsespace-temp-storage'
 
     def generate_presigned_url(self, blob_name):
         blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
@@ -235,7 +300,67 @@ class ImageUploadView(APIView):
             return Response({'url': url}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+logger = logging.getLogger(__name__)
+import logging
+import time
+from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+import uuid
 
+logger = logging.getLogger(__name__)
+
+
+class MoveImageView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def __init__(self):
+        self.account_url = os.getenv('AZURE_BLOB_ACCOUNT_URL')
+        self.credential = os.getenv('AZURE_BLOB_CREDENTIAL')
+        self.account_name = os.getenv('AZURE_BLOB_ACCOUNT_NAME')
+        self.account_key = os.getenv('AZURE_BLOB_ACCOUNT_KEY')
+        self.container_name = 'synapsespace-storage'
+
+    def post(self, request):
+        temp_url = request.data.get('tempUrl')
+        if not temp_url:
+            logger.error("Temporary URL is required")
+            return Response({"error": "Temporary URL is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
+
+            # Parse the URL to get the blob name
+            parsed_url = urlparse(temp_url)
+            temp_blob_name = unquote(parsed_url.path.split('/')[-1])
+            logger.info(f"Temp blob name: {temp_blob_name}")
+
+            temp_blob_client = blob_service_client.get_blob_client(container=self.container_name,
+                                                                   blob=f"temp/{temp_blob_name}")
+            perm_blob_name = f"postImages/{uuid.uuid4()}_{temp_blob_name}"
+            perm_blob_client = blob_service_client.get_blob_client(container=self.container_name, blob=perm_blob_name)
+
+            # Copy the blob to the permanent folder
+            copy_status = perm_blob_client.start_copy_from_url(temp_blob_client.url)
+            logger.info(f"Copy status: {copy_status}")
+
+            # Ensure the copy operation is complete
+            while perm_blob_client.get_blob_properties().copy.status == 'pending':
+                time.sleep(1)
+
+            # Delete the temporary blob
+            temp_blob_client.delete_blob()
+            logger.info(f"Deleted temporary blob: temp/{temp_blob_name}")
+
+            # Generate the new URL
+            new_url = f"https://{self.account_name}.blob.core.windows.net/{self.container_name}/{perm_blob_name}"
+            return Response({"newUrl": new_url}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error moving image: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class getCommunityPosts(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsCommunityMember]
     serializer_class = CommunityPostSerializer

@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
 
     let loginUser = async (e) => {
         e.preventDefault();
+        setError(null);
         try {
             let data = {
                 username_or_email: null,
