@@ -12,7 +12,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Community, Membership, Post, LikedPost, Likes, Comment
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
-                          MembershipSerializer, CommunitySerializer, CreatePostSerializer, ImageUploadSerializer,
+                          MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
                           CreateCommentSerializer)
 from .permissions import IsCommunityMember
@@ -27,6 +27,9 @@ from rest_framework import status
 from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
 import uuid
 import pyotp
+import logging
+import time
+
 
 from django.conf import settings
 
@@ -257,58 +260,9 @@ class GenerateSignedUrlView(APIView):
         except Exception as e:
             logger.error(f"Error generating signed URL: {str(e)}")
             raise e
-class ImageUploadView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def __init__(self):
-        self.account_url = os.getenv('AZURE_BLOB_ACCOUNT_URL')
-        self.credential = os.getenv('AZURE_BLOB_CREDENTIAL')
-        self.account_name = os.getenv('AZURE_BLOB_ACCOUNT_NAME')
-        self.account_key = os.getenv('AZURE_BLOB_ACCOUNT_KEY')
-        self.container_name = 'synapsespace-temp-storage'
-
-    def generate_presigned_url(self, blob_name):
-        blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
-        container_client = blob_service_client.get_container_client(self.container_name)
-
-        sas_token = generate_blob_sas(
-            account_name=self.account_name,
-            container_name=self.container_name,
-            blob_name=blob_name,
-            account_key=self.account_key,
-            permission=BlobSasPermissions(read=True, write=True),  # Ensure read and write permissions
-            expiry=datetime.utcnow() + timedelta(hours=1)
-        )
-
-        return f"https://{blob_service_client.account_name}.blob.core.windows.net/{self.container_name}/{blob_name}?{sas_token}"
-
-    def post(self, request):
-        serializer = ImageUploadSerializer(data=request.data)
-        if serializer.is_valid():
-            image = serializer.validated_data['image']
-            blob_name = f"images/{datetime.utcnow().isoformat()}_{image.name}"
-
-            # Upload to Azure Blob Storage
-            blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
-            blob_client = blob_service_client.get_blob_client(container=self.container_name, blob=blob_name)
-
-            blob_client.upload_blob(image, overwrite=True)
-
-            # Generate the URL
-            url = self.generate_presigned_url(blob_name)
-
-            return Response({'url': url}, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 logger = logging.getLogger(__name__)
-import logging
-import time
-from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-import uuid
+
 
 logger = logging.getLogger(__name__)
 

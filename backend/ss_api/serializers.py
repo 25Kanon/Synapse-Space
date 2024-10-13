@@ -226,13 +226,6 @@ class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
         fields = ['id','bannerURL','imgURL','name', 'description', 'rules', 'keyword', 'owned_by']
-class ImageUploadSerializer(serializers.Serializer):
-    image = serializers.ImageField()
-
-    def validate_image(self, value):
-        # Add any validation you want here (e.g., file size, format)
-        return value
-
 class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
