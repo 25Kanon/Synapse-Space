@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect} from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import AuthContext from "../../context/AuthContext";
 import axios from "axios";
@@ -11,7 +11,6 @@ import MainContentContainer from "../../components/MainContentContainer";
 import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
 import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
-import StyledOutput from "../../components/community/StyledOutput";
 
 export default function Community() {
     const API_URL = process.env.REACT_APP_API_BASE_URI;
@@ -21,6 +20,7 @@ export default function Community() {
     const [communityDetails, setCommunityDetails] = useState([]);
     const [posts, setPosts] = useState([]);
     const [Error, setError] = useState(null);
+    const [postCreated, setPostCreated] = useState(false);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -32,6 +32,7 @@ export default function Community() {
                 });
                 setIsMember(true)
                 setPosts(response.data);
+                setPostCreated(false);
             } catch (err) {
                 if (err.response.status === 403) {
                     setIsMember(false);
@@ -45,7 +46,7 @@ export default function Community() {
         if (communityDetails) {
             fetchPosts();
         }
-    }, [id, communityDetails, isMember, API_URL]);
+    }, [id, communityDetails, isMember, API_URL, postCreated]);
 
     useEffect(() => {
         const fetchCommunityDetails = async () => {
@@ -112,7 +113,7 @@ export default function Community() {
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL}
                         commAvatar={communityDetails.imgURL}/>
-                <CreatePost userName={user.username} community={communityDetails.id} />
+                <CreatePost userName={user.username} community={communityDetails.id} onPostCreated={() => setPostCreated(true)} />
                 {posts.map((post) => (
                     <CommunityPost
                         key={post.id}

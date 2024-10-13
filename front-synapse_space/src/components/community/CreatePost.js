@@ -8,7 +8,7 @@ import '@mdxeditor/editor/style.css';
 import RichTextEditor from "../RichTextEditor";
 
 const API_URL = process.env.REACT_APP_API_BASE_URI;
-const CreatePost = ({ userName, community }) => {
+const CreatePost = ({ userName, community, onPostCreated }) => {
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
     const [title, setTitle] = useState("");
@@ -59,6 +59,7 @@ const CreatePost = ({ userName, community }) => {
                 setEditorContent('');
                 setSuccess('Post submitted successfully');
                 toggleFormVisibility();
+                onPostCreated(); // Trigger the fetchPosts useEffect
             } else {
                 setError('Error submitting post' + response.statusText);
             }
@@ -114,7 +115,8 @@ const CreatePost = ({ userName, community }) => {
 
 CreatePost.propTypes = {
     userName: PropTypes.string.isRequired,
-    community: PropTypes.string.isRequired
+    community: PropTypes.string.isRequired,
+    onPostCreated: PropTypes.func.isRequired
 };
 
 export default CreatePost;

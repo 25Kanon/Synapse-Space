@@ -361,13 +361,14 @@ class MoveImageView(APIView):
         except Exception as e:
             logger.error(f"Error moving image: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class getCommunityPosts(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsCommunityMember]
     serializer_class = CommunityPostSerializer
 
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
-        return Post.objects.filter(posted_in_id=community_id)
+        return Post.objects.filter(posted_in_id=community_id).order_by('-created_at')
 
 
 class getCommunityPost(generics.RetrieveAPIView):
