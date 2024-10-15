@@ -1,10 +1,11 @@
 from django.urls import path
 from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView,
                     MembershipListView,
-                    CommunityDetailView, CommunityMembersListView, PostCreateView,getCommunityPosts, UserProfileView,
+                    CommunityDetailView, CommunityMembersListView, PostCreateView, getCommunityPosts, UserProfileView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
-                    CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView)
+                    CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
+                    CookieTokenRefreshView)
 
 
 urlpatterns = [
@@ -12,9 +13,9 @@ urlpatterns = [
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/logout/', LogoutView.as_view(), name='logout'),
-    path('auth/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/memberships/', MembershipListView.as_view(), name='membership-list'),
-
+    path('auth/check-auth/', CheckAuthView.as_view(), name='check-auth'),
      # User Profile URLs
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('activities/', UserActivitiesView.as_view(), name='user-activities'),

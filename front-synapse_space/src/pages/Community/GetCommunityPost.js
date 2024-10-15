@@ -1,29 +1,26 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useContext} from "react";
 import CommunityPost from "../../components/community/CommunityPost";
-import axios from "axios";
+import AxiosInstance from "../../utils/AxiosInstance";
 import { useParams } from "react-router-dom";
 import ErrorAlert from "../../components/ErrorAlert";
 import NavBar from "../../components/NavBar";
 import Sidebar from "../../components/Sidebar";
 import MembersList from "../../components/community/MembersList";
 import MainContentContainer from "../../components/MainContentContainer";
+import { AuthContext } from "../../context/AuthContext";
+import { tuple } from "yup";
 
 const GetCommunityPost = () => {
     const API_URL = process.env.REACT_APP_API_BASE_URI;
     const { community_id, post_id } = useParams();
     const [post, setPost] = useState(null);
     const [error, setError] = useState(null);
-
+    const { user } = useContext(AuthContext);
     useEffect(() => {
         const getCommunityPost = async () => {
             try {
-                const response = await axios.get(
-                    `${API_URL}/api/community/${community_id}/post/${post_id}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                        },
-                    }
+                const response = await AxiosInstance.get(
+                    `/api/community/${community_id}/post/${post_id}`,{},{withCredentials: true}
                 );
                 setPost(response.data);
             } catch (error) {
@@ -51,6 +48,7 @@ const GetCommunityPost = () => {
                         postContent={post.content}
                         postId={post.id}
                         showComments={true}
+                        userID={user.id}
                     />
                 ) : (
                     <h2>Post does not exist</h2>

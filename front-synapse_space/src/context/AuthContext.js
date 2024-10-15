@@ -1,23 +1,73 @@
-import { createContext, useState, useEffect } from "react";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import AxiosInstance from '../utils/AxiosInstance';
+import {jwtDecode} from 'jwt-decode';
 
-const AuthContext = createContext();
-export default AuthContext;
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    let [authToken, setAuthToken] = useState(() => localStorage.getItem('access_token') || null);
-    let [user, setUser] = useState(null);
-    let [loginData, setLoginData] = useState(null);
-    let [requireOTP, setRequireOTP] = useState(false);
-    let [loading, setLoading] = useState(true);
-    let [error, setError] = useState(null);
-    let navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [loginData, setLoginData] = useState(null);
+    const [requireOTP, setRequireOTP] = useState(false);
+    const [error, setError] = useState(null);
 
-    const isAuthenticated = !!authToken;
+    const refreshToken = useCallback(async () => {
+        try {
+            const response = await AxiosInstance.post('/api/auth/token/refresh/', {}, { withCredentials: true });
+            const newAccessToken = response.data.access;
+            
+            // Update the access token in your storage mechanism (e.g., cookie)
+            document.cookie = `access_token=${newAccessToken}; path=/; SameSite=Lax`;
+            
+            return newAccessToken;
+        } catch (error) {
+            console.error('Error refreshing token:', error);
+            setUser(null);
+            throw error;
+        }
+    }, []);
 
-    let loginUser = async (e) => {
+    const scheduleTokenRefresh = useCallback((token) => {
+        const decodedToken = jwtDecode(token);
+        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
+        const currentTime = Date.now();
+        const timeUntilRefresh = expirationTime - currentTime - 60000; // Refresh 1 minute before expiry
+        console.log('timeUntilRefresh', timeUntilRefresh)
+        setTimeout(() => {
+            refreshToken()
+                .then(scheduleTokenRefresh)
+                .catch(console.error);
+        }, timeUntilRefresh);
+    }, [refreshToken]);
+
+    const checkAuthentication = useCallback(async () => {
+        try {
+            const response = await AxiosInstance.get('/api/auth/check-auth/', { withCredentials: true });
+            console.log('user', response.data)
+            setUser(response.data.user);
+            console.log('user', user)
+            // Schedule token refresh
+            const cookies = document.cookie.split(';');
+            const accessToken = cookies.find(cookie => cookie.trim().startsWith('access_token='));
+            if (accessToken) {
+                const token = accessToken.split('=')[1];
+                scheduleTokenRefresh(token);
+            }
+            return true;
+        } catch (error) {
+            console.error('Authentication check failed:', error);
+            setUser(null);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    }, [scheduleTokenRefresh]);
+
+    useEffect(() => {
+        checkAuthentication();
+    }, [checkAuthentication]);
+
+    const loginUser = async (e) => {
         e.preventDefault();
         setError(null);
         try {
@@ -29,34 +79,31 @@ export const AuthProvider = ({ children }) => {
             if (requireOTP) {
                 data = loginData;
                 data.otp = e.target.otp.value;
+                console.log(data)
             } else {
                 data.username_or_email = e.target.username_or_email.value;
                 data.password = e.target.password.value;
-                setLoginData(data);
+                setLoginData(data);// Store login data for OTP
             }
 
-            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/login/`, data, {
+            const response = await AxiosInstance.post(`/api/auth/login/`, data, {
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
             });
 
+            // Check response for OTP requirement
             if (response.data.message === "OTP required") {
                 console.log('OTP required');
                 setRequireOTP(true);
                 setLoginData(data);
             } else {
-                const { access, refresh } = response.data;
-                localStorage.setItem('access_token', access);
-                localStorage.setItem('refresh_token', refresh);
-                setAuthToken(access);
-                const decodedUser = jwtDecode(access);
-                setUser(decodedUser);
                 console.log('Login successful', response.data);
-                setError(null);
-                setLoginData(null)
-                setRequireOTP(false)// Clear any previous error messages
-                navigate('/'); // Redirect to the home page after successful login
+                setUser(response.data.user);
+                scheduleTokenRefresh(response.data.access);
+                setRequireOTP(false);
+                setLoginData(null);
+                return response.data;
             }
         } catch (error) {
             if (error.response) {
@@ -69,98 +116,50 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    let refreshUserToken = () => {
-        console.log('Refreshing token');
-        axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/token/refresh/`, {
-            'refresh': localStorage.getItem('refresh_token')
-
-        }).then(response => {
-            const { access, refresh } = response.data;
-            localStorage.setItem('access_token', access);
-            localStorage.setItem('refresh_token', refresh);
-            setAuthToken(access);
-        }).catch(error => {
-            console.error('Token refresh error', error);
-            setError('Token refresh failed. Please login again.');
-        });
-        console.log('Refresh token', localStorage.getItem('refresh_token'))
-    }
-
-    let logoutUser = async () => {
+    const logout = async () => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URI}/api/auth/logout/`, { 'refresh': localStorage.getItem('refresh_token')}, {
+            await AxiosInstance.post('/api/auth/logout/', {}, { 
+                withCredentials: true,
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                    'Content-Type': 'application/json'
+                    'X-CSRFToken': getCookie('csrftoken')
                 }
             });
-            setAuthToken(null);
             setUser(null);
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
+            setRequireOTP(false);
+            setLoginData(null);
         } catch (error) {
             console.error('Logout failed:', error);
-            setError('Invalid access token')
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            window.location.reload();
-        }
-    }
-
-    // Fetch user data if authenticated
-    useEffect(() => {
-        if (authToken) {
-            const decodedUser = jwtDecode(authToken);
-            const tokenExpirationTime = decodedUser.exp;
-            const currentTime = Date.now() / 1000;
-            if (tokenExpirationTime < currentTime)
-                logoutUser();
-            setUser(decodedUser);
+            setUser(null);
+            setRequireOTP(false);
+            setLoginData(null);
 
         }
-        setLoading(false);
-    }, [authToken]);
+    };
 
-    // Refresh token when near expiration
-    useEffect(() => {
-        const checkTokenExpiration = () => {
-            const accessToken = localStorage.getItem('access_token');
-            if (!accessToken) {
-                return;
-            }
-
-            const decodedToken = jwtDecode(accessToken);
-            const currentTime = Date.now() / 1000;
-            const tokenExpirationTime = decodedToken.exp;
-            console.log('Token expiration time:', tokenExpirationTime);
-
-            if (tokenExpirationTime < currentTime) {
-                logoutUser();
-            } else if (tokenExpirationTime - currentTime < 60) {
-                refreshUserToken();
-            }
-        };
-
-        const intervalId = setInterval(checkTokenExpiration, 60000); // Check every minute
-
-        return () => clearInterval(intervalId); 
-    }, [authToken, loading]);
-
-
-
-    let contextData = {
-        loginUser,
-        logoutUser,
-        isAuthenticated,
-        user,
-        loading,
-        requireOTP,
-        error, // Include error in context data
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
     }
+
+    const isAuthenticated = async () => {
+        if (user) return true;
+        return await checkAuthentication();
+    };
 
     return (
-        <AuthContext.Provider value={contextData}>
-            {!loading && children}
+        <AuthContext.Provider value={{ 
+            isAuthenticated, 
+            user, 
+            loading, 
+            loginUser, 
+            logout, 
+            refreshToken,
+            requireOTP,
+            error
+        }}>
+            {children}
         </AuthContext.Provider>
     );
-}
+};
+export default AuthContext;

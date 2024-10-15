@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import AxiosInstance from 'utils/AxiosInstance';
 
 const MembersList = ({id}) => {
   const [members, setMembers] = useState([]);
@@ -8,11 +9,8 @@ const MembersList = ({id}) => {
 
     const fetchMembers = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URI}/api/community/${id}/members/`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          }
-        });
+        const response = await AxiosInstance.get(`/api/community/${id}/members/`, {}, { withCredentials: true,});
+
         setMembers(response.data);
         console.log("members:", response.data);
       } catch (error) {

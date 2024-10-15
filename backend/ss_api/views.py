@@ -1,39 +1,45 @@
+from django.db.models import Q
+from django.conf import settings
 import os
-from datetime import datetime, timedelta, timezone
-from urllib.parse import urlparse, unquote
+from datetime import datetime, timedelta
 
-import requests
-from dotenv import load_dotenv
+
+# Rest Framework imports
 from rest_framework import generics, permissions, status, serializers
-from django.db.models import Q  # Import Q for complex queries
+from rest_framework.decorators import api_view
+from rest_framework import exceptions as rest_exceptions, response, decorators as rest_decorators, permissions as rest_permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework_simplejwt import tokens, views as jwt_views, serializers as jwt_serializers, exceptions as jwt_exceptions
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+# Azure Blob Storage imports
+from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
 
+# Other third-party library imports
+import uuid
+import logging
+from urllib.parse import parse_qsl, urljoin, urlparse, unquote
+
+
+# Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
-                          CreateCommentSerializer)
-from .permissions import IsCommunityMember
-from rest_framework_simplejwt.views import TokenRefreshView
-
-import logging
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
-import uuid
-import pyotp
-import logging
-import time
-
+                          CreateCommentSerializer, CookieTokenRefreshSerializer)
+from .permissions import IsCommunityMember, CookieJWTAuthentication
 
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
@@ -53,7 +59,7 @@ class RegisterView(generics.GenericAPIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class LoginView(generics.GenericAPIView):
+class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
@@ -61,33 +67,99 @@ class LoginView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         response_data = serializer.validated_data
+
+        # Check if OTP is required
         if 'message' in response_data and response_data['message'] == 'OTP required':
             # Respond with a message indicating OTP is required
-
             return Response({'message': 'OTP required'}, status=status.HTTP_200_OK)
 
-        # If OTP is provided and valid, send the token response
-        return Response(response_data, status=status.HTTP_200_OK)
+        # If OTP is provided and valid, generate the token response
+        response = Response(response_data, status=status.HTTP_200_OK)
+
+        # Set cookies for access_token and refresh_token
+        if 'access' in response_data:
+            response.set_cookie(
+                'access_token',
+                response_data['access'],
+                max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
+                httponly=True,
+                samesite='Lax',
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+            )
+        if 'refresh' in response_data:
+            response.set_cookie(
+                'refresh_token',
+                response_data['refresh'],
+                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+                httponly=True,
+                samesite='Lax',
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+            )
+
+        return response
 
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer
 
+class CookieTokenRefreshView(jwt_views.TokenRefreshView):
+    serializer_class = CookieTokenRefreshSerializer
+    def finalize_response(self, request, response, *args, **kwargs):
+        if response.data.get("refresh"):
+            response.set_cookie(
+                key=settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'],
+                value=response.data['refresh'],
+                expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+            )
+
+            del response.data["refresh"]
+        response["X-CSRFToken"] = request.COOKIES.get("csrftoken")
+        return super().finalize_response(request, response, *args, **kwargs)
+
+class CheckAuthView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        logger.info(f"Auth check for user: {request.user}")
+        logger.info(f"Request headers: {request.headers}")
+        logger.info(f"Request COOKIES: {request.COOKIES}")
+        return Response({
+            'is_authenticated': True,
+            'user': {
+                'id': request.user.id,
+                'username': request.user.username,
+                'email': request.user.email,
+                'student_number': request.user.student_number,
+            }
+        })
 
 class LogoutView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        response = Response()
         try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-
-            return Response({"detail": "Logout successful."}, status=status.HTTP_205_RESET_CONTENT)
+            refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            response.data = {"detail": "Logout successful."}
+            response.status_code = status.HTTP_200_OK
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+            response.data = {"error": str(e)}
+            response.status_code = status.HTTP_400_BAD_REQUEST
+        finally:
+            # Always remove the cookies, even if an error occurred
+            response.delete_cookie('access_token')
+            response.delete_cookie('refresh_token')
+        return response
 
 class CommunityCreateView(generics.CreateAPIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = Community.objects.all()
     serializer_class = CreateCommunitySerializer
@@ -165,6 +237,8 @@ class CommunityCreateView(generics.CreateAPIView):
 
 
 class MembershipListView(generics.ListAPIView):
+
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = MembershipSerializer
 
@@ -173,6 +247,8 @@ class MembershipListView(generics.ListAPIView):
         return Membership.objects.filter(user__student_number=student_number)
 
 class CommunityMembersListView(generics.ListAPIView):
+
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = MembershipSerializer
 
@@ -186,6 +262,7 @@ class CommunityDetailView(generics.RetrieveAPIView):
     lookup_field = 'id'
 
 class PostCreateView(generics.CreateAPIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsCommunityMember]
     queryset = Post.objects.all()
     serializer_class = CreatePostSerializer
@@ -198,9 +275,8 @@ class PostCreateView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-logger = logging.getLogger(__name__)
-
 class GenerateSignedUrlView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
 
@@ -261,13 +337,9 @@ class GenerateSignedUrlView(APIView):
             logger.error(f"Error generating signed URL: {str(e)}")
             raise e
 
-logger = logging.getLogger(__name__)
-
-
-logger = logging.getLogger(__name__)
-
 
 class MoveImageView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def __init__(self):
@@ -317,6 +389,7 @@ class MoveImageView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class getCommunityPosts(generics.ListAPIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, IsCommunityMember]
     serializer_class = CommunityPostSerializer
 
@@ -326,6 +399,7 @@ class getCommunityPosts(generics.ListAPIView):
 
 
 class getCommunityPost(generics.RetrieveAPIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, IsCommunityMember]
     serializer_class = getCommunityPostSerializer
     queryset = Post.objects.all()
@@ -337,6 +411,7 @@ class getCommunityPost(generics.RetrieveAPIView):
         return get_object_or_404(Post, id=post_id, posted_in=community_id)
 
 class likePostView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, IsCommunityMember]
     def post(self, request, community_id, post_id):
         post = Post.objects.get(id=post_id)
@@ -348,6 +423,7 @@ class likePostView(APIView):
             return Response({"message": "Post already liked"}, status=status.HTTP_200_OK)
 
 class unlikePostView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, IsCommunityMember]
     def post(self, request, community_id, post_id):
         post = Post.objects.get(id=post_id)
@@ -360,6 +436,7 @@ class unlikePostView(APIView):
             return Response({"message": "Post not liked"}, status=status.HTTP_200_OK)
 
 class getPostLikesView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, community_id, post_id):
@@ -371,6 +448,7 @@ class getPostLikesView(APIView):
 class CommentCreateView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CreateCommentSerializer
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -383,6 +461,7 @@ class CommentDetailView(generics.RetrieveAPIView):
 
 class PostCommentsView(generics.ListAPIView):
     serializer_class = CommentSerializer
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -391,6 +470,7 @@ class PostCommentsView(generics.ListAPIView):
 class CommentUpdateView(generics.UpdateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_update(self, serializer):
@@ -398,10 +478,10 @@ class CommentUpdateView(generics.UpdateAPIView):
 
 class CommentDeleteView(generics.DestroyAPIView):
     queryset = Comment.objects.all()
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
 class UserProfileView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
@@ -429,6 +509,7 @@ class UserProfileView(APIView):
         return Response(user_data)
 
 class UserActivitiesView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -449,6 +530,7 @@ class UserActivitiesView(APIView):
         return Response(activities)
 
 class CommunityListView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         search_query = request.query_params.get('search', None)  # Get the search query parameter
@@ -464,8 +546,9 @@ class CommunityListView(APIView):
 
         serializer = CommunitySerializer(communities, many=True)
         return Response(serializer.data)
-    
+
 class JoinCommunityView(generics.CreateAPIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):

@@ -14,6 +14,7 @@ import Delimiter from "@editorjs/delimiter";
 import InlineCode from "@editorjs/inline-code";
 import Marker from "@editorjs/marker";
 import axios from "axios";
+import AxiosInstance  from "../utils/AxiosInstance";
 
 const RichTextEditor = ({ onChange, setEditorContent }) => {
     const editorRef = useRef(null);
@@ -24,14 +25,12 @@ const RichTextEditor = ({ onChange, setEditorContent }) => {
             try {
                 const formData = new FormData();
                 formData.append('file', file);
-
-                const response = await axios.post(`${API_URL}/api/generate-signed-url/`, formData, {
+                
+                const response = await AxiosInstance.post(`/api/generate-signed-url/`, formData, { withCredentials: true,
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                        'Content-Type': 'multipart/form-data'
+                        'Content-Type': 'multipart/form-data',
                     }
                 });
-
                 if (response.status === 200) {
                     resolve({
                         success: 1,

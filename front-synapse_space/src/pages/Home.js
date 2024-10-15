@@ -1,23 +1,42 @@
-import React, { useContext } from "react";
-import AuthContext from "../context/AuthContext";
+import React, { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
 
-import ErrorAlert  from "../components/ErrorAlert";
+import ErrorAlert from "../components/ErrorAlert";
 import Sidebar from "../components/Sidebar";
-import NavBar from "../components/NavBar"
-import FriendsList from "../components/FriendsList"
+import NavBar from "../components/NavBar";
+import FriendsList from "../components/FriendsList";
 import MainContentContainer from "../components/MainContentContainer";
-export default function Home() {
-    const { user, error  } = useContext(AuthContext);
 
-    if (!user) {
+export default function Home() {
+    const { isAuthenticated, user, error } = useContext(AuthContext);
+    const [loading, setLoading] = useState(true);
+    const [isAuth, setIsAuth] = useState(false);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const authStatus = await isAuthenticated();
+            setIsAuth(authStatus);
+            setLoading(false);
+        };
+
+        checkAuth();
+    }, [isAuthenticated]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!isAuth || !user) {
         return (
             <div>
-                <div class="hero bg-base-200 min-h-screen">
-                    <p class="text-center text-xl">Welcome to Synapse Space. Please login to continue.</p>
+                <div className="hero bg-base-200 min-h-screen">
+                    <p className="text-center text-xl">Welcome to Synapse Space. Please login to continue.</p>
+                    {user}
                 </div>
             </div>
         );
     }
+
     return (
         <>
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}

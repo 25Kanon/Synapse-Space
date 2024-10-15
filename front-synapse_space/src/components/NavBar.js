@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 const NavBar = () => {
     const navigate = useNavigate();
-    const { user, logoutUser } = useContext(AuthContext);
+    const { user, logout } = useContext(AuthContext);
     const [scrolled, setScrolled] = useState(false);
     const [searchQuery, setSearchQuery] = useState(''); // State to hold search input
 
@@ -31,6 +31,16 @@ const NavBar = () => {
         e.preventDefault(); // Prevent default form submission
         if (searchQuery) {
             navigate('/search', { state: { query: searchQuery } }); // Navigate to search page with query
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/login'); // Redirect to login page after logout
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Optionally, you can show an error message to the user
         }
     };
 
@@ -79,7 +89,7 @@ const NavBar = () => {
                                 </summary>
                                 <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
                                     <li><Link to="/profile">Profile</Link></li>
-                                    <li> <button onClick={logoutUser} className="btn btn-logout">Logout</button></li>
+                                    <li> <button onClick={handleLogout} className="btn btn-logout">Logout</button></li>
                                 </ul>
                             </details>
                         </div>

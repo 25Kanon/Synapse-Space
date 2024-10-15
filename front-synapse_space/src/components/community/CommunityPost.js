@@ -8,24 +8,21 @@ import { faThumbsUp as ThumbsUpIcon } from "@fortawesome/free-solid-svg-icons/fa
 import Checkbox from '@mui/material/Checkbox';
 import {faComment} from "@fortawesome/free-solid-svg-icons/faComment";
 import {FormControlLabel} from "@mui/material";
-import axios from "axios";
+import AxiosInstance from 'utils/AxiosInstance';
 import CommentSection from './CommentSection';
 import StyledOutput from "./StyledOutput";
+
 
 const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, userID, showComments }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
-    const API_URL = process.env.REACT_APP_API_BASE_URI;
 
     useEffect(()=>{
         const fetchLikeStatus = async () => {
             try {
-                const likes = await axios.get(`${API_URL}/api/community/${community}/post/${postId}/likes`, {
 
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                    }
-                });
+                const likes= await AxiosInstance.get(`/api/community/${community}/post/${postId}/likes`, {}, { withCredentials: true,});
+
                 if (likes.status === 200) {
                     setLikes(likes.data);
                     if (likes.data.some((like) => like.user === userID)) {
@@ -39,16 +36,13 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
         };
         fetchLikeStatus();
 
-    }, [community, postId, isLiked]);
+    }, [community, postId, isLiked, userID]);
 
 
     const handleLikeChange = () => {
-        const url = `${API_URL}/api/community/${community}/post/${postId}/${isLiked ? 'unlike' : 'like'}`;
-        axios.post(url, { postId }, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-            }
-        })
+        const url = `/api/community/${community}/post/${postId}/${isLiked ? 'unlike' : 'like'}`;
+         AxiosInstance.post(url, { postId }, { withCredentials: true})
+
             .then(response => {
                 if (response.status === 200 || response.status === 201) {
                     setIsLiked(!isLiked);

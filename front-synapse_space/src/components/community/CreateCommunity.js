@@ -8,6 +8,7 @@ import Banner from "./Banner";
 import AvatarCropper from "../avatarCropper";
 import BannerCropper from "./BannerCropper";
 import { useMemberships } from "../../context/MembershipContext";
+import AxiosInstance from 'utils/AxiosInstance';
 
 
 const CreateCommunity = () => {
@@ -105,11 +106,10 @@ const CreateCommunity = () => {
         }
 
         try {
-            const response = await axios.post(`${API_URL}/api/community/create/`, formData, {
+            const response = await AxiosInstance.post(`/api/community/create/`, formData, { withCredentials: true,
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                    "Content-Type": "multipart/form-data",
-                },
+                    'Content-Type': 'multipart/form-data',
+                }
             });
 
             if (response.status === 201) {

@@ -3,26 +3,22 @@ import CommentList from "./CommentList";
 import CommentForm from "./CommentForm";
 import axios from "axios";
 import AuthContext from "../../context/AuthContext";
-
+import AxiosInstance  from "../../utils/AxiosInstance";
 const CommentSection = ({ postID }) => {
     const [comments, setComments] = useState([]);
     const { user } = useContext(AuthContext);
     const API_URL = process.env.REACT_APP_API_BASE_URI;
 
-    useEffect(() => {
-        const fetchComments = async () => {
-            try {
-                const response = await axios.get(`${API_URL}/api/posts/${postID}/comments/`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                });
-                setComments(response.data);
-            } catch (error) {
-                console.error("Error fetching comments:", error);
-            }
-        };
+    const fetchComments = async () => {
+        try {
+            const response = await AxiosInstance.get(`/api/posts/${postID}/comments/`, { withCredentials: true });
+            setComments(response.data);
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+        }
+    };
 
+    useEffect(() => {
         fetchComments();
     }, [postID]);
 
@@ -33,29 +29,15 @@ const CommentSection = ({ postID }) => {
             post: postID,
         };
 
-        const addReplyRecursive = (comments) => {
-            return comments.map((comment) => {
-                if (comment.id === parentId) {
-                    return { ...comment, replies: [...comment.replies, newComment] };
-                } else if (comment.replies.length > 0) {
-                    return { ...comment, replies: addReplyRecursive(comment.replies) };
-                }
-                return comment;
-            });
-        };
-
         try {
-            const response = await axios.post(`${API_URL}/api/comments/`, newComment, {
+            await AxiosInstance.post(`/api/comments/`, newComment, {
+                withCredentials: true,
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                },
+                    'Content-Type': 'multipart/form-data',
+                }
             });
-            const { data } = response;
-            if (parentId === null) {
-                setComments([...comments, data]);
-            } else {
-                setComments(addReplyRecursive(comments));
-            }
+            // Refetch comments after adding a new comment
+            fetchComments();
         } catch (error) {
             console.error("Error adding comment:", error);
         }
@@ -124,6 +106,7 @@ const CommentSection = ({ postID }) => {
                 onUpdate={updateComment}
                 onDelete={deleteComment}
                 onReply={addComment}
+                refetchComments={fetchComments}
             />
         </div>
     );

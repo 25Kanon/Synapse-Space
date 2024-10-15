@@ -6,6 +6,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt import tokens, views as jwt_views, serializers as jwt_serializers, exceptions as jwt_exceptions
 from rest_framework import serializers
 from django.contrib.auth import authenticate, get_user_model
 from django.utils.translation import gettext_lazy as _
@@ -126,19 +127,16 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         return user
 
     def get_token_data(self, user):
-        """
-        Generate token pair with additional custom claims if needed.
-        """
-        refresh = self.get_token(user)
+        refresh = RefreshToken.for_user(user)
         data = {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'user': str(refresh.access_token['username']),
-            'student_number': str(refresh.access_token['student_number'])
+            'user': user.username,
+            'student_number': user.student_number
         }
 
-        # Add any custom claims to the access token here
-        # Example: refresh.access_token['attribute'] = "value"
+        # Add custom claims
+        refresh.access_token['username'] = user.username
 
         return data
 
@@ -176,22 +174,29 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 
     @classmethod
     def get_token(cls, user):
-        """
-        Override this method to add custom claims to the token.
-        """
-        token = RefreshToken.for_user(user)
-        token['username'] = user.username
-        token['student_number'] = user.student_number
+        token = super().get_token(user)
 
-        # Add custom claims here if required in the future
-        # Example: token['custom_claim'] = "custom_value"
+        # Add custom claims
+        token['username'] = user.username
+        # Add any other custom claims you want to include in the token
 
         return token
+
+        
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         return data
 
+class CookieTokenRefreshSerializer(jwt_serializers.TokenRefreshSerializer):
+    refresh = None
+    def validate(self, attrs):
+        attrs['refresh'] = self.context['request'].COOKIES.get('refresh')
+        if attrs['refresh']:
+            return super().validate(attrs)
+        else:
+            raise jwt_exceptions.InvalidToken(
+                'No valid token found in cookie \'refresh\'')
 
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()

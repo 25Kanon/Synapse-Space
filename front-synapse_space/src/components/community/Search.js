@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from 'react';
-import axios from 'axios';
+import AxiosInstance from 'utils/AxiosInstance';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { useMemberships } from '../../context/MembershipContext';
@@ -11,12 +11,7 @@ const Search = () => {
     const location = useLocation();
     const { query } = location.state || {}; // Access the search query
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_API_BASE_URI}/api/community?search=` + query,
-            {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                }
-            })
+        AxiosInstance.get(`/api/community?search=` + query, {},{withCredentials: true,})
             .then(response => {
                 setCommunities(response.data);
             })

@@ -6,6 +6,7 @@ import SuccessAlert from "../SuccessAlert";
 import PropTypes from 'prop-types';
 import '@mdxeditor/editor/style.css';
 import RichTextEditor from "../RichTextEditor";
+import AxiosInstance from 'utils/AxiosInstance';
 
 const API_URL = process.env.REACT_APP_API_BASE_URI;
 const CreatePost = ({ userName, community, onPostCreated }) => {
@@ -46,12 +47,11 @@ const CreatePost = ({ userName, community, onPostCreated }) => {
             formData.append("title", DOMPurify.sanitize(title));
             formData.append("content", JSON.stringify(updatedContent));
             formData.append("posted_in", community);
-
-            const response = await axios.post(`${API_URL}/api/community/${community}/post`, formData, {
+                
+            const response = await AxiosInstance.post(`/api/community/${community}/post`, formData, { withCredentials: true,
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
                     'Content-Type': 'multipart/form-data',
-                },
+                }
             });
 
             if (response.status === 200 || response.status === 201) {
@@ -72,10 +72,10 @@ const CreatePost = ({ userName, community, onPostCreated }) => {
         const updatedBlocks = await Promise.all(content.blocks.map(async (block) => {
             if (block.type === 'image') {
                 const tempUrl = block.data.file.url;
-                const response = await axios.post(`${API_URL}/api/move-image/`, { tempUrl }, {
+                const response = await AxiosInstance.post(`/api/move-image/`, { tempUrl }, { withCredentials: true,
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
-                    },
+                        'Content-Type': 'multipart/form-data',
+                    }
                 });
                 if (response.status === 200) {
                     block.data.file.url = response.data.newUrl;

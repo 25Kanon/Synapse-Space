@@ -11,6 +11,7 @@ import MainContentContainer from "../../components/MainContentContainer";
 import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
 import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
+import AxiosInstance from "utils/AxiosInstance";
 
 export default function Community() {
     const API_URL = process.env.REACT_APP_API_BASE_URI;
@@ -25,11 +26,7 @@ export default function Community() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get(`${API_URL}/api/community/${id}/posts/`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
-                    },
-                });
+                const response = await AxiosInstance.get(`/api/community/${id}/posts/`, {}, { withCredentials: true,});
                 setIsMember(true)
                 setPosts(response.data);
                 setPostCreated(false);
@@ -51,11 +48,7 @@ export default function Community() {
     useEffect(() => {
         const fetchCommunityDetails = async () => {
             try {
-                const response = await axios.get(`${API_URL}/api/community/${id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                    }
-                });
+                const response = await AxiosInstance.get(`/api/community/${id}`, {}, { withCredentials: true,});
                 setCommunityDetails(response.data);
             } catch (error) {
                 setError(`Error fetching community details: ${error.message}`);
@@ -122,7 +115,7 @@ export default function Community() {
                         postTitle={post.title}
                         postContent={post.content}
                         postId={post.id}
-                        userID={user.user_id}
+                        userID={user.id}
                     />
 
                 ))}
