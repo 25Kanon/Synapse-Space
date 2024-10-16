@@ -13,15 +13,13 @@ export const AuthProvider = ({ children }) => {
 
     const refreshToken = useCallback(async () => {
         try {
+            console.log('refreshing token')
             const response = await AxiosInstance.post('/api/auth/token/refresh/', {}, { withCredentials: true });
-            const newAccessToken = response.data.access;
-            
-            // Update the access token in your storage mechanism (e.g., cookie)
-            document.cookie = `access_token=${newAccessToken}; path=/; SameSite=Lax`;
-            
-            return newAccessToken;
+            return response;
         } catch (error) {
             console.error('Error refreshing token:', error);
+            console.log('Error refreshing token:', error)
+            setError('Error refreshing token:', error);
             setUser(null);
             throw error;
         }
@@ -48,7 +46,7 @@ export const AuthProvider = ({ children }) => {
             console.log('user', user)
             // Schedule token refresh
             const cookies = document.cookie.split(';');
-            const accessToken = cookies.find(cookie => cookie.trim().startsWith('access_token='));
+            const accessToken = cookies.find(cookie => cookie.trim().startsWith('access='));
             if (accessToken) {
                 const token = accessToken.split('=')[1];
                 scheduleTokenRefresh(token);
@@ -65,7 +63,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         checkAuthentication();
-    }, [checkAuthentication]);
+    }, [checkAuthentication, loginData]);
 
     const loginUser = async (e) => {
         e.preventDefault();
@@ -118,15 +116,11 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await AxiosInstance.post('/api/auth/logout/', {}, { 
-                withCredentials: true,
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                }
-            });
+            await AxiosInstance.post('/api/auth/logout/', {}, { withCredentials: true,});
             setUser(null);
             setRequireOTP(false);
             setLoginData(null);
+            console.log('logout')
         } catch (error) {
             console.error('Logout failed:', error);
             setUser(null);

@@ -6,7 +6,7 @@ import Sidebar from "../components/Sidebar";
 import NavBar from "../components/NavBar";
 import FriendsList from "../components/FriendsList";
 import MainContentContainer from "../components/MainContentContainer";
-
+import axiosInstance from "../utils/AxiosInstance";
 export default function Home() {
     const { isAuthenticated, user, error } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
@@ -45,7 +45,12 @@ export default function Home() {
             <FriendsList />
 
             <MainContentContainer>
-                
+                <div>
+                    <h2>Test Refresh Call</h2>
+                    <button onClick={() => {
+                        axiosInstance.post('api/auth/token/refresh/',{}, {withCredentials: true})
+                    }}>Refresh</button>
+                </div>
             </MainContentContainer>
         </>
     );
