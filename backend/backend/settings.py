@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+from django.conf import settings
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -66,18 +67,13 @@ REST_FRAMEWORK = {
     ),
 }
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Add your frontend URL here
-]
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS").split(",")
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',  # Add your frontend URL here
-]
 ACCESS_CONTROL_ALLOW_CREDENTIALS = True
 
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTP_ONLY = True
-CSRF_TRUSTED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS").split(",")
 CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = "None"
@@ -147,14 +143,14 @@ PASSWORD_HASHERS = [
 ]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
+    'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': False,
+    'UPDATE_LAST_LOGIN': True,
 
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
+    "SIGNING_KEY": os.getenv('SECRET_KEY'),
     'VERIFYING_KEY': None,
     'AUDIENCE': None,
     'ISSUER': None,
@@ -174,10 +170,10 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 
     # Custom settings for cookie-based JWT
-    'AUTH_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
-    'AUTH_COOKIE_REFRESH': 'refresh_token',  # Cookie name. Enables cookies if value is set.
+    'AUTH_COOKIE': 'access',  # Cookie name. Enables cookies if value is set.
+    'AUTH_COOKIE_REFRESH': 'refresh',  # Cookie name. Enables cookies if value is set.
     'AUTH_COOKIE_DOMAIN': None,     # A string like "example.com", or None for standard domain cookie.
-    'AUTH_COOKIE_SECURE': False,    # Whether the auth cookies should be secure (https:// only).
+    'AUTH_COOKIE_SECURE': True,    # Whether the auth cookies should be secure (https:// only).
     'AUTH_COOKIE_HTTP_ONLY' : True, # Http only cookie flag.It's not fetch by javascript.
     'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
     'AUTH_COOKIE_SAMESITE': 'Lax',  # Whether to set the flag restricting cookie leaks on cross-site requests.

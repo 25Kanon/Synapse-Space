@@ -187,16 +187,33 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         return data
-
+        
 class CookieTokenRefreshSerializer(jwt_serializers.TokenRefreshSerializer):
     refresh = None
+
     def validate(self, attrs):
         attrs['refresh'] = self.context['request'].COOKIES.get('refresh')
         if attrs['refresh']:
-            return super().validate(attrs)
+            try:
+                # Add this line for debugging
+                print(f"Refresh token from cookie: {attrs['refresh']}")
+                
+                return super().validate(attrs)
+            except TokenError as e:
+                # Add more detailed error handling
+                print(f"TokenError: {str(e)}")
+                raise jwt_exceptions.InvalidToken(f"Token is invalid or expired: {str(e)}")
         else:
-            raise jwt_exceptions.InvalidToken(
-                'No valid token found in cookie \'refresh\'')
+            raise jwt_exceptions.InvalidToken('No valid token found in cookie \'refresh_token\'')
+
+    # Add this method to verify the token manually
+    def verify_token(self, token):
+        from rest_framework_simplejwt.tokens import RefreshToken
+        try:
+            RefreshToken(token)
+            return True
+        except TokenError:
+            return False  
 
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()

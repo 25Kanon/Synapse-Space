@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import (RegisterView, LoginView, LogoutView, CustomTokenRefreshView, CommunityCreateView,
+from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     MembershipListView,
                     CommunityDetailView, CommunityMembersListView, PostCreateView, getCommunityPosts, UserProfileView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,

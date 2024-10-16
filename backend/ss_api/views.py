@@ -79,42 +79,87 @@ class LoginView(TokenObtainPairView):
         # Set cookies for access_token and refresh_token
         if 'access' in response_data:
             response.set_cookie(
-                'access_token',
+                'access',
                 response_data['access'],
                 max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
-                httponly=True,
-                samesite='Lax',
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
                 secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
             )
         if 'refresh' in response_data:
             response.set_cookie(
-                'refresh_token',
+                'refresh',
                 response_data['refresh'],
                 max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
-                httponly=True,
-                samesite='Lax',
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
                 secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
             )
 
         return response
 
-class CustomTokenRefreshView(TokenRefreshView):
-    serializer_class = CustomTokenRefreshSerializer
-
 class CookieTokenRefreshView(jwt_views.TokenRefreshView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = CookieTokenRefreshSerializer
+
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh')
+
+        if not refresh_token:
+            return Response({"detail": "Refresh token not found in cookies."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            data = {'access': str(refresh.access_token)}
+
+            if settings.SIMPLE_JWT['ROTATE_REFRESH_TOKENS']:
+                # Create a new refresh token
+                new_refresh = RefreshToken.for_user(request.user)
+                new_access = new_refresh.access_token
+                data['refresh'] = str(new_refresh)
+                data['access'] = str(new_access)
+            else:
+                # If not rotating tokens, use the same refresh token
+                data['refresh'] = refresh_token
+
+            response = Response(data)
+            
+            # Set the new refresh token in the cookie
+            response.set_cookie(
+                'refresh',
+                data['refresh'],
+                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+            )
+            response.set_cookie(
+                'access',
+                data['access'],
+                 max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+            )
+            
+
+            return response
+
+        except TokenError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
     def finalize_response(self, request, response, *args, **kwargs):
         if response.data.get("refresh"):
             response.set_cookie(
-                key=settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'],
-                value=response.data['refresh'],
-                expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
-                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                'refresh',
+                response.data['refresh'],
+                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+                httponly=True,
+                samesite='Lax',
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
             )
-
-            del response.data["refresh"]
+            del response.data["refresh"]  # Remove refresh from the response data
         response["X-CSRFToken"] = request.COOKIES.get("csrftoken")
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -154,8 +199,8 @@ class LogoutView(APIView):
             response.status_code = status.HTTP_400_BAD_REQUEST
         finally:
             # Always remove the cookies, even if an error occurred
-            response.delete_cookie('access_token')
-            response.delete_cookie('refresh_token')
+            response.delete_cookie('access')
+            response.delete_cookie('refresh')
         return response
 
 class CommunityCreateView(generics.CreateAPIView):
