@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import AxiosInstance from '../utils/AxiosInstance';
 import {jwtDecode} from 'jwt-decode';
+import axios from 'axios';
+import {Navigate, useNavigate} from "react-router-dom";
 
 export const AuthContext = createContext();
 
@@ -10,6 +12,10 @@ export const AuthProvider = ({ children }) => {
     const [loginData, setLoginData] = useState(null);
     const [requireOTP, setRequireOTP] = useState(false);
     const [error, setError] = useState(null);
+    const [authWithGoogle, setAuthWithGoogle] = useState(false);
+    const navigate = useNavigate();
+    const [isVerified, setIsVerified] = useState(false);
+
 
     const refreshToken = useCallback(async () => {
         try {
@@ -63,7 +69,14 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         checkAuthentication();
-    }, [checkAuthentication, loginData]);
+    }, [checkAuthentication, loginData,authWithGoogle]);
+
+    useEffect(() => {
+        if (!isVerified) {
+            navigate('/account-setup');
+        }
+    }, [isVerified]);
+
 
     const loginUser = async (e) => {
         e.preventDefault();
@@ -130,6 +143,12 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const isLoggedinWithGoogle=()=>{
+        setAuthWithGoogle(true)
+        console.log(authWithGoogle)
+        return authWithGoogle;
+    }
+
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -144,9 +163,10 @@ export const AuthProvider = ({ children }) => {
     return (
         <AuthContext.Provider value={{ 
             isAuthenticated, 
-            user, 
+            user,
+            isLoggedinWithGoogle,
             loading, 
-            loginUser, 
+            loginUser,
             logout, 
             refreshToken,
             requireOTP,

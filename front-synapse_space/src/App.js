@@ -5,6 +5,7 @@ import './App.css';
 import PrivateRoute from './utils/PrivateRoute';
 import PublicRoute from './utils/PublicRoute';
 import Home from './pages/Home';
+import UserSetup from "./pages/UserSetup";
 import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
 import ProfilePage from './pages/Profile/ProfilePage';
@@ -64,6 +65,9 @@ function App() {
           <Routes>
             <Route path="/" element={<PrivateRoute />}>
               <Route path="/" element={<Home />} />
+            </Route>
+            <Route path="/" element={<PrivateRoute />}>
+              <Route path="/account-setup" element={<UserSetup />} />
             </Route>
             <Route path="/profile" element={<PrivateRoute />}>
               <Route path="/profile" element={<ProfilePage />} />

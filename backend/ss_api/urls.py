@@ -1,11 +1,12 @@
-from django.urls import path
+from django.urls import path, include
 from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     MembershipListView,
                     CommunityDetailView, CommunityMembersListView, PostCreateView, getCommunityPosts, UserProfileView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
                     CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
-                    CookieTokenRefreshView, UserListView)
+                    CookieTokenRefreshView, UserListView, CustomGoogleLogin)
+from django.contrib import admin
 
 
 urlpatterns = [
@@ -16,6 +17,9 @@ urlpatterns = [
     path('auth/token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/memberships/', MembershipListView.as_view(), name='membership-list'),
     path('auth/check-auth/', CheckAuthView.as_view(), name='check-auth'),
+
+    path('auth/google/', include('allauth.socialaccount.urls')),
+    path('auth/login/google/', CustomGoogleLogin.as_view(), name='google_login'),
      # User Profile URLs
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('activities/', UserActivitiesView.as_view(), name='user-activities'),
@@ -40,7 +44,7 @@ urlpatterns = [
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
     path('comments/<int:pk>/update/', CommentUpdateView.as_view(), name='comment-update'),
     path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
-    
+
     # User URLs
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),
     path('users/', UserListView.as_view(), name='user-list'),

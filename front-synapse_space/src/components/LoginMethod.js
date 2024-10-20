@@ -1,13 +1,18 @@
-import React, {useState} from 'react';
+import React, {useState, useContext, useRef} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons'
 import {Link} from 'react-router-dom';
 import LoginForm from './LoginForm';
+import GoogleBtn from './GoogleBtn';
+import {GoogleOAuthProvider} from "@react-oauth/google";
+
 
 
 
 export default function LoginMethod() {
     const [showLoginForm, setShowLoginForm] = useState(false);
+    const onSuccessRef = useRef(null);
+    const onErrorRef = useRef(null);
     const handleLoginWithEmail = () => {
         setShowLoginForm(true);
     };
@@ -42,11 +47,12 @@ export default function LoginMethod() {
             <div>
             <div className="flex flex-col">
                     <h2 className="card-title justify-start mb-5">Welcome Back!</h2>
+
+
                     <div className="card-actions py-10 flex-col justify-center">
-                        <button className="btn btn-primary  text-center w-full">
-                            <FontAwesomeIcon icon={faGoogle} />
-                            Login with Google
-                        </button>
+                        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+                            <GoogleBtn/>
+                        </GoogleOAuthProvider>
                         <div className="divider">or</div>
                         <button className="btn w-full" onClick={handleLoginWithEmail}>
                             Login with Email

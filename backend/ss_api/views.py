@@ -1,3 +1,4 @@
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.db.models import Q
 from django.conf import settings
 import os
@@ -17,6 +18,11 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
+
+
 # Azure Blob Storage imports
 from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
 
@@ -25,7 +31,7 @@ import uuid
 import logging
 from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 
-
+from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
@@ -168,11 +174,17 @@ class CheckAuthView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
+
+        if not request.user.is_verified:
+            return Response({
+                'is_verfied': False,
+            })
         logger.info(f"Auth check for user: {request.user}")
         logger.info(f"Request headers: {request.headers}")
         logger.info(f"Request COOKIES: {request.COOKIES}")
         return Response({
             'is_authenticated': True,
+            'is_verified': True,
             'user': {
                 'id': request.user.id,
                 'username': request.user.username,
@@ -181,6 +193,37 @@ class CheckAuthView(APIView):
             }
         })
 
+
+class CustomGoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+    client_class = OAuth2Client
+    def get_response(self):
+        # After successful login, issue JWT tokens
+        user = self.user
+        if user.is_google:
+            refresh = RefreshToken.for_user(user)
+            response = Response({
+                'username': user.username,
+            })
+            response.set_cookie(
+                'access',
+                str(refresh.access_token),
+                max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+            )
+            response.set_cookie(
+                'refresh',
+                str(refresh),
+                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+            )
+            return response
+        else:
+            return Response({"error": "The email Address is already associated with another user"}, status=status.HTTP_400_BAD_REQUEST)
 class LogoutView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]

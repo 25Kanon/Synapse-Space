@@ -6,17 +6,19 @@ import pyotp
 
 class User(AbstractUser):
     # Add any additional fields here
-    student_number = models.IntegerField(unique=True, null=False)
+    student_number = models.IntegerField(unique=True, null=True)
     first_name = models.CharField(max_length=200, null=False, blank=False)
     last_name = models.CharField(max_length=200, null=False, blank=False)
     email = models.CharField(max_length=200, null=False, blank=False, unique=True)
     program = models.CharField(max_length=200, null=True, blank=True)
-    registration_form = models.ImageField(upload_to='reg_forms/', null=True, blank=True)
-    profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    registration_form = models.URLField(null=True, blank=True)
+    profile_pic = models.URLField(null=True, blank=True)
     interests = ArrayField(models.CharField(max_length=200), blank=True, null=True)
     bio = models.TextField(null=True, blank=True)
     otp_secret = models.CharField(max_length=32, default=pyotp.random_base32)
-
+    is_verified = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_google = models.BooleanField(default=True)
     pass
 
 class Community(models.Model):
