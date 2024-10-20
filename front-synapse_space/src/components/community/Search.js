@@ -83,7 +83,7 @@ const Search = () => {
 
                 )}
             </div>
-            {communities.length > 0 && <hr />} {/* Horizontal line divider */}
+            {userList.length > 0 && communities.length >0 && <hr />} {/* Horizontal line divider */}
             <div className="flex flex-wrap">
                 <UserList users={userList} resultCount={userList.length} searchQuery={searchQuery} />
             </div>

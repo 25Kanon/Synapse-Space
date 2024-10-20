@@ -12,8 +12,8 @@ const UserCard = ({ name, handle, img }) => {
           alt={`${name}'s avatar`}
         />
       </div>
-      <h3 className="text-sm font-medium">{name}</h3>
-      <p className="text-xs text-gray-500">{handle}</p>
+      <h3 className="text-sm font-medium">{handle}</h3>
+      <p className="text-xs text-gray-500">{name}</p>
     </div>
   );
 };

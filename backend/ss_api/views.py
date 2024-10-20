@@ -627,12 +627,10 @@ class UserListView(generics.ListAPIView):
         search = self.request.query_params.get('search', None)
         if search:
             queryset = queryset.filter(
-                Q(id__icontains=search) |
                 Q(student_number__icontains=search) |
                 Q(username__icontains=search) |
                 Q(first_name__icontains=search) |
                 Q(last_name__icontains=search) |
-                Q(registration_form__icontains=search) |
                 Q(email__icontains=search)
             )
         return queryset
