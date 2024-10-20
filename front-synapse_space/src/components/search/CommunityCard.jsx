@@ -2,12 +2,17 @@ import React from 'react';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import JoinCommuinityBtn from '../community/JoinCommuinityBtn';
+import { useNavigate } from 'react-router-dom';
 
 const CommunityCard = ({ community, getInitials, isJoined }) => {
+  const navigate = useNavigate();
+  const handleCardClick = () => {
+    navigate(`/community/${community.id}`);
+  };
   return (
     <div className="p-6 mx-auto">
       {/* DaisyUI Card */}
-      <div className="card w-72 bg-base-100 shadow-xl">
+      <div className="card w-72 bg-base-100 shadow-xl cursor-pointer transform transition-transform hover:scale-105 hover:shadow-2xl" onClick={handleCardClick}>
         <figure>
           <img
             className="rounded-t-lg object-cover h-48 w-full"
