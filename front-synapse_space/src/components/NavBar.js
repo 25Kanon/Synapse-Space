@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faMessage, faChevronDown } from '@fortawesome/free-solid-svg-icons'
 import AuthContext from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-
+import { useLocation } from 'react-router-dom';
 const NavBar = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
@@ -43,7 +43,10 @@ const NavBar = () => {
             // Optionally, you can show an error message to the user
         }
     };
+    const location = useLocation();
 
+    // Check if the current pathname is '/search'
+    const isOnSearchPage = location.pathname === '/search';
     return (
         <nav className={`fixed top-0 z-40 w-full ${scrolled ? 'bg-base-200' : ''}`}>
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
@@ -56,7 +59,7 @@ const NavBar = () => {
                         </a>
                     </div>
                     {/* Search form */}
-                    <form onSubmit={handleSearchSubmit}>
+                    {!isOnSearchPage && (<form onSubmit={handleSearchSubmit}>
                         <input
                             type="text"
                             placeholder="search"
@@ -66,7 +69,8 @@ const NavBar = () => {
                             value={searchQuery} // Bind the search input to state
                             onChange={(e) => setSearchQuery(e.target.value)} // Update state on input change
                         />
-                    </form>
+                    </form>)}
+
 
                     <div className="flex items-center justify-center ms-3 bg-base-200 px-3 rounded-full my-auto h-auto dropdown-left sm:block hidden">
                         <div className="flex items-center py-1 px-2">

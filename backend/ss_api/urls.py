@@ -5,7 +5,7 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
                     CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
-                    CookieTokenRefreshView)
+                    CookieTokenRefreshView, UserListView)
 
 
 urlpatterns = [
@@ -40,5 +40,9 @@ urlpatterns = [
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
     path('comments/<int:pk>/update/', CommentUpdateView.as_view(), name='comment-update'),
     path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
+    
+    # User URLs
+    # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),
+    path('users/', UserListView.as_view(), name='user-list'),
 
 ]

@@ -27,7 +27,7 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 
 
 # Local imports
-from .models import Community, Membership, Post, LikedPost, Likes, Comment
+from .models import Community, Membership, Post, LikedPost, Likes, Comment, User
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -613,3 +613,26 @@ class JoinCommunityView(generics.CreateAPIView):
             return Response({"message": "Successfully joined the community.", "membership": serializer.data}, status=status.HTTP_201_CREATED)
         else:
             return Response({"message": "You are already a member of this community."}, status=status.HTTP_200_OK)
+        
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'student_number', 'username', 'first_name', 'last_name', 'email', 'profile_pic', 'interests','bio']
+class UserListView(generics.ListAPIView):
+    serializer_class = CustomUserSerializer
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get_queryset(self):
+        queryset = User.objects.all()
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(id__icontains=search) |
+                Q(student_number__icontains=search) |
+                Q(username__icontains=search) |
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(registration_form__icontains=search) |
+                Q(email__icontains=search)
+            )
+        return queryset
