@@ -38,7 +38,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
-                          CreateCommentSerializer, CookieTokenRefreshSerializer)
+                          CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication
 
 from django.conf import settings
@@ -64,6 +64,37 @@ class RegisterView(generics.GenericAPIView):
             logger.error(f"Error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class VerifyAccountView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        serializer = VerifyAccountSerializer(data=request.data, partial=True)  # Allows partial updates
+
+        if serializer.is_valid():
+            # Update the fields for the user
+            user.student_number = serializer.validated_data.get('student_number', user.student_number)
+            user.username = serializer.validated_data.get('username', user.username)
+            user.registration_form = serializer.validated_data.get('registration_form', user.registration_form)
+            user.profile_pic = serializer.validated_data.get('profile_pic', user.profile_pic)
+
+            # Handle interests as an array
+            interests = serializer.validated_data.get('interests', user.interests)
+            if isinstance(interests, list):
+                user.interests = interests  # Assign the list directly
+
+            user.bio = serializer.validated_data.get('bio', user.bio)
+            user.program = serializer.validated_data.get('program', user.program)
+            user.is_verified = serializer.validated_data.get('is_verified', user.is_verified)
+
+            user.save()
+
+            return Response({'message': 'User details updated successfully.'}, status=status.HTTP_200_OK)
+
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -177,7 +208,11 @@ class CheckAuthView(APIView):
 
         if not request.user.is_verified:
             return Response({
-                'is_verfied': False,
+                'user':{
+                    'isVerified': request.user.is_verified,
+                    'username': request.user.username,
+                    'pic': request.user.profile_pic,
+                }
             })
         logger.info(f"Auth check for user: {request.user}")
         logger.info(f"Request headers: {request.headers}")
@@ -190,9 +225,44 @@ class CheckAuthView(APIView):
                 'username': request.user.username,
                 'email': request.user.email,
                 'student_number': request.user.student_number,
+                'isVerified': request.user.is_verified,
             }
         })
 
+class ImageUploadView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def __init__(self):
+        super().__init__()
+        self.account_url = os.getenv('AZURE_BLOB_ACCOUNT_URL')
+        self.credential = os.getenv('AZURE_BLOB_CREDENTIAL')
+        self.account_name = os.getenv('AZURE_BLOB_ACCOUNT_NAME')
+        self.account_key = os.getenv('AZURE_BLOB_ACCOUNT_KEY')
+        self.container_name = 'synapsespace-storage'
+
+    def post(self, request):
+        print("Request Files:", request.FILES)  # Debug: Check incoming files
+        blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
+        container_client = blob_service_client.get_container_client(self.container_name)
+
+        img_url = None
+        try:
+            img_file = request.FILES.get('img')
+            print("Uploaded File:", img_file)  # Debug: Check if file is retrieved
+
+            if img_file:
+                img_blob_name = f"uploads/{uuid.uuid4()}-{img_file.name}"  # Use a unique blob name
+                container_client.upload_blob(img_blob_name, img_file, overwrite=True)
+                img_url = f"https://{self.account_name}.blob.core.windows.net/{self.container_name}/{img_blob_name}"
+            else:
+                return Response({'error': 'No file uploaded.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'url': img_url}, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            # Handle any exceptions that occur during the upload process
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomGoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter

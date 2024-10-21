@@ -5,7 +5,8 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
                     CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
-                    CookieTokenRefreshView, UserListView, CustomGoogleLogin)
+                    CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
+                    CustomGoogleLogin)
 from django.contrib import admin
 
 
@@ -17,6 +18,8 @@ urlpatterns = [
     path('auth/token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/memberships/', MembershipListView.as_view(), name='membership-list'),
     path('auth/check-auth/', CheckAuthView.as_view(), name='check-auth'),
+    path('verify/account/', VerifyAccountView.as_view(), name='verify-account'),
+    path('upload/', ImageUploadView.as_view(), name='upload'),
 
     path('auth/google/', include('allauth.socialaccount.urls')),
     path('auth/login/google/', CustomGoogleLogin.as_view(), name='google_login'),

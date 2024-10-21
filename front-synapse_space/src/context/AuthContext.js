@@ -47,9 +47,9 @@ export const AuthProvider = ({ children }) => {
     const checkAuthentication = useCallback(async () => {
         try {
             const response = await AxiosInstance.get('/api/auth/check-auth/', { withCredentials: true });
-            console.log('user', response.data)
+            console.log(response.data.user)
             setUser(response.data.user);
-            console.log('user', user)
+
             // Schedule token refresh
             const cookies = document.cookie.split(';');
             const accessToken = cookies.find(cookie => cookie.trim().startsWith('access='));
@@ -70,12 +70,6 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         checkAuthentication();
     }, [checkAuthentication, loginData,authWithGoogle]);
-
-    useEffect(() => {
-        if (!isVerified) {
-            navigate('/account-setup');
-        }
-    }, [isVerified]);
 
 
     const loginUser = async (e) => {
