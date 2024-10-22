@@ -26,19 +26,20 @@ const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) 
     };
 
     const handleSubmitReply = (content) => {
+        // Pass the current comment's id as the parent_id for the reply
         onReply(content, comment.id);
         setIsReplying(false);
     };
 
     return (
         <>
-            <div className={` rounded-lg bg-base-100 mb-4 p-3  shadow-lg ${optionalClasses}`}>
+            <div className={` rounded-lg bg-base-100 mb-4 p-3 shadow-lg ${optionalClasses}`}>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                     <span className="font-semibold mr-2">{comment.author}</span>
                     <span>{new Date(comment.created_at).toLocaleString()}</span>
                 </div>
                 {isEditing ? (
-                    <CommentForm onSubmit={handleUpdate} initialValue={comment.content}/>
+                    <CommentForm onSubmit={handleUpdate} initialValue={comment.content} />
                 ) : (
                     <>
                         <p className="mb-2">{comment.content}</p>
@@ -46,22 +47,22 @@ const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) 
                             {user.username === comment.author && (
                                 <>
                                     <button onClick={handleEdit} className="text-blue-500 hover:text-blue-700">
-                                        <Edit size={16}/>
+                                        <Edit size={16} />
                                     </button>
                                     <button onClick={handleDelete} className="text-red-500 hover:text-red-700">
-                                        <Trash2 size={16}/>
+                                        <Trash2 size={16} />
                                     </button>
                                 </>
                             )}
                             <button onClick={handleReply} className="text-green-500 hover:text-green-700">
-                                <MessageCircle size={16}/>
+                                <MessageCircle size={16} />
                             </button>
                         </div>
                     </>
                 )}
                 {isReplying && (
                     <div className="mt-4">
-                        <CommentForm onSubmit={handleSubmitReply}/>
+                        <CommentForm onSubmit={handleSubmitReply} />
                     </div>
                 )}
             </div>

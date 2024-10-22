@@ -25,7 +25,7 @@ const CommentSection = ({ postID }) => {
     const addComment = async (content, parentId = null) => {
         const newComment = {
             content,
-            parent: parentId,
+            parent: parentId,  // Now passing correct parent ID for replies
             post: postID,
         };
 

@@ -10,8 +10,9 @@ const CommentList = ({ onUpdate, onDelete, onReply, comments, refetchComments })
                     comment={comment}
                     onUpdate={onUpdate}
                     onDelete={onDelete}
-                    onReply={(content) => {
-                        onReply(content, comment.id);
+                    onReply={(content, parentId) => {
+                        // Pass the correct parentId for replies
+                        onReply(content, parentId);
                         refetchComments();
                     }}
                 />
