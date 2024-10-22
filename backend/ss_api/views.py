@@ -415,6 +415,8 @@ class CommunityMembersListView(generics.ListAPIView):
         return Membership.objects.filter(community__id=community_id).select_related('user')
 
 class CommunityDetailView(generics.RetrieveAPIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = CommunitySerializer
     queryset = Community.objects.all()
     lookup_field = 'id'

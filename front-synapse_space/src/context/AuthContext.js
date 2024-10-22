@@ -14,7 +14,6 @@ export const AuthProvider = ({ children }) => {
     const [error, setError] = useState(null);
     const [authWithGoogle, setAuthWithGoogle] = useState(false);
     const navigate = useNavigate();
-    const [isVerified, setIsVerified] = useState(false);
 
 
     const refreshToken = useCallback(async () => {
@@ -70,7 +69,6 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         checkAuthentication();
     }, [checkAuthentication, loginData,authWithGoogle]);
-
 
     const loginUser = async (e) => {
         e.preventDefault();
@@ -154,9 +152,15 @@ export const AuthProvider = ({ children }) => {
         return await checkAuthentication();
     };
 
+    const isVerified = async () => {
+        if (!user) return await checkAuthentication();
+        return(user.isVerified)
+    }
+
     return (
         <AuthContext.Provider value={{ 
             isAuthenticated, 
+            isVerified,
             user,
             isLoggedinWithGoogle,
             loading, 

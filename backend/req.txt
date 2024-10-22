@@ -9,3 +9,9 @@ gunicorn
 uvicorn
 whitenoise[brotli]
 azure-communication-email
+
+django-oauth-toolkit
+djangorestframework-simplejwt
+django-allauth
+social-auth-app-django 
+dj_rest_auth

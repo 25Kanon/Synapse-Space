@@ -66,9 +66,9 @@ function App() {
             <Route path="/" element={<PrivateRoute />}>
               <Route path="/" element={<Home />} />
             </Route>
-            <Route path="/" element={<PrivateRoute />}>
+            {/* <Route path="/account-setup" element={<PrivateRoute />}>
               <Route path="/account-setup" element={<UserSetup />} />
-            </Route>
+            </Route> */}
             <Route path="/profile" element={<PrivateRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
