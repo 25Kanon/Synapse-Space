@@ -105,7 +105,9 @@ function UserSetup() {
         try {
             // Upload profile picture and registration form
             const profilePicUrl = await handleFileUpload(formData.profile_pic);
+            console.log('profilePicUrl', profilePicUrl)
             const regFormUrl = await handleFileUpload(formData.registration_form);
+            console.log('regFormUrl', regFormUrl)
 
             // Prepare the final payload
             const payload = {

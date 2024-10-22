@@ -26,7 +26,7 @@ import time
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'student_number', 'username', 'first_name', 'last_name', 'registration_form', 'email', 'password', 'profile_pic', 'interests', 'bio']
+        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'password']
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:

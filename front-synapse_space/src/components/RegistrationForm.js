@@ -5,6 +5,7 @@ import axios from 'axios';
 import * as yup from 'yup';
 import SuccessAlert from './SuccessAlert';
 import ErrorAlert from './ErrorAlert';
+
 const validationSchema = yup.object({
     student_number: yup
         .number()
@@ -16,14 +17,10 @@ const validationSchema = yup.object({
     last_name: yup
         .string()
         .required('Last Name is required'),
-
     email: yup
         .string('Enter your TIP email')
         .email('Enter a valid email')
         .required('TIP Email is required'),
-    username: yup
-        .string('Enter your username')
-        .required('Username is required'),
     password: yup
         .string()
         .required('Password is required')
@@ -42,10 +39,10 @@ export default function RegistrationForm() {
     const formik = useFormik({
         initialValues: {
             student_number: '',
+            username:'',
             first_name: '',
             last_name: '',
             email: '',
-            username: '',
             password: '',
             confirmPassword: '',
         },
@@ -55,8 +52,8 @@ export default function RegistrationForm() {
                 student_number: DOMPurify.sanitize(values.student_number),
                 first_name: DOMPurify.sanitize(values.first_name),
                 last_name: DOMPurify.sanitize(values.last_name),
+                username: DOMPurify.sanitize(values.email),
                 email: DOMPurify.sanitize(values.email),
-                username: DOMPurify.sanitize(values.username),
                 password: DOMPurify.sanitize(values.password),
                 confirmPassword: DOMPurify.sanitize(values.confirmPassword),
             };
@@ -66,9 +63,8 @@ export default function RegistrationForm() {
             const registerUser = async () => {
                 try {
                     const response = await axios.post(`${API_URL}/api/auth/register/`, submittedValues);
-                    const username = response.data.user.username;
                     console.log('Account created successfully:', response.data);
-                    setSuccessMessage(`Account created successfully! Welcome, ${username}!`);
+                    setSuccessMessage('Account created successfully!');
                 } catch (error) {
                     if (error.response) {
                         setErrorMessage(JSON.stringify(error.response.data));
@@ -85,11 +81,9 @@ export default function RegistrationForm() {
     });
 
     return (
-
-
-        <form className="card-body max-w-xl mx-8 flex-col" onSubmit={formik.handleSubmit}>
-            {successMessage && <SuccessAlert text={successMessage} />}
-            {errorMessage && <ErrorAlert text={errorMessage} />}
+        <form className="card-body mx-8 flex-col" onSubmit={formik.handleSubmit}>
+            {successMessage && <SuccessAlert text={successMessage}/>}
+            {errorMessage && <ErrorAlert text={errorMessage}/>}
 
             <h2 className="card-title justify-center">Welcome Back!</h2>
             <h3 className="flex justify-center">Create an account</h3>
@@ -106,37 +100,8 @@ export default function RegistrationForm() {
                     onChange={formik.handleChange}
                     value={formik.values.student_number}
                 />
-                {formik.errors.student_number ? <span className="label-text text-error">{formik.errors.student_number}</span> : null}
-            </div>
-
-            <div className="form-control">
-                <label className="label">
-                    <span className="label-text">First Name</span>
-                </label>
-                <input
-                    type="text"
-                    name="first_name"
-                    placeholder="First name"
-                    className="input input-bordered w-full"
-                    onChange={formik.handleChange}
-                    value={formik.values.first_name}
-                />
-                {formik.errors.first_name ? <span className="label-text text-error">{formik.errors.first_name}</span> : null}
-            </div>
-
-            <div className="form-control">
-                <label className="label">
-                    <span className="label-text">Last Name</span>
-                </label>
-                <input
-                    type="text"
-                    name="last_name"
-                    placeholder="Last Name"
-                    className="input input-bordered w-full"
-                    onChange={formik.handleChange}
-                    value={formik.values.last_name}
-                />
-                {formik.errors.last_name ? <span className="label-text text-error">{formik.errors.last_name}</span> : null}
+                {formik.errors.student_number ?
+                    <span className="label-text text-error">{formik.errors.student_number}</span> : null}
             </div>
 
             <div className="form-control">
@@ -154,19 +119,37 @@ export default function RegistrationForm() {
                 {formik.errors.email ? <span className="label-text text-error">{formik.errors.email}</span> : null}
             </div>
 
+
             <div className="form-control">
                 <label className="label">
-                    <span className="label-text">Username</span>
+                    <span className="label-text">First Name</span>
                 </label>
                 <input
                     type="text"
-                    name="username"
-                    placeholder="Username"
+                    name="first_name"
+                    placeholder="First Name"
                     className="input input-bordered w-full"
                     onChange={formik.handleChange}
-                    value={formik.values.username}
+                    value={formik.values.first_name}
                 />
-                {formik.errors.username ? <span className="label-text text-error">{formik.errors.username}</span> : null}
+                {formik.errors.first_name ?
+                    <span className="label-text text-error">{formik.errors.first_name}</span> : null}
+            </div>
+
+            <div className="form-control">
+                <label className="label">
+                    <span className="label-text">Last Name</span>
+                </label>
+                <input
+                    type="text"
+                    name="last_name"
+                    placeholder="Last Name"
+                    className="input input-bordered w-full"
+                    onChange={formik.handleChange}
+                    value={formik.values.last_name}
+                />
+                {formik.errors.last_name ?
+                    <span className="label-text text-error">{formik.errors.last_name}</span> : null}
             </div>
 
             <div className="form-control">
@@ -181,7 +164,8 @@ export default function RegistrationForm() {
                     onChange={formik.handleChange}
                     value={formik.values.password}
                 />
-                {formik.errors.password ? <span className="label-text text-error">{formik.errors.password}</span> : null}
+                {formik.errors.password ?
+                    <span className="label-text text-error">{formik.errors.password}</span> : null}
             </div>
 
             <div className="form-control">
@@ -196,11 +180,11 @@ export default function RegistrationForm() {
                     onChange={formik.handleChange}
                     value={formik.values.confirmPassword}
                 />
-                {formik.errors.confirmPassword ? <span className="label-text text-error">{formik.errors.confirmPassword}</span> : null}
+                {formik.errors.confirmPassword ?
+                    <span className="label-text text-error">{formik.errors.confirmPassword}</span> : null}
             </div>
 
             <button type="submit" className="btn btn-primary mt-4">Submit</button>
-
         </form>
     );
 }

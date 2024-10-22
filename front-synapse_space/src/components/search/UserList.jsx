@@ -10,7 +10,7 @@ const UserList = ({ users = [], resultCount = 0, searchQuery }) => {
           {resultCount} users for "{searchQuery}"
         </h2>
       )}
-      <div className="grid grid-cols-5 gap-6 mt-4"> {/* Adjusted gap */}
+      <div className="flex flex-row gap-5 mt-4"> {/* Adjusted gap */}
         {resultCount > 0 ? (
           users.map((user) => (
             <UserCard
