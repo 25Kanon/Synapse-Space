@@ -1,0 +1,21 @@
+# Frontend specific (React inside front-synapse_space)
+front-synapse_space/node_modules/
+front-synapse_space/build/
+front-synapse_space/.pnp
+front-synapse_space/.pnp.js
+front-synapse_space/coverage/
+front-synapse_space/.DS_Store
+front-synapse_space/.env.local
+front-synapse_space/.env.development.local
+front-synapse_space/.env.test.local
+front-synapse_space/.env.production.local
+front-synapse_space/npm-debug.log*
+front-synapse_space/yarn-debug.log*
+front-synapse_space/yarn-error.log*
+front-synapse_space\.env
+env/
+backend/.env
+**/__pycache__/
+*.pyc
+front-synapse_space/.env
+projectSynapseSpace/
