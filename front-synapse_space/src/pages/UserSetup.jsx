@@ -4,12 +4,15 @@ import ErrorAlert from "../components/ErrorAlert";
 import SuccessAlert from "../components/SuccessAlert";
 import AuthContext from "../context/AuthContext";
 import axiosInstance from "../utils/AxiosInstance";
+import {useNavigate} from "react-router-dom";
 
 const interestOptions = [
     "Sports", "Music", "Art", "Technology", "Science", "Literature", "Travel", "Cooking", "Photography", "Gaming"
 ];
 
+
 function UserSetup() {
+    const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const { user } = useContext(AuthContext);
     const [formData, setFormData] = useState({
@@ -121,6 +124,9 @@ function UserSetup() {
                 withCredentials: true,
             });
             setSuccess("User setup successful");
+            navigate("/");
+            setSuccess(null);
+
         } catch (error) {
             console.error('Error submitting form:', error);
             setError('Error submitting form: ' + error.message);
