@@ -105,7 +105,7 @@ export default function Community() {
             <MembersList id={id}/>
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL}
-                        commAvatar={communityDetails.imgURL}/>
+                        commAvatar={communityDetails.imgURL} communityID={communityDetails.id}/>
                 <CreatePost userName={user.username} community={communityDetails.id} onPostCreated={() => setPostCreated(true)} />
                 {posts.map((post) => (
                     <CommunityPost

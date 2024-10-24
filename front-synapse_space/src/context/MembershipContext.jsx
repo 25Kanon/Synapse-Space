@@ -32,7 +32,7 @@ export const MembershipsProvider = ({ children }) => {
         setMemberships((prevMemberships) => [...prevMemberships, newMembership]);
     };
     useEffect(() => {
-        if (user) {// Assuming you store the student number in localStorage
+        if (user) {
             fetchMemberships();
         }
     }, [user]);

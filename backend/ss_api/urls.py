@@ -6,7 +6,7 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
                     CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
-                    CustomGoogleLogin)
+                    CustomGoogleLogin, getMembershipRole)
 from django.contrib import admin
 
 
@@ -31,6 +31,7 @@ urlpatterns = [
     path('community/create/', CommunityCreateView.as_view(), name='community-create'),
     path('community/<int:id>/', CommunityDetailView.as_view(), name='community-detail'),
     path('community/<int:community_id>/members/', CommunityMembersListView.as_view(), name='community-members-list'),
+    path('community/<int:community_id>/membership/role/', getMembershipRole.as_view(), name='community-membership-role'),
     path('community/<int:community_id>/post', PostCreateView.as_view(), name='community-create-post'),
     path('generate-signed-url/', GenerateSignedUrlView.as_view(), name='generate-signed-url'),
     path('move-image/',MoveImageView.as_view(), name='move-image'),

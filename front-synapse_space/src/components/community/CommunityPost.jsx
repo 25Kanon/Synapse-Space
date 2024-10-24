@@ -117,7 +117,7 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
 CommunityPost.propTypes = {
     userName: PropTypes.string.isRequired,
     userAvatar: PropTypes.string,
-    community: PropTypes.string.isRequired,
+    community: PropTypes.number.isRequired,
     postTitle: PropTypes.string.isRequired,
     postContent: PropTypes.string.isRequired,
     postId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,

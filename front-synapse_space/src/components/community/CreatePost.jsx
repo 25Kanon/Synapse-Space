@@ -115,7 +115,7 @@ const CreatePost = ({ userName, community, onPostCreated }) => {
 
 CreatePost.propTypes = {
     userName: PropTypes.string.isRequired,
-    community: PropTypes.string.isRequired,
+    community: PropTypes.number.isRequired,
     onPostCreated: PropTypes.func.isRequired
 };
 

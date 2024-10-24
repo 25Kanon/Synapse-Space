@@ -393,7 +393,17 @@ class CommunityCreateView(generics.CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+class getMembershipRole(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
 
+    def get(self, request, community_id):
+        user = request.user
+        membership = Membership.objects.filter(user=user, community_id=community_id).first()
+        if membership:
+            return Response({"role": membership.role}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": user}, status=status.HTTP_404_NOT_FOUND)
 class MembershipListView(generics.ListAPIView):
 
     authentication_classes = [CookieJWTAuthentication]
