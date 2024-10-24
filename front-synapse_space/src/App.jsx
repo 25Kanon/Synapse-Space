@@ -15,7 +15,7 @@ import Community from './pages/Community/Community';
 import GetCommunityPost from "./pages/Community/GetCommunityPost";
 import DiscoverCommunity from './pages/Community/DiscoverCommunity';
 import { MembershipsProvider } from './context/MembershipContext';
-
+import  ModDashboard  from './pages/Community/ModDashboard';
 
 
 function App() {
@@ -66,9 +66,9 @@ function App() {
             <Route path="/" element={<PrivateRoute />}>
               <Route path="/" element={<Home />} />
             </Route>
-            {/* <Route path="/account-setup" element={<PrivateRoute />}>
-              <Route path="/account-setup" element={<UserSetup />} />
-            </Route> */}
+            <Route path="/community/mod" element={<PrivateRoute />}>
+              <Route path="/community/mod" element={<ModDashboard />} />
+            </Route>
             <Route path="/profile" element={<PrivateRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
