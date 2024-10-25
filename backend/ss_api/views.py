@@ -200,20 +200,38 @@ class CookieTokenRefreshView(jwt_views.TokenRefreshView):
         response["X-CSRFToken"] = request.COOKIES.get("csrftoken")
         return super().finalize_response(request, response, *args, **kwargs)
 
+
 class CheckAuthView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
 
+    def get(self, request):
         if not request.user.is_verified:
             return Response({
-                'user':{
+                'user': {
                     'isVerified': request.user.is_verified,
                     'username': request.user.username,
                     'pic': request.user.profile_pic,
                 }
             })
+
+        # Get the refresh token from the cookie
+        refresh_token = request.COOKIES.get('refresh')
+
+        # Calculate the expiration time
+        expiration_time = None
+        if refresh_token:
+            try:
+                # Decode the refresh token
+                token = RefreshToken(refresh_token)
+                # Get the expiration timestamp
+                exp_timestamp = token['exp']
+                # Convert to datetime
+                expiration_time = datetime.fromtimestamp(exp_timestamp)
+            except TokenError:
+                # Handle invalid token
+                pass
+
         logger.info(f"Auth check for user: {request.user}")
         logger.info(f"Request headers: {request.headers}")
         logger.info(f"Request COOKIES: {request.COOKIES}")
@@ -226,6 +244,7 @@ class CheckAuthView(APIView):
                 'email': request.user.email,
                 'student_number': request.user.student_number,
                 'isVerified': request.user.is_verified,
+                'exp': expiration_time.isoformat() if expiration_time else None,
             }
         })
 

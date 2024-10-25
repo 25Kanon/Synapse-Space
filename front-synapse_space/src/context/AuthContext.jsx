@@ -27,12 +27,15 @@ export const AuthProvider = ({ children }) => {
             setError('Error refreshing token:', error);
             setUser(null);
             throw error;
+        }finally {
+            checkAuthentication()
         }
     }, []);
 
-    const scheduleTokenRefresh = useCallback((token) => {
-        const decodedToken = jwtDecode(token);
-        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
+    const scheduleTokenRefresh = useCallback((expDate) => {
+        const date= new Date(expDate);
+        const expirationTime = date.getTime();
+        console.log('expirationTime', expirationTime)
         const currentTime = Date.now();
         const timeUntilRefresh = expirationTime - currentTime - 60000; // Refresh 1 minute before expiry
         console.log('timeUntilRefresh', timeUntilRefresh)
@@ -48,14 +51,7 @@ export const AuthProvider = ({ children }) => {
             const response = await AxiosInstance.get('/api/auth/check-auth/', { withCredentials: true });
             console.log(response.data.user)
             setUser(response.data.user);
-
-            // Schedule token refresh
-            const cookies = document.cookie.split(';');
-            const accessToken = cookies.find(cookie => cookie.trim().startsWith('access='));
-            if (accessToken) {
-                const token = accessToken.split('=')[1];
-                scheduleTokenRefresh(token);
-            }
+            scheduleTokenRefresh(response.data.user.exp);
             return true;
         } catch (error) {
             console.error('Authentication check failed:', error);
@@ -64,10 +60,11 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, [scheduleTokenRefresh]);
+    }, []);
 
     useEffect(() => {
         checkAuthentication();
+
     }, [checkAuthentication, loginData,authWithGoogle]);
 
     const loginUser = async (e) => {
