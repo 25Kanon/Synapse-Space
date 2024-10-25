@@ -1,6 +1,8 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.contenttypes.models import ContentType
 import pyotp
 
 
@@ -11,8 +13,8 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=200, null=False, blank=False)
     email = models.CharField(max_length=200, null=False, blank=False, unique=True)
     program = models.CharField(max_length=200, null=True, blank=True)
-    registration_form = models.URLField(null=True, blank=True)
-    profile_pic = models.URLField(null=True, blank=True)
+    registration_form = models.URLField(max_length=None, null=True, blank=True)
+    profile_pic = models.URLField(max_length=None, null=True, blank=True)
     interests = ArrayField(models.CharField(max_length=200), blank=True, null=True)
     bio = models.TextField(null=True, blank=True)
     otp_secret = models.CharField(max_length=32, default=pyotp.random_base32)
@@ -80,3 +82,31 @@ class LikedPost(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         Likes.objects.get_or_create(user=self.user, post=self.post)
+
+
+class Reports(models.Model):
+    REPORT_TYPES = [
+        ('post', 'Post'),
+        ('comment', 'Comment'),
+        ('user', 'User'),
+    ]
+
+    type = models.CharField(max_length=255, choices=REPORT_TYPES)
+    content = models.TextField()
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    concerning = GenericForeignKey('content_type', 'object_id')
+
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=255, default='pending')
+    community = models.ForeignKey(Community, on_delete=models.CASCADE)
+    resolved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resolved_reports', null=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Report by {self.author.username} on {self.type}: {self.reason}"
+
+

@@ -1,3 +1,5 @@
+import hashlib
+
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.db.models import Q
 from django.conf import settings
@@ -33,13 +35,14 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 
 from . import adapters
 # Local imports
-from .models import Community, Membership, Post, LikedPost, Likes, Comment, User
+from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
-                          CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer)
-from .permissions import IsCommunityMember, CookieJWTAuthentication
+                          CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
+                          ReportsSerializer)
+from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator
 
 from django.conf import settings
 
@@ -271,7 +274,8 @@ class ImageUploadView(APIView):
             print("Uploaded File:", img_file)  # Debug: Check if file is retrieved
 
             if img_file:
-                img_blob_name = f"uploads/{uuid.uuid4()}-{img_file.name}"  # Use a unique blob name
+                img_hash = hashlib.md5(img_file.name.encode()).hexdigest()[:8]
+                img_blob_name = f"uploads/{img_hash}-{img_file.name}"
                 container_client.upload_blob(img_blob_name, img_file, overwrite=True)
                 img_url = f"https://{self.account_name}.blob.core.windows.net/{self.container_name}/{img_blob_name}"
             else:
@@ -778,3 +782,26 @@ class UserListView(generics.ListAPIView):
                 Q(email__icontains=search)
             )
         return queryset
+
+class getCommunityStats(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    def get(self, request, community_id):
+        community = get_object_or_404(Community, id=community_id)
+        members = Membership.objects.filter(community=community).count()
+        posts = Post.objects.filter(posted_in=community).count()
+        return Response({
+            'members': members,
+            'posts': posts
+        })
+
+
+class ReportsListCreateView(generics.ListCreateAPIView):
+    queryset = Reports.objects.all()
+    serializer_class = ReportsSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
+
+    def perform_create(self, serializer):
+        # Attach the author (logged-in user) to the report
+        serializer.save(author=self.request.user)

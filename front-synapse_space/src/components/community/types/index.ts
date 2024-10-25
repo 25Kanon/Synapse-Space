@@ -13,7 +13,7 @@ export type Stats = {
     activeUsers: number;
     pendingReports: number;
     modActions: number;
-    activityScore: number;
+    postCount: number;
 };
 
 export type ModSettings = {

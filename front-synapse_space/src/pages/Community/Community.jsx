@@ -29,6 +29,7 @@ export default function Community() {
                 const response = await AxiosInstance.get(`/api/community/${id}/posts/`, {}, { withCredentials: true,});
                 setIsMember(true)
                 setPosts(response.data);
+                console.log("posts:", response.data);
                 setPostCreated(false);
             } catch (err) {
                 if (err.response.status === 403) {
@@ -116,6 +117,7 @@ export default function Community() {
                         postContent={post.content}
                         postId={post.id}
                         userID={user.id}
+                        authorId={post.created_by}
                     />
 
                 ))}

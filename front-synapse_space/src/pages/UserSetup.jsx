@@ -6,6 +6,7 @@ import AuthContext from "../context/AuthContext";
 import axiosInstance from "../utils/AxiosInstance";
 import {useNavigate} from "react-router-dom";
 
+
 const interestOptions = [
     "Sports", "Music", "Art", "Technology", "Science", "Literature", "Travel", "Cooking", "Photography", "Gaming"
 ];

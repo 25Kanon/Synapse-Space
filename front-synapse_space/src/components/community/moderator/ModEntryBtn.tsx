@@ -28,7 +28,7 @@ function ModEntryBtn({communityID}) {
     return (
         <button
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium btn btn-primary"
-            onClick={() => navigate("/community/mod")}>
+            onClick={() => navigate(`/community/${communityID}/mod`)}>
             <Shield className="w-4 h-4 mr-2"/>
             Mod Dashboard
         </button>

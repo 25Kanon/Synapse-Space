@@ -66,9 +66,6 @@ function App() {
             <Route path="/" element={<PrivateRoute />}>
               <Route path="/" element={<Home />} />
             </Route>
-            <Route path="/community/mod" element={<PrivateRoute />}>
-              <Route path="/community/mod" element={<ModDashboard />} />
-            </Route>
             <Route path="/profile" element={<PrivateRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
@@ -86,6 +83,9 @@ function App() {
             </Route>
             <Route path="/community" element={<PrivateRoute />}>
               <Route path="/community/:community_id/post/:post_id" element={<GetCommunityPost />} />
+            </Route>
+            <Route path="/community/" element={<PrivateRoute />}>
+              <Route path="/community/:community_id/mod" element={<ModDashboard />} />
             </Route>
             <Route path="/community" element={<PrivateRoute />}>
               <Route path="/community/create" element={<Create />} />

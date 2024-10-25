@@ -6,7 +6,7 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
                     CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
-                    CustomGoogleLogin, getMembershipRole)
+                    CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView)
 from django.contrib import admin
 
 
@@ -43,11 +43,15 @@ urlpatterns = [
     path('community/<int:community_id>/post/<int:post_id>/like', likePostView.as_view(), name='like-post'),
     path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
     path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
+    path('community/<int:community_id>/stats', getCommunityStats.as_view(), name='community-stats'),
     path('comments/', CommentCreateView.as_view(), name='comment-create'),
     path('posts/<int:post_id>/comments/', PostCommentsView.as_view(), name='post-comments'),
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
     path('comments/<int:pk>/update/', CommentUpdateView.as_view(), name='comment-update'),
     path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
+
+
+    path('<int:community_id>/create-report/', ReportsListCreateView.as_view(), name='report-create'),
 
     # User URLs
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),

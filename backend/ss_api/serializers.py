@@ -2,6 +2,7 @@ import os
 
 import pyotp
 import requests
+from django.contrib.contenttypes.models import ContentType
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -13,8 +14,8 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-from .models import (User, Community, Membership, 
-                     Post, Comment, SavedPost, LikedPost,)
+from .models import (User, Community, Membership,
+                     Post, Comment, SavedPost, LikedPost, Reports, )
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -316,3 +317,29 @@ class LikedPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = LikedPost
         fields = ['user', 'post', 'created_at']
+
+
+class ReportsSerializer(serializers.ModelSerializer):
+    # Display fields for readability
+    content_type = serializers.SlugRelatedField(
+        queryset=ContentType.objects.all(),
+        slug_field='model'  # Display the model name (e.g., "post", "comment")
+    )
+    object_id = serializers.IntegerField()
+    concerning = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Reports
+        fields = ['id', 'type', 'content', 'author', 'content_type', 'object_id', 'concerning', 'reason', 'created_at', 'community',  'status', 'resolved_by', 'resolved_at']
+        read_only_fields = ['author', 'created_at', 'status', 'concerning']
+
+    def get_concerning(self, obj):
+        # Returns a string representation of the concerning object
+        if obj.concerning:
+            return str(obj.concerning)
+        return None
+
+    def create(self, validated_data):
+        # Set the author to the current user
+        validated_data['author'] = self.context['request'].user
+        return super().create(validated_data)

@@ -23,6 +23,28 @@ class IsCommunityMember(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return self.has_permission(request, view)
 
+class IsCommunityAdminORModerator(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Fetch community_id from URL kwargs
+        community_id = view.kwargs.get('community_id')
+        if not community_id:
+            return False
+
+        # Try to get the community and check membership with `role__in`
+        try:
+            community = Community.objects.get(id=community_id)
+        except Community.DoesNotExist:
+            return False
+
+        return Membership.objects.filter(
+            user=request.user,
+            community=community,
+            role__in=['admin', 'moderator']
+        ).exists()
+
+    def has_object_permission(self, request, view, obj):
+        # Reuse `has_permission` logic for object-level permissions
+        return self.has_permission(request, view)
 
 
 class CookieJWTAuthentication(JWTAuthentication):

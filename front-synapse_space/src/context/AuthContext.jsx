@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
     const [requireOTP, setRequireOTP] = useState(false);
     const [error, setError] = useState(null);
     const [authWithGoogle, setAuthWithGoogle] = useState(false);
+    const [inSetup, setInSetup] = useState(true);
     const navigate = useNavigate();
 
 
@@ -51,7 +52,9 @@ export const AuthProvider = ({ children }) => {
             const response = await AxiosInstance.get('/api/auth/check-auth/', { withCredentials: true });
             console.log(response.data.user)
             setUser(response.data.user);
-            scheduleTokenRefresh(response.data.user.exp);
+            if(!inSetup){
+                scheduleTokenRefresh(response.data.user.exp);
+            }
             return true;
         } catch (error) {
             console.error('Authentication check failed:', error);
@@ -151,6 +154,9 @@ export const AuthProvider = ({ children }) => {
 
     const isVerified = async () => {
         if (!user) return await checkAuthentication();
+        if (user.isVerified){
+            setInSetup(false)
+        }
         return(user.isVerified)
     }
 

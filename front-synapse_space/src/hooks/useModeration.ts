@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import type { Report, ModSettings } from '../components/community/types';
+import AxiosInstance from '../utils/AxiosInstance'
 
 const initialReports: Report[] = [
     {
@@ -34,13 +35,29 @@ const initialSettings: ModSettings = {
     autoLockThreshold: 10
 };
 
-export function useModeration() {
+export function useModeration(id:number) {
     const [reports, setReports] = useState<Report[]>(initialReports);
     const [filter, setFilter] = useState<'all' | 'posts' | 'comments' | 'users'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState(2);
     const [settings, setSettings] = useState<ModSettings>(initialSettings);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [statCount, setStatCount]= useState();
+
+
+    const fetchStats = async () => {
+        try {
+            const response = await AxiosInstance.get(`/api/community/${id}/stats`, {}, { withCredentials: true,});
+            setStatCount(response.data);
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+            throw error;
+        }
+    };
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
 
     const handleApprove = (id: string) => {
         setReports(prev => prev.map(report =>
@@ -73,11 +90,13 @@ export function useModeration() {
         );
 
     const stats = {
-        activeUsers: 2451,
+        activeUsers: statCount?.members ?? 0,
         pendingReports: reports.filter(r => r.status === 'pending').length,
         modActions: reports.filter(r => r.status !== 'pending').length,
-        activityScore: 92
+        postCount: statCount?.posts ?? 0
     };
+    console.log(statCount);
+
 
     return {
         reports: filteredReports,
