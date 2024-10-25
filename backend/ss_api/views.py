@@ -370,7 +370,7 @@ class CommunityCreateView(generics.CreateAPIView):
             community = serializer.save(imgURL=img_url, bannerURL=banner_url)
 
             # Create initial membership
-            Membership.objects.create(user=self.request.user, community=community)
+            Membership.objects.create(user=self.request.user, community=community, role='admin')
 
         except Exception as e:
             # If there's an error during community creation, delete any uploaded images

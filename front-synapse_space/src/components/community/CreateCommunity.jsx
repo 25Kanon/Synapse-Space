@@ -93,7 +93,6 @@ const CreateCommunity = () => {
         formData.append("description", DOMPurify.sanitize(description));
         formData.append("rules", DOMPurify.sanitize(rules));
         formData.append("keyword", DOMPurify.sanitize(keyword));
-        formData.append("owned_by", `${user.student_number}`);
 
         if (communityAvatar) {
             // Assuming `communityAvatar` is a Blob or File object after cropping
