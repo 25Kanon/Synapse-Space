@@ -320,24 +320,33 @@ class LikedPostSerializer(serializers.ModelSerializer):
 
 
 class ReportsSerializer(serializers.ModelSerializer):
-    # Display fields for readability
     content_type = serializers.SlugRelatedField(
         queryset=ContentType.objects.all(),
-        slug_field='model'  # Display the model name (e.g., "post", "comment")
+        slug_field='model'
     )
     object_id = serializers.IntegerField()
     concerning = serializers.SerializerMethodField()
+    reports = serializers.SerializerMethodField()
+    author = serializers.CharField(source='author.username')
+    timestamp = serializers.DateTimeField(source='created_at')
 
     class Meta:
         model = Reports
-        fields = ['id', 'type', 'content', 'author', 'content_type', 'object_id', 'concerning', 'reason', 'created_at', 'community',  'status', 'resolved_by', 'resolved_at']
-        read_only_fields = ['author', 'created_at', 'status', 'concerning']
+        fields = [
+            'id', 'type', 'content', 'author', 'reason', 'timestamp',
+            'reports', 'status', 'content_type', 'object_id', 'concerning'
+        ]
 
     def get_concerning(self, obj):
-        # Returns a string representation of the concerning object
-        if obj.concerning:
-            return str(obj.concerning)
-        return None
+        # Return only the ID of the concerning object
+        return obj.object_id
+
+    def get_reports(self, obj):
+        # Count the total number of reports related to this concerning object
+        return Reports.objects.filter(
+            content_type=obj.content_type,
+            object_id=obj.object_id
+        ).count()
 
     def create(self, validated_data):
         # Set the author to the current user

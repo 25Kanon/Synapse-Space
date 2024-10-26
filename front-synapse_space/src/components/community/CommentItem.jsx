@@ -1,12 +1,15 @@
-import React, { useState, useContext } from "react";
+import React, {useState, useContext, useEffect, useRef} from "react";
 import CommentForm from "./CommentForm";
 import { Trash2, Edit, MessageCircle } from "lucide-react";
 import AuthContext from "../../context/AuthContext";
+import {useLocation} from "react-router-dom";
 
 const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [isReplying, setIsReplying] = useState(false);
     const { user } = useContext(AuthContext);
+    const location = useLocation();
+    const commentRef = useRef(null);
 
     const handleEdit = () => {
         setIsEditing(true);
@@ -31,9 +34,32 @@ const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) 
         setIsReplying(false);
     };
 
+    useEffect(() => {
+        // Extract the ID from the URL hash
+        const hash = location.hash;
+        if (hash) {
+            const id = hash.substring(1);
+            const element = document.getElementById(id);
+            console.log(element);
+
+            if (element) {
+                // Scroll to the element
+                element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+                // Add a temporary highlight class
+                element.classList.add("border");
+
+                // Remove the highlight class after a few seconds
+                setTimeout(() => {
+                    element.classList.remove("border");
+                }, 5000); // 2000 ms (2 seconds)
+            }
+        }
+    }, [location.hash]); // Re-run if the hash in the URL changes
+
     return (
         <>
-            <div className={` rounded-lg bg-base-100 mb-4 p-3 shadow-lg ${optionalClasses}`}>
+            <div id={`comment-${comment.id}`} ref={commentRef} className={` rounded-lg bg-base-100 mb-4 p-3 shadow-lg border-primary ${optionalClasses}`}>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                     <span className="font-semibold mr-2">{comment.author}</span>
                     <span>{new Date(comment.created_at).toLocaleString()}</span>

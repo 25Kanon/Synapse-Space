@@ -2,28 +2,6 @@ import {useEffect, useState} from 'react';
 import type { Report, ModSettings } from '../components/community/types';
 import AxiosInstance from '../utils/AxiosInstance'
 
-const initialReports: Report[] = [
-    {
-        id: '1',
-        type: 'post',
-        content: 'This is a reported post content that needs moderation...',
-        author: 'user123',
-        reason: 'Harassment',
-        timestamp: '2024-03-10T10:30:00Z',
-        reports: 5,
-        status: 'pending'
-    },
-    {
-        id: '2',
-        type: 'comment',
-        content: 'This is a reported comment that violates community guidelines...',
-        author: 'commenter456',
-        reason: 'Spam',
-        timestamp: '2024-03-10T11:15:00Z',
-        reports: 3,
-        status: 'pending'
-    }
-];
 
 const initialSettings: ModSettings = {
     autoModEnabled: true,
@@ -36,13 +14,15 @@ const initialSettings: ModSettings = {
 };
 
 export function useModeration(id:number) {
-    const [reports, setReports] = useState<Report[]>(initialReports);
+    const [reports, setReports] = useState([]);
     const [filter, setFilter] = useState<'all' | 'posts' | 'comments' | 'users'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState(2);
     const [settings, setSettings] = useState<ModSettings>(initialSettings);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [statCount, setStatCount]= useState();
+
+    const [unformattedReports, setUnformattedReports] = useState([]);
 
 
     const fetchStats = async () => {
@@ -54,10 +34,23 @@ export function useModeration(id:number) {
             throw error;
         }
     };
+
+
+    const fetchReports = async () => {
+        try {
+            const response = await AxiosInstance.get(`/api/community/${id}/reports`, {}, { withCredentials: true,});
+            setReports(response.data);
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+            throw error;
+        }
+    };
+
     useEffect(() => {
         fetchStats();
+        fetchReports();
     }, []);
-
 
     const handleApprove = (id: string) => {
         setReports(prev => prev.map(report =>

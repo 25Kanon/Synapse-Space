@@ -25,22 +25,21 @@ class IsCommunityMember(permissions.BasePermission):
 
 class IsCommunityAdminORModerator(permissions.BasePermission):
     def has_permission(self, request, view):
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            return False
+
         # Fetch community_id from URL kwargs
         community_id = view.kwargs.get('community_id')
         if not community_id:
             return False
 
-        # Try to get the community and check membership with `role__in`
+        # Fetch the community instance and use the `is_admin_or_moderator` method
         try:
             community = Community.objects.get(id=community_id)
+            return community.is_admin_or_moderator(request.user)
         except Community.DoesNotExist:
             return False
-
-        return Membership.objects.filter(
-            user=request.user,
-            community=community,
-            role__in=['admin', 'moderator']
-        ).exists()
 
     def has_object_permission(self, request, view, obj):
         # Reuse `has_permission` logic for object-level permissions

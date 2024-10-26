@@ -1,6 +1,7 @@
 import hashlib
 
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.conf import settings
 import os
@@ -805,3 +806,23 @@ class ReportsListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         # Attach the author (logged-in user) to the report
         serializer.save(author=self.request.user)
+
+
+class getReportsView(generics.ListAPIView):
+    serializer_class = ReportsSerializer
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+
+    def get_queryset(self):
+        # Fetch community_id from the URL
+        community_id = self.kwargs.get('community_id')
+
+        # Get the community instance and ensure it exists
+        community = get_object_or_404(Community, id=community_id)
+
+        # Filter reports for the specified community based on content types
+        community_content_types = ContentType.objects.filter(model__in=['post', 'comment'])
+        return Reports.objects.filter(
+            content_type__in=community_content_types,
+            community=community
+        )

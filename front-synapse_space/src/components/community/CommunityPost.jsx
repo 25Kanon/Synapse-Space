@@ -18,6 +18,43 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
     const { user} = useContext(AuthContext);
+
+    const handleLikeChange = () => {
+        const url = `/api/community/${community}/post/${postId}/${isLiked ? 'unlike' : 'like'}`;
+         AxiosInstance.post(url, { postId }, { withCredentials: true})
+
+            .then(response => {
+                if (response.status === 200 || response.status === 201) {
+                    setIsLiked(!isLiked);
+                } else {
+                    console.error('Failed to change like status');
+                }
+            })
+            .catch(error => {
+                console.error('Error occurred while changing like status:', error);
+            });
+    };
+
+
+    const handleReport = () => {
+        const url = `/api/create-report`;
+        AxiosInstance.post(url, { postId }, { withCredentials: true})
+            .then(response => {
+                if (response.status === 200 || response.status === 201) {
+                    console.log('Post reported successfully');
+                } else {
+                    console.error('Failed to report the post');
+                }
+            })
+            .catch(error => {
+                console.error('Error occurred while reporting the post:', error);
+            });
+    };
+
+
+    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+
+
     useEffect(()=>{
         const fetchLikeStatus = async () => {
             try {
@@ -38,39 +75,6 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
         fetchLikeStatus();
 
     }, [community, postId, isLiked, userID]);
-
-
-    const handleLikeChange = () => {
-        const url = `/api/community/${community}/post/${postId}/${isLiked ? 'unlike' : 'like'}`;
-         AxiosInstance.post(url, { postId }, { withCredentials: true})
-
-            .then(response => {
-                if (response.status === 200 || response.status === 201) {
-                    setIsLiked(!isLiked);
-                } else {
-                    console.error('Failed to change like status');
-                }
-            })
-            .catch(error => {
-                console.error('Error occurred while changing like status:', error);
-            });
-    };
-
-    const handleReport = () => {
-        const url = `/api/create-report`;
-        AxiosInstance.post(url, { postId }, { withCredentials: true})
-            .then(response => {
-                if (response.status === 200 || response.status === 201) {
-                    console.log('Post reported successfully');
-                } else {
-                    console.error('Failed to report the post');
-                }
-            })
-            .catch(error => {
-                console.error('Error occurred while reporting the post:', error);
-            });
-    };
-    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
     return (
         <>

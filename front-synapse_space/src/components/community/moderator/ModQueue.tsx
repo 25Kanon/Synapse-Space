@@ -11,8 +11,10 @@ import {
     VolumeX,
     UserCheck,
     Trash2,
+    SquareArrowOutUpRight,
 } from 'lucide-react';
 import type { Report } from '../types';
+import {useParams} from "react-router-dom";
 
 type ModQueueProps = {
     reports: Report[];
@@ -43,9 +45,9 @@ function StatusBadge({
         <span
             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badges[status]}`}
         >
-      {typeIcons[type]}
+            {typeIcons[type]}
             {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
+        </span>
     );
 }
 
@@ -58,14 +60,17 @@ function ActionButtons({
 }) {
     const actionsByType = {
         post: [
+            { label: 'Open', icon: SquareArrowOutUpRight, color: 'text-primary' },
             { label: 'Lock', icon: Lock, color: 'text-orange-500' },
             { label: 'Pin', icon: Pin, color: 'text-blue-500' },
         ],
         comment: [
+            { label: 'Open', icon: SquareArrowOutUpRight, color: 'text-primary' },
             { label: 'Hide', icon: AlertTriangle, color: 'text-yellow-500' },
             { label: 'Delete', icon: Trash2, color: 'text-red-500' },
         ],
         user: [
+            { label: 'Open', icon: SquareArrowOutUpRight, color: 'text-primary' },
             { label: 'Mute', icon: VolumeX, color: 'text-orange-500' },
             { label: 'Ban', icon: UserCheck, color: 'text-red-500' },
         ],
@@ -82,8 +87,8 @@ function ActionButtons({
                 >
                     <action.icon className="w-5 h-5" />
                     <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            {action.label}
-          </span>
+                        {action.label}
+                    </span>
                 </button>
             ))}
         </>
@@ -92,17 +97,30 @@ function ActionButtons({
 
 export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
     const [hoveredId, setHoveredId] = React.useState<string | null>(null);
+    const { community_id } = useParams();
     const [actionFeedback, setActionFeedback] = React.useState<{
         id: string;
         action: string;
     } | null>(null);
 
-    const handleAction = (action: string, id: string) => {
+    const handleAction = (action: string, id: string, type: Report['type'], reportedId: Report['object_id']) => {
         if (action === 'approve') {
             onApprove(id);
         } else if (action === 'reject') {
             onReject(id);
+        } else if (action === 'open') {
+            // Handle opening the reported item based on its type and ID
+            let url = '';
+            if (type === 'post') {
+                url = `/community/${community_id}/post/${reportedId}`;
+            } else if (type === 'comment') {
+                url = `/community/${community_id}/post/${reportedId}#comment-${id}`;
+            } else if (type === 'user') {
+                url = `/user/${id}`;
+            }
+            window.location.href = url; // Navigate to the URL
         }
+
         setActionFeedback({ id, action });
         setTimeout(() => setActionFeedback(null), 2000);
     };
@@ -153,13 +171,13 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                             <div className="flex items-start space-x-3 flex-grow">
                                 <div className="flex-grow min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium">
-                      {report.author}
-                    </span>
+                                        <span className="font-medium">
+                                            {report.author}
+                                        </span>
                                         <StatusBadge status={report.status} type={report.type} />
                                         <span className="text-sm text-secondary">
-                      {new Date(report.timestamp).toLocaleString()}
-                    </span>
+                                            {new Date(report.timestamp).toLocaleString()}
+                                        </span>
                                     </div>
 
                                     <p className="mt-1 text-base-content break-words">
@@ -170,13 +188,13 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                                         <div className="flex items-center text-red-600">
                                             <AlertTriangle className="w-4 h-4 mr-1" />
                                             <span className="text-sm font-medium">
-                        {report.reason}
-                      </span>
+                                                {report.reason}
+                                            </span>
                                         </div>
                                         <span className="text-sm text-secondary">
-                      {report.reports}{' '}
+                                            {report.reports}{' '}
                                             {report.reports === 1 ? 'report' : 'reports'}
-                    </span>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -189,27 +207,36 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                                 >
                                     <ActionButtons
                                         type={report.type}
-                                        onAction={(action) => handleAction(action, report.id)}
+                                        onAction={(action) => handleAction(action, report.id, report.type, report.object_id)}
                                     />
                                     <button
-                                        onClick={() => handleAction('approve', report.id)}
+                                        onClick={() => handleAction('approve', report.id, report.type, report.object_id)}
                                         className="p-2 rounded-full hover:bg-green-100 text-green-600 transition-colors relative group"
                                         title="Approve"
                                     >
                                         <CheckCircle className="w-5 h-5" />
                                         <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      Approve
-                    </span>
+                                            Approve
+                                        </span>
                                     </button>
                                     <button
-                                        onClick={() => handleAction('reject', report.id)}
+                                        onClick={() => handleAction('reject', report.id, report.type, report.object_id)}
                                         className="p-2 rounded-full hover:bg-red-100 text-red-600 transition-colors relative group"
                                         title="Reject"
                                     >
                                         <XCircle className="w-5 h-5" />
                                         <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      Reject
-                    </span>
+                                            Reject
+                                        </span>
+                                    </button>
+                                    <button
+                                        className="p-2 rounded-full hover:bg-gray-100 transition-colors relative group"
+                                        title="More actions"
+                                    >
+                                        <MoreVertical className="w-5 h-5 text-gray-500" />
+                                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            More
+                                        </span>
                                     </button>
                                 </div>
                             )}
@@ -220,3 +247,5 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
         </div>
     );
 }
+
+export default ModQueue;

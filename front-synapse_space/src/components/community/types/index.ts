@@ -6,6 +6,7 @@ export type Report = {
     reason: string;
     timestamp: string;
     reports: number;
+    object_id:number;
     status: 'pending' | 'approved' | 'rejected';
 };
 

@@ -34,6 +34,14 @@ class Community(models.Model):
     def __str__(self):
         return self.name
 
+    def is_admin_or_moderator(self, user):
+        """Check if the user has an admin or moderator role in this community."""
+        return Membership.objects.filter(
+            user=user,
+            community=self,
+            role__in=['admin', 'moderator']
+        ).exists()
+
 class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
