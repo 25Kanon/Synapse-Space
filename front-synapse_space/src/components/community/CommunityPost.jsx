@@ -1,10 +1,10 @@
 import React, {useContext, useEffect, useState} from "react";
 import PropTypes from 'prop-types';
 import '@mdxeditor/editor/style.css';
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faThumbsUp} from "@fortawesome/free-regular-svg-icons/faThumbsUp";
-import { faThumbsUp as ThumbsUpIcon } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
+import {faThumbsUp as ThumbsUpIcon} from "@fortawesome/free-solid-svg-icons/faThumbsUp";
 import Checkbox from '@mui/material/Checkbox';
 import {faComment} from "@fortawesome/free-solid-svg-icons/faComment";
 import {FormControlLabel} from "@mui/material";
@@ -14,14 +14,27 @@ import StyledOutput from "./StyledOutput";
 import AuthContext from "../../context/AuthContext";
 import ReportForm from "../../components/ReportForm"
 
-const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent, postId, userID, showComments, authorId}) => {
+const CommunityPost = ({
+                           userName,
+                           userAvatar,
+                           community,
+                           postTitle,
+                           postContent,
+                           postId,
+                           userID,
+                           showComments,
+                           authorId
+                       }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
-    const { user} = useContext(AuthContext);
+    const {user} = useContext(AuthContext);
+    const getInitials = (name) => {
+        return name.split(' ').map(word => word[0]).join('');
+    };
 
     const handleLikeChange = () => {
         const url = `/api/community/${community}/post/${postId}/${isLiked ? 'unlike' : 'like'}`;
-         AxiosInstance.post(url, { postId }, { withCredentials: true})
+        AxiosInstance.post(url, {postId}, {withCredentials: true})
 
             .then(response => {
                 if (response.status === 200 || response.status === 201) {
@@ -36,14 +49,14 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
     };
 
 
-    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+    const label = {inputProps: {'aria-label': 'Checkbox demo'}};
 
 
-    useEffect(()=>{
+    useEffect(() => {
         const fetchLikeStatus = async () => {
             try {
 
-                const likes= await AxiosInstance.get(`/api/community/${community}/post/${postId}/likes`, {}, { withCredentials: true,});
+                const likes = await AxiosInstance.get(`/api/community/${community}/post/${postId}/likes`, {}, {withCredentials: true,});
 
                 if (likes.status === 200) {
                     setLikes(likes.data);
@@ -67,10 +80,20 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                     <div className="flex items-center h-5">
                         <div className="mx-2 avatar">
                             <div className="rounded-full h-7">
-                                <img
-                                    src={userAvatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
-                                    alt="User avatar"
-                                />
+                                {userAvatar ? (
+                                    <img
+                                        src={userAvatar}
+                                        alt="User avatar"
+                                        className="w-full h-full object-cover rounded-full"
+                                    />
+                                ) : (
+                                    <div
+                                        className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
+            <span className="text-sm font-semibold">
+                {getInitials(userName)}
+            </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <p className="flex items-center text-sm font-semibold">
@@ -89,8 +112,10 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                                     className="p-2 shadow menu dropdown-content bg-secondary rounded-box w-52">
                                     {authorId === user.id ? (
                                         <div>
-                                            <li><Link to={`/community/${community}/post/${postId}/edit`}>Edit</Link></li>
-                                            <li><Link to={`/community/${community}/post/${postId}/delete`}>Delete</Link></li>
+                                            <li><Link to={`/community/${community}/post/${postId}/edit`}>Edit</Link>
+                                            </li>
+                                            <li><Link to={`/community/${community}/post/${postId}/delete`}>Delete</Link>
+                                            </li>
                                         </div>
                                     ) : (
                                         <li>

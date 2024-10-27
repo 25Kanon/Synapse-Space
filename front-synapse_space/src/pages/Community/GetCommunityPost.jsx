@@ -11,11 +11,12 @@ import { AuthContext } from "../../context/AuthContext";
 import { tuple } from "yup";
 
 const GetCommunityPost = () => {
-    const API_URL = import.meta.env.VITE_API_BASE_URI;
     const { community_id, post_id } = useParams();
     const [post, setPost] = useState(null);
     const [error, setError] = useState(null);
     const { user } = useContext(AuthContext);
+
+
     useEffect(() => {
         const getCommunityPost = async () => {
             try {
@@ -29,7 +30,7 @@ const GetCommunityPost = () => {
         };
 
         getCommunityPost();
-    }, [API_URL, community_id, post_id]);
+    }, [community_id, post_id]);
 
 
     return (
@@ -50,6 +51,7 @@ const GetCommunityPost = () => {
                         showComments={true}
                         userID={user.id}
                         authorId={post.created_by}
+                        userAvatar={post.userAvatar}
                     />
                 ) : (
                     <h2>Post does not exist</h2>

@@ -250,6 +250,7 @@ class CheckAuthView(APIView):
                 'student_number': request.user.student_number,
                 'isVerified': request.user.is_verified,
                 'exp': expiration_time.isoformat() if expiration_time else None,
+                'pic': request.user.profile_pic,
             }
         })
 
@@ -590,6 +591,17 @@ class getCommunityPosts(generics.ListAPIView):
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
         return Post.objects.filter(posted_in_id=community_id).order_by('-created_at')
+
+
+class getJoinedCommunityPosts(generics.ListAPIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = CommunityPostSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        joined_communities = Membership.objects.filter(user=user).values_list('community_id', flat=True)
+        return Post.objects.filter(posted_in_id__in=joined_communities).order_by('-created_at')
 
 
 class getCommunityPost(generics.RetrieveAPIView):

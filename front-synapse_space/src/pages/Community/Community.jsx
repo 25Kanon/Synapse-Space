@@ -58,7 +58,7 @@ export default function Community() {
         };
 
         fetchCommunityDetails();
-    }, [id, API_URL]);
+    }, [id]);
 
 
     if (!user) {
@@ -118,6 +118,7 @@ export default function Community() {
                         postId={post.id}
                         userID={user.id}
                         authorId={post.created_by}
+                        userAvatar={post.userAvatar}
                     />
 
                 ))}

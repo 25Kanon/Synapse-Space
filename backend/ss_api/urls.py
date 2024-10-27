@@ -8,7 +8,7 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
                     CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView, getReportsView,
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
-                    modResolveView)
+                    modResolveView, getJoinedCommunityPosts)
 from django.contrib import admin
 
 
@@ -36,7 +36,8 @@ urlpatterns = [
     path('community/<int:community_id>/membership/role/', getMembershipRole.as_view(), name='community-membership-role'),
     path('community/<int:community_id>/post', PostCreateView.as_view(), name='community-create-post'),
     path('generate-signed-url/', GenerateSignedUrlView.as_view(), name='generate-signed-url'),
-    path('move-image/',MoveImageView.as_view(), name='move-image'),
+    path('move-image/', MoveImageView.as_view(), name='move-image'),
+    path('community/joined/posts/', getJoinedCommunityPosts.as_view(), name='joined-community-posts'),
     path('community/<int:community_id>/posts/', getCommunityPosts.as_view(), name='community-posts-list'),
     path('community/<int:community_id>/join/', JoinCommunityView.as_view(), name='join-community'),
     path('community', CommunityListView.as_view(), name='community-list'),

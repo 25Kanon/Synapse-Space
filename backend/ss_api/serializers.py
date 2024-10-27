@@ -251,6 +251,7 @@ class CreateMembership(serializers.ModelSerializer):
 
 class MembershipSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
+    userAvatar = serializers.CharField(source='user.profile_pic', read_only=True)
     user_id = serializers.CharField(source='user.id', read_only=True, required=False)
     community = serializers.PrimaryKeyRelatedField(queryset=Community.objects.all())
     community_name = serializers.CharField(source='community.name', read_only=True)
@@ -258,7 +259,7 @@ class MembershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Membership
-        fields = ['username','community', 'community_name', 'community_avatar', 'user_id']
+        fields = ['username', 'userAvatar', 'community', 'community_name', 'community_avatar', 'user_id']
 
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -280,19 +281,21 @@ class CreatePostSerializer(serializers.ModelSerializer):
 
 class CommunityPostSerializer(serializers.ModelSerializer):
     created_by_username = serializers.SerializerMethodField()
+    userAvatar = serializers.CharField(source='created_by.profile_pic', read_only=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in']
+        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar']
 
     def get_created_by_username(self, obj):
         return obj.created_by.username
 
 class getCommunityPostSerializer(serializers.ModelSerializer):
     created_by_username = serializers.SerializerMethodField()
+    userAvatar = serializers.CharField(source='created_by.profile_pic', read_only=True)
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in']
+        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar']
 
     def get_created_by_username(self, obj):
         return obj.created_by.username
