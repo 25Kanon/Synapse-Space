@@ -21,6 +21,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
@@ -36,13 +37,13 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 
 from . import adapters
 # Local imports
-from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports
+from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
-                          ReportsSerializer)
+                          ReportsSerializer, FriendRequestSerializer, FriendSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator
 
 from django.conf import settings
@@ -855,3 +856,96 @@ class modResolveView(generics.UpdateAPIView):
 
         return Response({"message": "Report has been approved."}, status=status.HTTP_200_OK)
 
+
+
+
+class SendFriendRequestView(generics.CreateAPIView):
+    serializer_class = FriendRequestSerializer
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        # Get the receiver ID from the request data
+        receiver_id = request.data.get('receiver')
+
+        # Check if the receiver user exists
+        try:
+            receiver = User.objects.get(id=receiver_id)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Prevent sending a friend request to oneself
+        if request.user.id == receiver.id:
+            return Response({"detail": "You cannot send a friend request to yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the sender and receiver are already friends
+        if Friendship.objects.filter(
+            Q(user1=request.user, user2=receiver) | Q(user1=receiver, user2=request.user)
+        ).exists():
+            return Response({"detail": "You are already friends with this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if there is a pending friend request from the current user to this receiver
+        if FriendRequest.objects.filter(sender=request.user, receiver=receiver, status='pending').exists():
+            return Response({"detail": "Friend request already sent and pending."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Proceed with creating the friend request
+        return super().create(request, *args, **kwargs)
+
+# List all friends of the logged-in user
+class ListFriendsView(generics.ListAPIView):
+    serializer_class = FriendSerializer
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        friendships = Friendship.objects.filter(user1=user)
+        return [friendship.user2 for friendship in friendships]
+
+class ListSentFriendRequestsView(generics.ListAPIView):
+    serializer_class = FriendRequestSerializer  # Use FriendRequestSerializer to display sent friend requests
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        # Return friend requests where either the sender or receiver is the logged-in user
+        return FriendRequest.objects.filter(
+            Q(sender=user) | Q(receiver=user),
+            status='pending'
+        )
+
+
+class RespondToFriendRequestView(generics.UpdateAPIView):
+    serializer_class = FriendRequestSerializer
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        # Get the friend request by ID, ensure the receiver is the requesting user
+        friend_request = get_object_or_404(FriendRequest, id=kwargs['pk'])
+
+        # Check if the logged-in user is the receiver of the request
+        if friend_request.receiver != request.user:
+            raise PermissionDenied("You are not authorized to respond to this friend request.")
+
+        # Perform the requested action based on the 'action' field in request data
+        action = request.data.get('action')
+
+        # Perform the requested action: accept or reject
+        if action == 'accept':
+            friend_request.delete()
+
+            # Create a mutual friendship between sender and receiver
+            Friendship.objects.create(user1=friend_request.sender, user2=friend_request.receiver)
+            Friendship.objects.create(user1=friend_request.receiver, user2=friend_request.sender)
+
+            return Response({"detail": "Friend request accepted."}, status=status.HTTP_200_OK)
+
+        elif action == 'reject':
+            # Delete the friend request if rejected
+            friend_request.delete()
+            return Response({"detail": "Friend request rejected and deleted."}, status=status.HTTP_200_OK)
+
+        # If no valid action is specified, return an error
+        return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)

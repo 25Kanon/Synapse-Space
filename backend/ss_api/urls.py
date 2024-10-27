@@ -7,6 +7,7 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
                     CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView, getReportsView,
+                    SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView
                     modResolveView)
 from django.contrib import admin
 
@@ -60,4 +61,8 @@ urlpatterns = [
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),
     path('users/', UserListView.as_view(), name='user-list'),
 
+    path('friend/send-request/', SendFriendRequestView.as_view(), name='send_friend_request'),
+    path('friend-requests/', ListSentFriendRequestsView.as_view(), name='list_friend_requests'),
+    path('respond-request/<int:pk>/', RespondToFriendRequestView.as_view(), name='respond_to_friend_request'),
+    path('friends/', ListFriendsView.as_view(), name='list_friends'),
 ]

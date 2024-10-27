@@ -1,8 +1,8 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import AxiosInstance from '../utils/AxiosInstance';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
-import {Navigate, useNavigate} from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
@@ -28,13 +28,13 @@ export const AuthProvider = ({ children }) => {
             setError('Error refreshing token:', error);
             setUser(null);
             throw error;
-        }finally {
+        } finally {
             checkAuthentication()
         }
     }, []);
 
     const scheduleTokenRefresh = useCallback((expDate) => {
-        const date= new Date(expDate);
+        const date = new Date(expDate);
         const expirationTime = date.getTime();
         console.log('expirationTime', expirationTime)
         const currentTime = Date.now();
@@ -45,14 +45,14 @@ export const AuthProvider = ({ children }) => {
                 .then(scheduleTokenRefresh)
                 .catch(console.error);
         }, timeUntilRefresh);
-    }, [refreshToken, user]);
+    }, []);
 
     const checkAuthentication = useCallback(async () => {
         try {
             const response = await AxiosInstance.get('/api/auth/check-auth/', { withCredentials: true });
             console.log(response.data.user)
             setUser(response.data.user);
-            if(!inSetup){
+            if (!inSetup) {
                 scheduleTokenRefresh(response.data.user.exp);
             }
             return true;
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         checkAuthentication();
 
-    }, [checkAuthentication, loginData,authWithGoogle]);
+    }, [loginData, authWithGoogle]);
 
     const loginUser = async (e) => {
         e.preventDefault();
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await AxiosInstance.post('/api/auth/logout/', {}, { withCredentials: true,});
+            await AxiosInstance.post('/api/auth/logout/', {}, { withCredentials: true, });
             setUser(null);
             setRequireOTP(false);
             setLoginData(null);
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const isLoggedinWithGoogle=()=>{
+    const isLoggedinWithGoogle = () => {
         setAuthWithGoogle(true)
         console.log(authWithGoogle)
         return authWithGoogle;
@@ -152,21 +152,21 @@ export const AuthProvider = ({ children }) => {
 
     const isVerified = async () => {
         if (!user) return await checkAuthentication();
-        if (user.isVerified){
+        if (user.isVerified) {
             setInSetup(false)
         }
-        return(user.isVerified)
+        return (user.isVerified)
     }
 
     return (
-        <AuthContext.Provider value={{ 
-            isAuthenticated, 
+        <AuthContext.Provider value={{
+            isAuthenticated,
             isVerified,
             user,
             isLoggedinWithGoogle,
-            loading, 
+            loading,
             loginUser,
-            logout, 
+            logout,
             refreshToken,
             requireOTP,
             error
