@@ -35,7 +35,7 @@ export const FriendProvider = ({ children }) => {
         fetchFriendRequests();
         const intervalId = setInterval(fetchFriendRequests, 30000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [user?.id]);
 
     // Fetch friends
     const fetchFriends = () => {
@@ -51,7 +51,7 @@ export const FriendProvider = ({ children }) => {
         fetchFriends();
         const intervalId = setInterval(fetchFriends, 30000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [user?.id]);
 
     // Send friend request
     const sendFriendRequest = (userId) => {
