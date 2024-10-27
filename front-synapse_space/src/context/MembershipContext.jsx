@@ -32,7 +32,7 @@ export const MembershipsProvider = ({ children }) => {
         setMemberships((prevMemberships) => [...prevMemberships, newMembership]);
     };
     useEffect(() => {
-        if (user) {
+        if (user && user.IsVerified) {
             fetchMemberships();
         }
     }, [user]);
