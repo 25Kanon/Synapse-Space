@@ -9,6 +9,7 @@ import UserSetup from "./pages/UserSetup";
 import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
 import ProfilePage from './pages/Profile/ProfilePage';
+import EditProfile from './pages/Profile/EditProfile';
 import Create from './pages/Community/Create';
 import SearchCommunity from './pages/Community/SearchCommunity';
 import Community from './pages/Community/Community';
@@ -68,6 +69,9 @@ function App() {
             </Route>
             <Route path="/profile" element={<PrivateRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
+            </Route>
+            <Route path="/edit-profile" element={<PrivateRoute />}>
+                <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
             <Route path="/activities" element={<PrivateRoute />}>
               <Route path="/activities" element={<ProfilePage />} />

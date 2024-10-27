@@ -27,7 +27,16 @@ import time
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'password']
+        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True}  # Ensure the password is write-only
+        }
+
+    def create(self, validated_data):
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])  # Hash the password
+        user.save()
+        return user
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
