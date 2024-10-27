@@ -5,6 +5,8 @@ import { useLocation } from 'react-router-dom';
 import SearchBar from '../search/SearchBar';
 import UserList from '../search/UserList';
 import CommunityCard from '../search/CommunityCard';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
 const Search = () => {
     const [communities, setCommunities] = useState([]);
     const [userList, setUserList] = useState([]);
@@ -12,7 +14,7 @@ const Search = () => {
     const location = useLocation();
     const { query } = location.state || {}; // Access the search query
     const [searchQuery, setSearchQuery] = useState(query);
-
+    const { user } = useContext(AuthContext);
     useEffect(() => {
         const delay = 300; // Delay in milliseconds
         const handler = setTimeout(() => {
@@ -42,7 +44,8 @@ const Search = () => {
             if (searchQuery) {
                 AxiosInstance.get(`/api/users/?search=` + searchQuery.trim(), { withCredentials: true })
                     .then(response => {
-                        setUserList(response.data);
+                        const filteredData = response.data.filter(item => item.id !== user.id);
+                        setUserList(filteredData);
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -83,7 +86,7 @@ const Search = () => {
 
                 )}
             </div>
-            {userList.length > 0 && communities.length >0 && <hr />} {/* Horizontal line divider */}
+            {userList.length > 0 && communities.length > 0 && <hr />} {/* Horizontal line divider */}
             <div className="flex flex-wrap">
                 <UserList users={userList} resultCount={userList.length} searchQuery={searchQuery} />
             </div>

@@ -1,8 +1,11 @@
 // src/components/UserList.js
 import React from 'react';
 import UserCard from './UserCard';
+import { useFriends } from '../../context/FriendContext'; // Import the context with friends data
 
 const UserList = ({ users = [], resultCount = 0, searchQuery }) => {
+  const { friends } = useFriends(); // Access friends from context
+
   return (
     <div className="max-w-lg mx-auto">
       {resultCount > 0 && (
@@ -10,14 +13,16 @@ const UserList = ({ users = [], resultCount = 0, searchQuery }) => {
           {resultCount} users for "{searchQuery}"
         </h2>
       )}
-      <div className="flex flex-row gap-5 mt-4"> {/* Adjusted gap */}
+      <div className="flex flex-row gap-5 mt-4">
         {resultCount > 0 ? (
           users.map((user) => (
             <UserCard
               key={user.id}
-              name={user.first_name + " " + user.last_name}
+              userId={user.id}
+              name={`${user.first_name} ${user.last_name}`}
               handle={user.username}
               img={user.profile_pic}
+              isFriend={friends.some(friend => friend.id === user.id)} // Check if the user is a friend
             />
           ))
         ) : (

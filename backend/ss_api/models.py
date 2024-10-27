@@ -119,3 +119,31 @@ class Reports(models.Model):
         return f"Report by {self.author.username} on {self.type}: {self.reason}"
 
 
+
+class FriendRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    sender = models.ForeignKey(User, related_name='sent_friend_requests', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='received_friend_requests', on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Friend request from {self.sender} to {self.receiver} ({self.status})"
+
+    class Meta:
+        unique_together = ('sender', 'receiver')  # A user cannot send multiple requests to the same user
+        
+class Friendship(models.Model):
+    user1 = models.ForeignKey(User, related_name='friendships1', on_delete=models.CASCADE)
+    user2 = models.ForeignKey(User, related_name='friendships2', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user1} is friends with {self.user2}"
+    
+    

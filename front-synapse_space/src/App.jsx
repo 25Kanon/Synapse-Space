@@ -16,8 +16,8 @@ import Community from './pages/Community/Community';
 import GetCommunityPost from "./pages/Community/GetCommunityPost";
 import DiscoverCommunity from './pages/Community/DiscoverCommunity';
 import { MembershipsProvider } from './context/MembershipContext';
-import  ModDashboard  from './pages/Community/ModDashboard';
-
+import ModDashboard from './pages/Community/ModDashboard';
+import { FriendProvider } from './context/FriendContext';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -63,44 +63,46 @@ function App() {
     <Router>
       <AuthProvider>
         <MembershipsProvider>
-          <Routes>
-            <Route path="/" element={<PrivateRoute />}>
-              <Route path="/" element={<Home />} />
-            </Route>
-            <Route path="/profile" element={<PrivateRoute />}>
-              <Route path="/profile" element={<ProfilePage />} />
-            </Route>
-            <Route path="/edit-profile" element={<PrivateRoute />}>
+          <FriendProvider>
+            <Routes>
+              <Route path="/" element={<PrivateRoute />}>
+                <Route path="/" element={<Home />} />
+              </Route>
+              <Route path="/profile" element={<PrivateRoute />}>
+                <Route path="/profile" element={<ProfilePage />} />
+              </Route>
+              <Route path="/edit-profile" element={<PrivateRoute />}>
                 <Route path="/edit-profile" element={<EditProfile />} />
-            </Route>
-            <Route path="/activities" element={<PrivateRoute />}>
-              <Route path="/activities" element={<ProfilePage />} />
-            </Route>
-            <Route path="/" element={<PublicRoute />}>
-              <Route path="/login" element={<UserLogin />} />
-            </Route>
-            <Route path="/" element={<PublicRoute />}>
-              <Route path="/register" element={<UserRegister />} />
-            </Route>
-            <Route path="/community" element={<PrivateRoute />}>
-              <Route path="/community/:id" element={<Community />} />
-            </Route>
-            <Route path="/community" element={<PrivateRoute />}>
-              <Route path="/community/:community_id/post/:post_id" element={<GetCommunityPost />} />
-            </Route>
-            <Route path="/community/" element={<PrivateRoute />}>
-              <Route path="/community/:community_id/mod" element={<ModDashboard />} />
-            </Route>
-            <Route path="/community" element={<PrivateRoute />}>
-              <Route path="/community/create" element={<Create />} />
-            </Route>
-            <Route path="/search" element={<PrivateRoute />}>
-              <Route path="/search" element={<SearchCommunity />} />
-            </Route>
-            <Route path="/discover" element={<PrivateRoute />}>
-              <Route path="/discover" element={<DiscoverCommunity />} />
-            </Route>
-          </Routes>
+              </Route>
+              <Route path="/activities" element={<PrivateRoute />}>
+                <Route path="/activities" element={<ProfilePage />} />
+              </Route>
+              <Route path="/" element={<PublicRoute />}>
+                <Route path="/login" element={<UserLogin />} />
+              </Route>
+              <Route path="/" element={<PublicRoute />}>
+                <Route path="/register" element={<UserRegister />} />
+              </Route>
+              <Route path="/community" element={<PrivateRoute />}>
+                <Route path="/community/:id" element={<Community />} />
+              </Route>
+              <Route path="/community" element={<PrivateRoute />}>
+                <Route path="/community/:community_id/post/:post_id" element={<GetCommunityPost />} />
+              </Route>
+              <Route path="/community/" element={<PrivateRoute />}>
+                <Route path="/community/:community_id/mod" element={<ModDashboard />} />
+              </Route>
+              <Route path="/community" element={<PrivateRoute />}>
+                <Route path="/community/create" element={<Create />} />
+              </Route>
+              <Route path="/search" element={<PrivateRoute />}>
+                <Route path="/search" element={<SearchCommunity />} />
+              </Route>
+              <Route path="/discover" element={<PrivateRoute />}>
+                <Route path="/discover" element={<DiscoverCommunity />} />
+              </Route>
+            </Routes>
+          </FriendProvider>
         </MembershipsProvider>
       </AuthProvider>
     </Router>

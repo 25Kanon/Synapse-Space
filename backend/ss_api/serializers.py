@@ -14,8 +14,9 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-from .models import (User, Community, Membership,
-                     Post, Comment, SavedPost, LikedPost, Reports, )
+from .models import (User, Community, Membership, 
+                     Post, Comment, SavedPost, LikedPost,
+                     Reports, FriendRequest)
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -327,8 +328,7 @@ class LikedPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = LikedPost
         fields = ['user', 'post', 'created_at']
-
-
+        
 class ReportsSerializer(serializers.ModelSerializer):
     content_type = serializers.SlugRelatedField(
         queryset=ContentType.objects.all(),
@@ -358,3 +358,45 @@ class ReportsSerializer(serializers.ModelSerializer):
             content_type=obj.content_type,
             object_id=obj.object_id
         ).count()
+
+    def create(self, validated_data):
+        # Set the author to the current user
+        validated_data['author'] = self.context['request'].user
+        return super().create(validated_data)
+    
+class FriendRequestSerializer(serializers.ModelSerializer):
+    sender_profile_pic = serializers.CharField(source='sender.profile_pic', read_only=True)
+    receiver_profile_pic = serializers.CharField(source='receiver.profile_pic', read_only=True)
+    sender_name = serializers.SerializerMethodField()
+    receiver_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = FriendRequest
+        fields = ['id', 'sender', 'receiver', 'sender_profile_pic', 'receiver_profile_pic', 'sender_name', 'receiver_name', 'status', 'created_at']
+        read_only_fields = ['id', 'status', 'created_at', 'sender']  # Mark `sender` as read-only here
+
+    def get_sender_name(self, obj):
+        return f"{obj.sender.first_name} {obj.sender.last_name}"
+
+    def get_receiver_name(self, obj):
+        return f"{obj.receiver.first_name} {obj.receiver.last_name}"
+
+    def validate(self, data):
+        # Set the sender to the authenticated user after other validations
+        data['sender'] = self.context['request'].user
+        return data
+
+    def create(self, validated_data):
+        # The `sender` will already be set in `validate`, so proceed with creation
+        return super().create(validated_data)
+
+
+class FriendSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'full_name', 'profile_pic', 'username', 'email']
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
