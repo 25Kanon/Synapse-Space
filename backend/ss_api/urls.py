@@ -6,7 +6,8 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
                     CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
-                    CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView, getReportsView)
+                    CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView, getReportsView,
+                    modResolveView)
 from django.contrib import admin
 
 
@@ -53,6 +54,7 @@ urlpatterns = [
 
 
     path('<int:community_id>/create-report/', ReportsListCreateView.as_view(), name='report-create'),
+    path('community/<int:community_id>/reports/resolve/<int:pk>/', modResolveView.as_view(), name='mod-approve'),
 
     # User URLs
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),

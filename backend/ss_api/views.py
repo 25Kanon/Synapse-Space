@@ -7,7 +7,7 @@ from django.conf import settings
 import os
 from datetime import datetime, timedelta
 
-
+from django.utils import timezone
 # Rest Framework imports
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.decorators import api_view
@@ -836,3 +836,22 @@ class getReportsView(generics.ListAPIView):
             content_type__in=community_content_types,
             community=community
         )
+
+
+class modResolveView(generics.UpdateAPIView):
+    queryset = Reports.objects.all()
+    serializer_class = ReportsSerializer
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    authentication_classes = [CookieJWTAuthentication]
+    lookup_field = 'pk'  # Ensure the view uses 'pk' as the lookup field
+
+    def put(self, request, *args, **kwargs):
+        report = self.get_object()
+        report.status = self.request.data.get('status', report.status)
+        report.is_resolved = True
+        report.resolved_by = self.request.user
+        report.resolved_at = timezone.now()
+        report.save()
+
+        return Response({"message": "Report has been approved."}, status=status.HTTP_200_OK)
+

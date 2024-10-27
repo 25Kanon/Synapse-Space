@@ -52,16 +52,35 @@ export function useModeration(id:number) {
         fetchReports();
     }, []);
 
-    const handleApprove = (id: string) => {
-        setReports(prev => prev.map(report =>
-            report.id === id ? { ...report, status: 'approved' } : report
-        ));
+    const handleApprove = async (reportId: string) => {
+        try {
+            await AxiosInstance.put(`/api/community/${id}/reports/resolve/${reportId}/`,
+                { status: 'approved' },
+                { withCredentials: true }
+            );
+            setReports(prev => prev.map(report =>
+                report.id === reportId ? { ...report, status: 'approved' } : report
+            ));
+        } catch (error) {
+            console.error('Error approving report:', error);
+            // Handle error (e.g., show user notification)
+        }
     };
 
-    const handleReject = (id: string) => {
-        setReports(prev => prev.map(report =>
-            report.id === id ? { ...report, status: 'rejected' } : report
-        ));
+
+    const handleReject = async (reportId: string) => {
+        try {
+            await AxiosInstance.put(`/api/community/${id}/reports/resolve/${reportId}/`,
+                { status: 'rejected' },
+                { withCredentials: true }
+            );
+            setReports(prev => prev.map(report =>
+                report.id === reportId ? { ...report, status: 'rejected' } : report
+            ));
+        } catch (error) {
+            console.error('Error approving report:', error);
+            // Handle error (e.g., show user notification)
+        }
     };
 
     const handleSettingsSave = (newSettings: ModSettings) => {
@@ -73,9 +92,9 @@ export function useModeration(id:number) {
     const filteredReports = reports
         .filter(report => {
             if (filter === 'all') return true;
-            if (filter === 'posts') return report.type === 'post';
-            if (filter === 'comments') return report.type === 'comment';
-            if (filter === 'users') return report.type === 'user';
+            if (filter === 'posts') return report.type === 'post' &&  report.status === 'pending';
+            if (filter === 'comments') return report.type === 'comment'  &&  report.status === 'pending' ;
+            if (filter === 'users') return report.type === 'user'  &&  report.status === 'pending';
             return false;
         })
         .filter(report =>

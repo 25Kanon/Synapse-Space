@@ -145,9 +145,9 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                             report.status === 'pending'
                                 ? 'hover:border-blue-200 hover:shadow-sm'
                                 : report.status === 'approved'
-                                    ? 'bg-green-50 border-green-100'
+                                    ? 'bg-green-50 border-green-100 text-secondary'
                                     : report.status === 'rejected'
-                                        ? 'bg-red-50 border-red-100'
+                                        ? 'bg-red-50 border-red-100 text-secondary'
                                         : 'border-gray-200'
                         }`}
                     >
@@ -180,7 +180,7 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                                         </span>
                                     </div>
 
-                                    <p className="mt-1 text-base-content break-words">
+                                    <p className="mt-1 text break-words">
                                         {report.content}
                                     </p>
 
