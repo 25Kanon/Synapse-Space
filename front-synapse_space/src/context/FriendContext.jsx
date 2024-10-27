@@ -11,14 +11,15 @@ export const FriendProvider = ({ children }) => {
     const [friendRequests, setFriendRequests] = useState([]);
     const [filteredFriendRequests, setFilteredFriendRequests] = useState([]);
     const [friends, setFriends] = useState([]);
-
     // Fetch friend requests
     const fetchFriendRequests = () => {
-        AxiosInstance.get('/api/friend-requests/', { withCredentials: true })
-            .then(response => {
-                setFriendRequests(response.data);
-            })
-            .catch(error => console.error('Error fetching friend requests:', error));
+        if (user?.id) {
+            AxiosInstance.get('/api/friend-requests/', { withCredentials: true })
+                .then(response => {
+                    setFriendRequests(response.data);
+                })
+                .catch(error => console.error('Error fetching friend requests:', error));
+        }
     };
 
     // Filter friend requests directed at the logged-in user
@@ -38,9 +39,11 @@ export const FriendProvider = ({ children }) => {
 
     // Fetch friends
     const fetchFriends = () => {
-        AxiosInstance.get('/api/friends/', { withCredentials: true })
-            .then(response => setFriends(response.data))
-            .catch(error => console.error('Error fetching friends:', error));
+        if (user?.id) {
+            AxiosInstance.get('/api/friends/', { withCredentials: true })
+                .then(response => setFriends(response.data))
+                .catch(error => console.error('Error fetching friends:', error));
+        }
     };
 
     // Poll for friends list every minute

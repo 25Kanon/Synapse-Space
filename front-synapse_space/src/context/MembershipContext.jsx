@@ -15,12 +15,13 @@ export const MembershipsProvider = ({ children }) => {
     const fetchMemberships = async () => {
         try {
             const studentNumber = user.student_number;
-            const response = await AxiosInstance.get('/api/auth/memberships/', { withCredentials: true,
+            const response = await AxiosInstance.get('/api/auth/memberships/', {
+                withCredentials: true,
                 params: {
                     student_number: studentNumber
                 }
             },
-                
+
             );
             setMemberships(response.data);
         } catch (error) {
@@ -32,7 +33,7 @@ export const MembershipsProvider = ({ children }) => {
         setMemberships((prevMemberships) => [...prevMemberships, newMembership]);
     };
     useEffect(() => {
-        if (user && user.IsVerified) {
+        if (user?.id) {
             fetchMemberships();
         }
     }, [user]);
