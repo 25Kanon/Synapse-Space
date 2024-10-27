@@ -7,7 +7,7 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
                     CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView, getReportsView,
-                    SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView
+                    SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
                     modResolveView)
 from django.contrib import admin
 
