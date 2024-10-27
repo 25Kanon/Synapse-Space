@@ -46,11 +46,11 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     posted_in = models.ForeignKey(Community, on_delete=models.CASCADE)
 
 class Membership(models.Model):
-    user = models.ForeignKey(User, to_field='student_number', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     community = models.ForeignKey(Community, to_field='id', on_delete=models.CASCADE)
     role = models.CharField(max_length=255, default='member')
 
@@ -104,6 +104,7 @@ class Reports(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    comment_post_id = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
     object_id = models.PositiveIntegerField()
     concerning = GenericForeignKey('content_type', 'object_id')
 

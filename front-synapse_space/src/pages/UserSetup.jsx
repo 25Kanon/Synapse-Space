@@ -109,9 +109,7 @@ function UserSetup() {
         try {
             // Upload profile picture and registration form
             const profilePicUrl = await handleFileUpload(formData.profile_pic);
-            console.log('profilePicUrl', profilePicUrl)
             const regFormUrl = await handleFileUpload(formData.registration_form);
-            console.log('regFormUrl', regFormUrl)
 
             // Prepare the final payload
             const payload = {
@@ -119,18 +117,36 @@ function UserSetup() {
                 profile_pic: profilePicUrl,
                 registration_form: regFormUrl,
             };
-
             // Send the final payload to the server
             const response = await axiosInstance.put(`/api/verify/account/`, payload, {
                 withCredentials: true,
             });
             setSuccess("User setup successful");
-            navigate("/");
+            window.location.reload();
             setSuccess(null);
 
         } catch (error) {
             console.error('Error submitting form:', error);
-            setError('Error submitting form: ' + error.message);
+
+            if (error.response) {
+                // Assuming error.response.data is the object you provided
+                const errorData = error.response.data;
+
+                // Get the keys of the error object
+                const errorKeys = Object.keys(errorData);
+
+                // Check if there are any errors and get the first one
+                if (errorKeys.length > 0) {
+                    const firstErrorKey = errorKeys[0]; // Get the first error key
+                    const firstErrorMessage = errorData[firstErrorKey][0]; // Get the first error message for that key
+                    setError(`Error: ${firstErrorMessage}`);
+                } else {
+                    setError('Unknown error occurred.');
+                }
+            } else {
+                // Fallback for network or other errors
+                setError('Error submitting form: ' + error.message);
+            }
         }
         console.log("Form submitted:", formData);
     };
@@ -224,8 +240,8 @@ function UserSetup() {
                                 <div className="w-100 flex justify-center items-center mx-3">
                                     <div className="form-control">
                                         <div className="form-control mt-4">
-                                            <div className="mx-auto">
-                                                <img className="h-auto w-md" src={regForm} alt="regform" />
+                                            <div className="mx-auto bg-red-300 p-4 object-none ">
+                                                <img className="h-80 w-80" src={regForm} alt="regform" />
                                             </div>
                                             <div className="input-group">
                                                 <span><span>Upload Registration Form</span></span>

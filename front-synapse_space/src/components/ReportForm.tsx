@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AxiosInstance from '../utils/AxiosInstance'
 
-const ReportForm = ({type, object, community}) => {
+const ReportForm = ({type, object, community, comment_post_id}) => {
     const [reason, setReason] = useState('');
     const [content, setContent] = useState('');
     const [error, setError] = useState('');
@@ -23,7 +23,8 @@ const ReportForm = ({type, object, community}) => {
                 reason,
                 content_type: contentTypeMapping[type],
                 object_id: object,
-                community: community
+                community: community,
+                comment_post_id: comment_post_id
             };
 
             await AxiosInstance.post(`/api/${community}/create-report/`, reportData, {withCredentials:true});

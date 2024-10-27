@@ -75,6 +75,7 @@ export function useModeration(id:number) {
             if (filter === 'all') return true;
             if (filter === 'posts') return report.type === 'post';
             if (filter === 'comments') return report.type === 'comment';
+            if (filter === 'users') return report.type === 'user';
             return false;
         })
         .filter(report =>

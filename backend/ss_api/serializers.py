@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['student_number', 'first_name', 'last_name', 'email', 'username', 'password']
+        fields = ['first_name', 'last_name', 'email', 'username', 'password']
         extra_kwargs = {
             'student_number': {'required': True},
             'first_name': {'required': True},
@@ -47,7 +47,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
-            student_number=validated_data['student_number'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name']
         )
@@ -242,12 +241,14 @@ class CreateMembership(serializers.ModelSerializer):
 
 class MembershipSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
+    user_id = serializers.CharField(source='user.id', read_only=True, required=False)
+    community = serializers.PrimaryKeyRelatedField(queryset=Community.objects.all())
     community_name = serializers.CharField(source='community.name', read_only=True)
     community_avatar = serializers.CharField(source='community.imgURL', read_only=True)
 
     class Meta:
         model = Membership
-        fields = ['username','community', 'community_name', 'community_avatar']
+        fields = ['username','community', 'community_name', 'community_avatar', 'user_id']
 
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -327,14 +328,15 @@ class ReportsSerializer(serializers.ModelSerializer):
     object_id = serializers.IntegerField()
     concerning = serializers.SerializerMethodField()
     reports = serializers.SerializerMethodField()
-    author = serializers.CharField(source='author.username')
-    timestamp = serializers.DateTimeField(source='created_at')
+    author = serializers.CharField(source='author.username', read_only=True)
+    timestamp = serializers.DateTimeField(source='created_at', read_only=True)
+    comment_post_id = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all(), required=False)
 
     class Meta:
         model = Reports
         fields = [
             'id', 'type', 'content', 'author', 'reason', 'timestamp',
-            'reports', 'status', 'content_type', 'object_id', 'concerning'
+            'reports', 'status', 'content_type', 'object_id', 'concerning', 'community', 'comment_post_id'
         ]
 
     def get_concerning(self, obj):
@@ -347,8 +349,3 @@ class ReportsSerializer(serializers.ModelSerializer):
             content_type=obj.content_type,
             object_id=obj.object_id
         ).count()
-
-    def create(self, validated_data):
-        # Set the author to the current user
-        validated_data['author'] = self.context['request'].user
-        return super().create(validated_data)

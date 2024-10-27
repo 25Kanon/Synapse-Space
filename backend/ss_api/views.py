@@ -97,7 +97,7 @@ class VerifyAccountView(APIView):
 
             return Response({'message': 'User details updated successfully.'}, status=status.HTTP_200_OK)
 
-        print(serializer.errors)
+        logger.error(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(TokenObtainPairView):
@@ -276,7 +276,7 @@ class ImageUploadView(APIView):
 
             if img_file:
                 img_hash = hashlib.md5(img_file.name.encode()).hexdigest()[:8]
-                img_blob_name = f"uploads/{img_hash}-{img_file.name}"
+                img_blob_name = f"uploads/{img_hash}-{img_file.name.replace(' ', '_')}"
                 container_client.upload_blob(img_blob_name, img_file, overwrite=True)
                 img_url = f"https://{self.account_name}.blob.core.windows.net/{self.container_name}/{img_blob_name}"
             else:
@@ -805,6 +805,7 @@ class ReportsListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # Attach the author (logged-in user) to the report
+
         serializer.save(author=self.request.user)
 
 
@@ -821,7 +822,7 @@ class getReportsView(generics.ListAPIView):
         community = get_object_or_404(Community, id=community_id)
 
         # Filter reports for the specified community based on content types
-        community_content_types = ContentType.objects.filter(model__in=['post', 'comment'])
+        community_content_types = ContentType.objects.filter(model__in=['post', 'comment', 'user'])
         return Reports.objects.filter(
             content_type__in=community_content_types,
             community=community

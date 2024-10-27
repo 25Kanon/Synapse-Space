@@ -36,22 +36,6 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
     };
 
 
-    const handleReport = () => {
-        const url = `/api/create-report`;
-        AxiosInstance.post(url, { postId }, { withCredentials: true})
-            .then(response => {
-                if (response.status === 200 || response.status === 201) {
-                    console.log('Post reported successfully');
-                } else {
-                    console.error('Failed to report the post');
-                }
-            })
-            .catch(error => {
-                console.error('Error occurred while reporting the post:', error);
-            });
-    };
-
-
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
 
@@ -103,22 +87,21 @@ const CommunityPost = ({ userName, userAvatar, community, postTitle, postContent
                                 </label>
                                 <ul tabIndex={0}
                                     className="p-2 shadow menu dropdown-content bg-secondary rounded-box w-52">
-                                    {authorId ? user.id &&
+                                    {authorId === user.id ? (
                                         <div>
-                                            <li><Link to={`/community/${community}/post/${postId}/edit`}>Edit</Link>
-                                            </li>
-                                            <li><Link to={`/community/${community}/post/${postId}/delete`}>Delete</Link>
-                                            </li>
-                                        </div> :
-                                        <li><a>Report</a></li>
-                                    }
-                                    <li>
-                                        <button
-                                                onClick={() => document.getElementById(`modal${postId}`).showModal()}>open
-                                            modal
-                                        </button>
-                                    </li>
-                                    <dialog id={`modal${postId}`} className="modal">
+                                            <li><Link to={`/community/${community}/post/${postId}/edit`}>Edit</Link></li>
+                                            <li><Link to={`/community/${community}/post/${postId}/delete`}>Delete</Link></li>
+                                        </div>
+                                    ) : (
+                                        <li>
+                                            <button
+                                                onClick={() => document.getElementById(`PostModal${postId}`).showModal()}>Report
+                                            </button>
+                                        </li>
+                                    )}
+
+
+                                    <dialog id={`PostModal${postId}`} className="modal">
                                         <ReportForm type={"post"} object={postId} community={community}/>
                                     </dialog>
 

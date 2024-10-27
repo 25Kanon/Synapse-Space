@@ -103,7 +103,7 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
         action: string;
     } | null>(null);
 
-    const handleAction = (action: string, id: string, type: Report['type'], reportedId: Report['object_id']) => {
+    const handleAction = (action: string, id: string, type: Report['type'], reportedId: Report['object_id'], comment_post_id: Report['comment_post_id']) => {
         if (action === 'approve') {
             onApprove(id);
         } else if (action === 'reject') {
@@ -114,7 +114,7 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
             if (type === 'post') {
                 url = `/community/${community_id}/post/${reportedId}`;
             } else if (type === 'comment') {
-                url = `/community/${community_id}/post/${reportedId}#comment-${id}`;
+                url = `/community/${community_id}/post/${comment_post_id}/#comment${`-`}${reportedId}`;
             } else if (type === 'user') {
                 url = `/user/${id}`;
             }
@@ -207,7 +207,7 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                                 >
                                     <ActionButtons
                                         type={report.type}
-                                        onAction={(action) => handleAction(action, report.id, report.type, report.object_id)}
+                                        onAction={(action) => handleAction(action, report.id, report.type, report.object_id, report.comment_post_id)}
                                     />
                                     <button
                                         onClick={() => handleAction('approve', report.id, report.type, report.object_id)}

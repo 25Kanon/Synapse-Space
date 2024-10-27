@@ -7,10 +7,6 @@ import SuccessAlert from './SuccessAlert';
 import ErrorAlert from './ErrorAlert';
 
 const validationSchema = yup.object({
-    student_number: yup
-        .number()
-        .required('Student Number is required')
-        .typeError('Student Number must be a number'),
     first_name: yup
         .string()
         .required('First Name is required'),
@@ -38,7 +34,6 @@ export default function RegistrationForm() {
 
     const formik = useFormik({
         initialValues: {
-            student_number: '',
             username:'',
             first_name: '',
             last_name: '',
@@ -49,7 +44,6 @@ export default function RegistrationForm() {
         validationSchema: validationSchema,
         onSubmit: async (values) => {
             const sanitizedValues = {
-                student_number: DOMPurify.sanitize(values.student_number),
                 first_name: DOMPurify.sanitize(values.first_name),
                 last_name: DOMPurify.sanitize(values.last_name),
                 username: DOMPurify.sanitize(values.email),
@@ -87,22 +81,6 @@ export default function RegistrationForm() {
 
             <h2 className="card-title justify-center">Welcome Back!</h2>
             <h3 className="flex justify-center">Create an account</h3>
-
-            <div className="form-control">
-                <label className="label">
-                    <span className="label-text">Student Number</span>
-                </label>
-                <input
-                    type="number"
-                    name="student_number"
-                    placeholder="Student Number"
-                    className="input input-bordered w-full"
-                    onChange={formik.handleChange}
-                    value={formik.values.student_number}
-                />
-                {formik.errors.student_number ?
-                    <span className="label-text text-error">{formik.errors.student_number}</span> : null}
-            </div>
 
             <div className="form-control">
                 <label className="label">

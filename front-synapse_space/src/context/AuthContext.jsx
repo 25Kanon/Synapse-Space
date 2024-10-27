@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
                 .then(scheduleTokenRefresh)
                 .catch(console.error);
         }, timeUntilRefresh);
-    }, [refreshToken]);
+    }, [refreshToken, user]);
 
     const checkAuthentication = useCallback(async () => {
         try {
@@ -102,8 +102,6 @@ export const AuthProvider = ({ children }) => {
                 setLoginData(data);
             } else {
                 console.log('Login successful', response.data);
-                setUser(response.data.user);
-                scheduleTokenRefresh(response.data.access);
                 setRequireOTP(false);
                 setLoginData(null);
                 return response.data;

@@ -1,8 +1,10 @@
 import React, {useState, useContext, useEffect, useRef} from "react";
 import CommentForm from "./CommentForm";
-import { Trash2, Edit, MessageCircle } from "lucide-react";
+import { Trash2, Edit, MessageCircle, Flag } from "lucide-react";
 import AuthContext from "../../context/AuthContext";
-import {useLocation} from "react-router-dom";
+import {useLocation, useParams} from "react-router-dom";
+import AxiosInstance from "../../utils/AxiosInstance";
+import ReportForm from "../ReportForm";
 
 const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -10,6 +12,8 @@ const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) 
     const { user } = useContext(AuthContext);
     const location = useLocation();
     const commentRef = useRef(null);
+    const searchParams = new URLSearchParams(window.location.search);
+    const { community_id } = useParams();
 
     const handleEdit = () => {
         setIsEditing(true);
@@ -33,6 +37,7 @@ const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) 
         onReply(content, comment.id);
         setIsReplying(false);
     };
+
 
     useEffect(() => {
         // Extract the ID from the URL hash
@@ -69,26 +74,39 @@ const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) 
                 ) : (
                     <>
                         <p className="mb-2">{comment.content}</p>
+
                         <div className="mt-2 space-x-2">
                             {user.username === comment.author && (
                                 <>
                                     <button onClick={handleEdit} className="text-blue-500 hover:text-blue-700">
-                                        <Edit size={16} />
+                                        <Edit size={16}/>
                                     </button>
                                     <button onClick={handleDelete} className="text-red-500 hover:text-red-700">
-                                        <Trash2 size={16} />
+                                        <Trash2 size={16}/>
                                     </button>
                                 </>
                             )}
                             <button onClick={handleReply} className="text-green-500 hover:text-green-700">
-                                <MessageCircle size={16} />
+                                <MessageCircle size={16}/>
                             </button>
+                            {user.username !== comment.author && (
+                                <>
+                                    <button onClick={() => document.getElementById(`CommentModal${comment.id}`).showModal()}
+                                            className="text-red-500 hover:text-red-700">
+                                        <Flag size={16}/>
+                                    </button>
+
+                                </>
+                            )}
                         </div>
+                        <dialog id={`CommentModal${comment.id}`} className="modal">
+                            <ReportForm type={"comment"} object={comment.id} community={community_id} comment_post_id={comment.post}/>
+                        </dialog>
                     </>
                 )}
                 {isReplying && (
                     <div className="mt-4">
-                        <CommentForm onSubmit={handleSubmitReply} />
+                        <CommentForm onSubmit={handleSubmitReply}/>
                     </div>
                 )}
             </div>
