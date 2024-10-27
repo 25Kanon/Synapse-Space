@@ -531,7 +531,6 @@ class GenerateSignedUrlView(APIView):
             logger.error(f"Error generating signed URL: {str(e)}")
             raise e
 
-
 class MoveImageView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -699,8 +698,18 @@ class UserProfileView(APIView):
 
         user.save()
 
-        user_data = UserProfileSerializer(user).data
+        user_data = UserSerializer(user).data
         return Response(user_data)
+    
+class EditProfileView(generics.UpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user  # Get the current authenticated user
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
 class UserActivitiesView(APIView):
     authentication_classes = [CookieJWTAuthentication]
@@ -767,6 +776,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'student_number', 'username', 'first_name', 'last_name', 'email', 'profile_pic', 'interests','bio']
+
 class UserListView(generics.ListAPIView):
     serializer_class = CustomUserSerializer
     authentication_classes = [CookieJWTAuthentication]
@@ -795,7 +805,6 @@ class getCommunityStats(APIView):
             'members': members,
             'posts': posts
         })
-
 
 class ReportsListCreateView(generics.ListCreateAPIView):
     queryset = Reports.objects.all()
