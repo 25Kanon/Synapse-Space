@@ -1,16 +1,16 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
-const BannerProfile = ({ first_name, profAvatar, profBanner, bio }) => {
-    const navigate = useNavigate(); // Initialize useNavigate
+const BannerProfile = ({ first_name, last_name, username, profAvatar, profBanner, bio }) => {
+    const navigate = useNavigate();
 
-    const getInitials = (first_name) => {
-        return first_name ? first_name[0] : '';
+    const getInitials = (name) => {
+        return name ? name[0] : '';
     };
 
     const handleEditClick = () => {
-        navigate("/edit-profile"); // Navigate to edit profile page
+        navigate("/edit-profile");
     };
 
     return (
@@ -29,17 +29,18 @@ const BannerProfile = ({ first_name, profAvatar, profBanner, bio }) => {
                         {profAvatar ? (
                             <img src={profAvatar} alt={`avatar-${first_name}`} />
                         ) : (
-                            <h2 className="text-lg font-bold">{getInitials(first_name)}</h2>
+                            <h2 className="text-lg font-bold">{getInitials(first_name)}{getInitials(last_name)}</h2>
                         )}
                     </div>
                 </div>
             </div>
 
             <div className="flex items-center justify-between mt-2 text-left ml-36">
-                <h2 className="font-semibold">{first_name}</h2>
+                <h2 className="font-semibold">{`${first_name} ${last_name}`}</h2> {/* Display full name */}
                 <button onClick={handleEditClick} className="btn btn-primary btn-sm">Edit</button>
             </div>
 
+            <p className="mt-1 text-sm text-gray-600 ml-36">@{username}</p> {/* Display username */}
             <p className="mt-1 text-sm text-gray-600 ml-36">{bio || 'No bio available'}</p>
         </div>
     );
@@ -47,6 +48,8 @@ const BannerProfile = ({ first_name, profAvatar, profBanner, bio }) => {
 
 BannerProfile.propTypes = {
     first_name: PropTypes.string.isRequired,
+    last_name: PropTypes.string.isRequired,
+    username: PropTypes.string.isRequired, // Add username prop type
     profAvatar: PropTypes.string,
     profBanner: PropTypes.string,
     bio: PropTypes.string,

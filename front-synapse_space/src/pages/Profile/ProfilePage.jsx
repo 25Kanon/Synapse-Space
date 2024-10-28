@@ -4,29 +4,24 @@ import 'tailwindcss/tailwind.css';
 import 'daisyui';
 import AuthContext from "../../context/AuthContext";
 import NavBar from '../../components/NavBar';
-import BannerProfile from '../../components/profile/BannerProfile';  // Updated import
+import BannerProfile from '../../components/profile/BannerProfile';  
 import MainContentContainer from "../../components/MainContentContainer";
 import ProfileTabs from '../../components/profile/ProfileTabs';
 import ActivitiesDisplay from '../../components/profile/ActivitiesDisplay';
 import AxiosInstance from "../../utils/AxiosInstance";
 
-
 const ProfilePage = () => {
-    const {user} = useContext(AuthContext); // Assuming this contains user info like username, first_name, last_name
+    const { user } = useContext(AuthContext); 
     const [userProfile, setUserProfile] = useState({});
     const [activities, setActivities] = useState({});
     const [activeTab, setActiveTab] = useState('overview');
 
-   
-
     useEffect(() => {
         // Fetch user profile
-        AxiosInstance.get(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`,{},   
-            {withCredentials:true}
-        )
+        AxiosInstance.get(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, { withCredentials: true })
             .then(response => {
-                setUserProfile(response.data); // Ensure correct response structure
-                console.log(response.data)
+                setUserProfile(response.data); 
+                console.log(response.data);
             })
             .catch(error => console.error(error));
 
@@ -42,10 +37,12 @@ const ProfilePage = () => {
             <MainContentContainer>
                 <div className="p-6">
                     <BannerProfile 
-                        first_name={user.username} 
-                        last_name={user.username}    
+                        first_name={userProfile.first_name} // Use first_name from userProfile
+                        last_name={userProfile.last_name} // Add last_name from userProfile
+                        username={user.username} // Pass username
                         profBanner={userProfile.bannerURL} 
-                        profAvatar={userProfile.profile_pic} 
+                        profAvatar={userProfile.profile_pic}
+                        bio={userProfile.bio}
                     />
                     <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
                     <ActivitiesDisplay activities={activities} activeTab={activeTab} />
