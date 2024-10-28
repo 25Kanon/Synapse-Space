@@ -15,6 +15,7 @@ class User(AbstractUser):
     program = models.CharField(max_length=200, null=True, blank=True)
     registration_form = models.URLField(max_length=None, null=True, blank=True)
     profile_pic = models.URLField(max_length=None, null=True, blank=True)
+    profile_banner = models.URLField(max_length=None, null=True, blank=True)
     interests = ArrayField(models.CharField(max_length=200), blank=True, null=True)
     bio = models.TextField(null=True, blank=True)
     otp_secret = models.CharField(max_length=32, default=pyotp.random_base32)

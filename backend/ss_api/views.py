@@ -688,6 +688,8 @@ class CommentDeleteView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
 class UserProfileView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         user = request.user

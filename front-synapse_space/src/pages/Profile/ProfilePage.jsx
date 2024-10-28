@@ -8,6 +8,8 @@ import BannerProfile from '../../components/profile/BannerProfile';  // Updated 
 import MainContentContainer from "../../components/MainContentContainer";
 import ProfileTabs from '../../components/profile/ProfileTabs';
 import ActivitiesDisplay from '../../components/profile/ActivitiesDisplay';
+import AxiosInstance from "../../utils/AxiosInstance";
+
 
 const ProfilePage = () => {
     const {user} = useContext(AuthContext); // Assuming this contains user info like username, first_name, last_name
@@ -15,11 +17,16 @@ const ProfilePage = () => {
     const [activities, setActivities] = useState({});
     const [activeTab, setActiveTab] = useState('overview');
 
+   
+
     useEffect(() => {
         // Fetch user profile
-        axios.get(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`)
+        AxiosInstance.get(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`,{},   
+            {withCredentials:true}
+        )
             .then(response => {
                 setUserProfile(response.data); // Ensure correct response structure
+                console.log(response.data)
             })
             .catch(error => console.error(error));
 
