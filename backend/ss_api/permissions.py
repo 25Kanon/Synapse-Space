@@ -18,7 +18,9 @@ class IsCommunityMember(permissions.BasePermission):
         except Community.DoesNotExist:
             return False
 
-        return Membership.objects.filter(user=request.user, community=community).exists()
+        if not Membership.objects.filter(status='accepted', user=request.user, community=community).exists():
+            return False
+        return True
 
     def has_object_permission(self, request, view, obj):
         return self.has_permission(request, view)

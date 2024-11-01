@@ -425,7 +425,7 @@ class getMembershipRole(APIView):
 
     def get(self, request, community_id):
         user = request.user
-        membership = Membership.objects.filter(user=user, community_id=community_id).first()
+        membership = Membership.objects.filter(user=user, community_id=community_id, status='accepted').first()
         if membership:
             return Response({"role": membership.role}, status=status.HTTP_200_OK)
         else:
@@ -438,7 +438,7 @@ class MembershipListView(generics.ListAPIView):
 
     def get_queryset(self):
         student_number = self.request.query_params.get('student_number')
-        return Membership.objects.filter(user__student_number=student_number)
+        return Membership.objects.filter(user__student_number=student_number, status='accepted').select_related('community')
 
 class CommunityMembersListView(generics.ListAPIView):
 
