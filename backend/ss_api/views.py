@@ -635,8 +635,10 @@ class unlikePostView(APIView):
         post = Post.objects.get(id=post_id)
         user = request.user
         like = Likes.objects.filter(user=user, post=post).first()
+        userLike= LikedPost.objects.filter(user=user, post=post).first()
         if like:
             like.delete()
+            userLike.delete()
             return Response({"message": "Post unliked successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Post not liked"}, status=status.HTTP_200_OK)
