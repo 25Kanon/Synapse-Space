@@ -256,10 +256,11 @@ class MembershipSerializer(serializers.ModelSerializer):
     community = serializers.PrimaryKeyRelatedField(queryset=Community.objects.all())
     community_name = serializers.CharField(source='community.name', read_only=True)
     community_avatar = serializers.CharField(source='community.imgURL', read_only=True)
+    status = serializers.CharField( read_only=True)
 
     class Meta:
         model = Membership
-        fields = ['username', 'userAvatar', 'community', 'community_name', 'community_avatar', 'user_id']
+        fields = ['id', 'username', 'userAvatar', 'community', 'community_name', 'community_avatar', 'user_id', 'status']
 
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:

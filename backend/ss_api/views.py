@@ -396,7 +396,7 @@ class CommunityCreateView(generics.CreateAPIView):
             community = serializer.save(imgURL=img_url, bannerURL=banner_url)
 
             # Create initial membership
-            Membership.objects.create(user=self.request.user, community=community, role='admin')
+            Membership.objects.create(user=self.request.user, community=community, role='admin', status='accepted')
 
         except Exception as e:
             # If there's an error during community creation, delete any uploaded images
@@ -430,6 +430,8 @@ class getMembershipRole(APIView):
             return Response({"role": membership.role}, status=status.HTTP_200_OK)
         else:
             return Response({"error": user}, status=status.HTTP_404_NOT_FOUND)
+
+
 class MembershipListView(generics.ListAPIView):
 
     authentication_classes = [CookieJWTAuthentication]
@@ -440,6 +442,7 @@ class MembershipListView(generics.ListAPIView):
         student_number = self.request.query_params.get('student_number')
         return Membership.objects.filter(user__student_number=student_number, status='accepted').select_related('community')
 
+
 class CommunityMembersListView(generics.ListAPIView):
 
     authentication_classes = [CookieJWTAuthentication]
@@ -448,7 +451,8 @@ class CommunityMembersListView(generics.ListAPIView):
 
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
-        return Membership.objects.filter(community__id=community_id).select_related('user')
+        return Membership.objects.filter(community__id=community_id, status='accepted').select_related('user')
+
 
 class CommunityDetailView(generics.RetrieveAPIView):
     authentication_classes = [CookieJWTAuthentication]
@@ -872,6 +876,96 @@ class modResolveView(generics.UpdateAPIView):
 
         return Response({"message": "Report has been approved."}, status=status.HTTP_200_OK)
 
+
+class getPendingCommunityMembersListView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    authentication_classes = [CookieJWTAuthentication]
+    serializer_class = MembershipSerializer
+
+    def get_queryset(self):
+        community_id = self.kwargs.get('community_id')
+        return Membership.objects.filter(community__id=community_id, role='member').select_related('user')
+
+
+class AcceptMembershipView(APIView):
+
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    authentication_classes = [CookieJWTAuthentication]
+    def post(self, request, *args, **kwargs):
+        community_id = kwargs.get('community_id')
+        user_ids = request.data.get('user_ids', [])
+
+        if not community_id or not user_ids:
+            return Response({"detail": "Community ID and user IDs are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            community = Community.objects.get(id=community_id)
+        except Community.DoesNotExist:
+            return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        memberships = Membership.objects.filter(community=community, user_id__in=user_ids)
+        updated_memberships = []
+
+        for membership in memberships:
+            membership.status = 'accepted'
+            membership.save()
+            updated_memberships.append(membership)
+
+        serializer = MembershipSerializer(updated_memberships, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class BanMembershipView(APIView):
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    authentication_classes = [CookieJWTAuthentication]
+    def post(self, request, *args, **kwargs):
+        community_id = kwargs.get('community_id')
+        user_ids = request.data.get('user_ids', [])
+
+        if not community_id or not user_ids:
+            return Response({"detail": "Community ID and user IDs are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            community = Community.objects.get(id=community_id)
+        except Community.DoesNotExist:
+            return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        memberships = Membership.objects.filter(community=community, user_id__in=user_ids)
+        updated_memberships = []
+
+        for membership in memberships:
+            membership.status = 'banned'
+            membership.save()
+            updated_memberships.append(membership)
+
+        serializer = MembershipSerializer(updated_memberships, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UnbanMembershipView(APIView):
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    authentication_classes = [CookieJWTAuthentication]
+    def post(self, request, *args, **kwargs):
+        community_id = kwargs.get('community_id')
+        user_ids = request.data.get('user_ids', [])
+
+        if not community_id or not user_ids:
+            return Response({"detail": "Community ID and user IDs are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            community = Community.objects.get(id=community_id)
+        except Community.DoesNotExist:
+            return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        memberships = Membership.objects.filter(community=community, user_id__in=user_ids)
+        updated_memberships = []
+
+        for membership in memberships:
+            membership.delete()
+
+        serializer = MembershipSerializer(updated_memberships, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 

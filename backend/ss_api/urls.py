@@ -8,7 +8,8 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
                     CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView, getReportsView,
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
-                    modResolveView, getJoinedCommunityPosts)
+                    modResolveView, getJoinedCommunityPosts, AcceptMembershipView, BanMembershipView,
+                    UnbanMembershipView, getPendingCommunityMembersListView)
 from django.contrib import admin
 
 
@@ -57,6 +58,10 @@ urlpatterns = [
 
     path('<int:community_id>/create-report/', ReportsListCreateView.as_view(), name='report-create'),
     path('community/<int:community_id>/reports/resolve/<int:pk>/', modResolveView.as_view(), name='mod-approve'),
+    path('community/<int:community_id>/pending-members/', getPendingCommunityMembersListView.as_view(), name='community-pending-members-list'),
+    path('membership/accept/<int:community_id>/', AcceptMembershipView.as_view(), name='accept-membership'),
+    path('membership/ban/<int:community_id>/', BanMembershipView.as_view(), name='accept-membership'),
+    path('membership/unban/<int:community_id>/', UnbanMembershipView.as_view(), name='accept-membership'),
 
     # User URLs
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),

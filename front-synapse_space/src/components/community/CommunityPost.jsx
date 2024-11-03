@@ -139,7 +139,7 @@ const CommunityPost = ({
                         <h2 className="card-title">{postTitle}</h2>
                     </Link>
 
-                    <article className="prose text-overflow: ellipsis">
+                    <article className="prose max-w-none lg:prose-lg text-overflow: ellipsis">
                         <StyledOutput data={JSON.parse(postContent)}/>
                     </article>
 

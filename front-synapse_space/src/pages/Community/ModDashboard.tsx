@@ -13,8 +13,7 @@ import SuccessAlert from "../../components/SuccessAlert";
 
 
 function ModDashboard() {
-
-    const {community_id} = useParams();
+    const { community_id } = useParams();
     const [community_details, setCommunityDetails]= useState('') ;
     const [Error, setError] = useState('');
 
@@ -87,7 +86,7 @@ function ModDashboard() {
             {/* Main Content */}
             <main className="max-w-7xl rounded rounded-lg bg-base-200 my-5 mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <ModStats stats={stats} />
-                <ModActions onOpenSettings={() => setIsSettingsOpen(true)}/>
+                <ModActions onOpenSettings={() => setIsSettingsOpen(true)} />
 
                 <div className="border rounded-lg shadow-sm p-4 mb-6 ">
                     <div className="flex items-center justify-between mb-4">

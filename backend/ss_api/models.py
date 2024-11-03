@@ -54,7 +54,7 @@ class Membership(models.Model):
     user = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     community = models.ForeignKey(Community, to_field='id', on_delete=models.CASCADE)
     role = models.CharField(max_length=255, default='member')
-    status = models.CharField(max_length=255, default='accepted')
+    status = models.CharField(max_length=255, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
