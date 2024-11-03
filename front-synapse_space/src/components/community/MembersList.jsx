@@ -64,7 +64,7 @@ const MembersList = ({ id }) => {
                                         )}
                                     </div>
                                 </div>
-                                <span className="ms-3 text-sm">{member.username}</span>
+                                <span className="ms-3 text-sm text-ellipsis overflow-hidden whitespace-nowrap">{member.username}</span>
                                 <div className="dropdown dropdown-end ml-auto">
                                     <label tabIndex={0} className="btn btn-ghost btn-circle">
                                         <svg

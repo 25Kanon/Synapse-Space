@@ -22,7 +22,7 @@ const FriendsList = () => {
                   alt={`${friend.full_name}'s profile`}
                   className="w-8 h-8 rounded-full"
                 />
-                <span>{friend.full_name}</span>
+                <span className="ms-3 text-ellipsis overflow-hidden whitespace-nowrap">{friend.full_name}</span>
               </li>
             ))
           ) : (
