@@ -888,6 +888,25 @@ class getPendingCommunityMembersListView(generics.ListAPIView):
         return Membership.objects.filter(community__id=community_id, role='member').select_related('user')
 
 
+class CheckPendingMembershipView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
+    def get(self, request, community_id):
+        user_id = request.user.id
+        try:
+            community = Community.objects.get(id=community_id)
+        except Community.DoesNotExist:
+            return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        membership = Membership.objects.filter(community=community, user_id=user_id, status='pending').first()
+        if membership:
+            serializer = MembershipSerializer(membership)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Pending membership not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+
 class AcceptMembershipView(APIView):
 
     permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
