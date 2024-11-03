@@ -49,6 +49,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     posted_in = models.ForeignKey(Community, on_delete=models.CASCADE)
+    isPinned = models.BooleanField(default=False)
 
 class Membership(models.Model):
     user = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)

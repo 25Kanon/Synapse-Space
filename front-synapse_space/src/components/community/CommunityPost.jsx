@@ -23,11 +23,14 @@ const CommunityPost = ({
                            postId,
                            userID,
                            showComments,
-                           authorId
+                           authorId,
+                           isPinned,
                        }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
     const {user} = useContext(AuthContext);
+    const [role, setRole] = useState('');
+    const communityID = community;
     const getInitials = (name) => {
         return name.split(' ').map(word => word[0]).join('');
     };
@@ -51,6 +54,34 @@ const CommunityPost = ({
 
     const label = {inputProps: {'aria-label': 'Checkbox demo'}};
 
+    const fetchMembership = async () =>  {
+        try{
+            const response = await AxiosInstance.get(`api/community/${community}/membership/role/`,{},{withCredentials: true});
+            setRole(response.data.role);
+            console.log(response.data.role);
+        }catch (error){
+            console.log(error);
+        }
+    }
+
+    const pinpost = async () => {
+        try{
+            const response = await AxiosInstance.post(`api/community/${community}/post/${postId}/pin/`,{},{withCredentials: true});
+            console.log(response);
+        }catch (error){
+            console.log(error);
+        }
+    }
+
+    const unpinPost = async () => {
+        try {
+            const response = await AxiosInstance.post(`api/community/${community}/post/${postId}/unpin/`, {}, {withCredentials: true});
+            console.log(response);
+            setIsPinned(false);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     useEffect(() => {
         const fetchLikeStatus = async () => {
@@ -70,12 +101,14 @@ const CommunityPost = ({
             }
         };
         fetchLikeStatus();
+        fetchMembership();
 
     }, [community, postId, isLiked, userID]);
 
     return (
         <>
-            <div key={postId} className="w-full my-5 border border-solid shadow-xl card card-compact">
+            <div key={postId} className={`w-full my-5 border border-solid shadow-xl card card-compact ${isPinned ? 'border-amber-400' : ''}`}>
+
                 <div className="card-body">
                     <div className="flex items-center h-5">
                         <div className="mx-2 avatar">
@@ -110,6 +143,20 @@ const CommunityPost = ({
                                 </label>
                                 <ul tabIndex={0}
                                     className="p-2 shadow menu dropdown-content bg-secondary rounded-box w-52">
+                                    {role === "moderator" || role === "admin" ? (
+                                        <li>
+                                            {isPinned ? (
+                                                <button onClick={() => unpinPost()}>
+                                                    Unpin Post
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => pinPost()}>
+                                                    Pin Post
+                                                </button>
+                                            )}
+                                        </li>
+                                    ) : null}
+
                                     {authorId === user.id ? (
                                         <div>
                                             <li><Link to={`/community/${community}/post/${postId}/edit`}>Edit</Link>
@@ -184,6 +231,7 @@ CommunityPost.propTypes = {
     postId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     showComments: PropTypes.bool,
     authorId: PropTypes.number,
+    isPinned: PropTypes.bool,
 };
 
 export default CommunityPost;

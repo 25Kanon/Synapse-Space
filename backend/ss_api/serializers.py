@@ -283,10 +283,11 @@ class CreatePostSerializer(serializers.ModelSerializer):
 class CommunityPostSerializer(serializers.ModelSerializer):
     created_by_username = serializers.SerializerMethodField()
     userAvatar = serializers.CharField(source='created_by.profile_pic', read_only=True)
+    isPinned = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar']
+        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar', 'isPinned']
 
     def get_created_by_username(self, obj):
         return obj.created_by.username
@@ -294,9 +295,10 @@ class CommunityPostSerializer(serializers.ModelSerializer):
 class getCommunityPostSerializer(serializers.ModelSerializer):
     created_by_username = serializers.SerializerMethodField()
     userAvatar = serializers.CharField(source='created_by.profile_pic', read_only=True)
+    isPinned = serializers.BooleanField(read_only=True)
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar']
+        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar', 'isPinned']
 
     def get_created_by_username(self, obj):
         return obj.created_by.username

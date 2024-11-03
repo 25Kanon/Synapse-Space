@@ -24,47 +24,47 @@ type ModActionsProps = {
 
 export function ModActions({ onOpenSettings }: ModActionsProps) {
     const actionGroups = {
-        posts: [
-            {
-                label: 'Lock Thread',
-                icon: Lock,
-                color: 'text-orange-500',
-                action: () => alert('Thread locked!'),
-
-            },
-            {
-                label: 'Pin Post',
-                icon: Pin,
-                color: 'text-blue-500',
-                action: () => alert('Post pinned!'),
-            },
-            {
-                label: 'Archive',
-                icon: Shield,
-                color: 'text-purple-500',
-                action: () => alert('Post archived!'),
-            },
-        ],
-        comments: [
-            {
-                label: 'Hide',
-                icon: AlertTriangle,
-                color: 'text-yellow-500',
-                action: () => alert('Comment hidden!'),
-            },
-            {
-                label: 'Delete',
-                icon: Trash2,
-                color: 'text-red-500',
-                action: () => alert('Comment deleted!'),
-            },
-            {
-                label: 'Mark as Answer',
-                icon: MessageSquare,
-                color: 'text-green-500',
-                action: () => alert('Marked as answer!'),
-            },
-        ],
+        // posts: [
+        //     {
+        //         label: 'Lock Thread',
+        //         icon: Lock,
+        //         color: 'text-orange-500',
+        //         action: () => alert('Thread locked!'),
+        //
+        //     },
+        //     {
+        //         label: 'Pin Post',
+        //         icon: Pin,
+        //         color: 'text-blue-500',
+        //         action: () => alert('Post pinned!'),
+        //     },
+        //     {
+        //         label: 'Archive',
+        //         icon: Shield,
+        //         color: 'text-purple-500',
+        //         action: () => alert('Post archived!'),
+        //     },
+        // ],
+        // comments: [
+        //     {
+        //         label: 'Hide',
+        //         icon: AlertTriangle,
+        //         color: 'text-yellow-500',
+        //         action: () => alert('Comment hidden!'),
+        //     },
+        //     {
+        //         label: 'Delete',
+        //         icon: Trash2,
+        //         color: 'text-red-500',
+        //         action: () => alert('Comment deleted!'),
+        //     },
+        //     {
+        //         label: 'Mark as Answer',
+        //         icon: MessageSquare,
+        //         color: 'text-green-500',
+        //         action: () => alert('Marked as answer!'),
+        //     },
+        // ],
         users: [
             {
                 label: 'Accept User',

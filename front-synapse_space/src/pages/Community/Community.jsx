@@ -119,6 +119,7 @@ export default function Community() {
                         userID={user.id}
                         authorId={post.created_by}
                         userAvatar={post.userAvatar}
+                        isPinned={post.isPinned}
                     />
 
                 ))}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, MessageSquare, Flag, Shield, Activity } from 'lucide-react';
+import { Users, MessageSquare, Flag, Shield, Rss } from 'lucide-react';
 import type { Stats } from '../types';
 
 type ModStatsProps = {
@@ -11,7 +11,7 @@ export function ModStats({ stats }: ModStatsProps) {
         { label: 'Active Users', value: stats.activeUsers.toLocaleString(), icon: Users, color: 'text-blue-500' },
         { label: 'Pending Reports', value: stats.pendingReports.toString(), icon: Flag, color: 'text-red-500' },
         // { label: 'Mod Actions Today', value: stats.modActions.toString(), icon: Shield, color: 'text-green-500' },
-        { label: 'Post Count', value: `${stats.postCount}%`, icon: Activity, color: 'text-purple-500' },
+        { label: 'Post Count', value: `${stats.postCount}`, icon: Rss, color: 'text-purple-500' },
     ];
 
     return (

@@ -594,7 +594,7 @@ class getCommunityPosts(generics.ListAPIView):
 
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
-        return Post.objects.filter(posted_in_id=community_id).order_by('-created_at')
+        return Post.objects.filter(posted_in_id=community_id).order_by('-isPinned', '-created_at')
 
 
 class getJoinedCommunityPosts(generics.ListAPIView):
@@ -855,7 +855,8 @@ class getReportsView(generics.ListAPIView):
         community_content_types = ContentType.objects.filter(model__in=['post', 'comment', 'user'])
         return Reports.objects.filter(
             content_type__in=community_content_types,
-            community=community
+            community=community,
+            status='pending'
         )
 
 
@@ -987,6 +988,24 @@ class UnbanMembershipView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class PinPostView(APIView):
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    authentication_classes = [CookieJWTAuthentication]
+    def post(self, request, community_id, post_id):
+        post = Post.objects.get(id=post_id)
+        post.isPinned = True
+        post.save()
+        return Response({"message": "Post has been pinned."}, status=status.HTTP_200_OK)
+
+
+class UnpinPostView(APIView):
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    authentication_classes = [CookieJWTAuthentication]
+    def post(self, request, community_id, post_id):
+        post = Post.objects.get(id=post_id)
+        post.isPinned = False
+        post.save()
+        return Response({"message": "Post has been pinned."}, status=status.HTTP_200_OK)
 
 class SendFriendRequestView(generics.CreateAPIView):
     serializer_class = FriendRequestSerializer
