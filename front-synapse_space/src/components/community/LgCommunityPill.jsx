@@ -10,18 +10,24 @@ const LgCommunityPill = ({ communityName, communityID, commAvatar}) => {
     };
 
     return (
-        <button onClick={() => navigate(`/community/${communityID}`)} className="flex items-center w-full p-2 rounded-full group mt-3   hover:bg-gray-100 dark:hover:bg-gray-700">
+        <button
+            onClick={() => navigate(`/community/${communityID}`)}
+            className="flex items-center w-full p-2 rounded-full group mt-3 hover:bg-gray-100 dark:hover:bg-gray-700 overflow-hidden whitespace-nowrap"
+        >
             <div className="avatar placeholder">
                 <div className="bg-neutral text-neutral-content w-5 rounded-full">
-                {commAvatar ? (
-                                <img src={commAvatar} alt={`avatar-${communityName}`} />
-                            ) : (
-                                <h2 className="text-xs font-bold">{getInitials(communityName)}</h2>
-                            )}
+                    {commAvatar ? (
+                        <img src={commAvatar} alt={`avatar-${communityName}`}/>
+                    ) : (
+                        <h2 className="text-xs font-bold">{getInitials(communityName)}</h2>
+                    )}
                 </div>
             </div>
-            <span className="ms-3">{communityName}</span>
+            <span className="ms-3 text-ellipsis overflow-hidden whitespace-nowrap">
+        {communityName}
+    </span>
         </button>
+
     );
 };
 
