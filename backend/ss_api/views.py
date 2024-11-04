@@ -713,8 +713,9 @@ class UserProfileView(APIView):
         # Update other fields
         user.first_name = data.get('first_name', user.first_name)
         user.last_name = data.get('last_name', user.last_name)
+        user.username = data.get('username', user.username)
         user.program = data.get('program', user.program)
-        profile.bio = data.get('bio', profile.bio)
+        user.bio = data.get('bio', user.bio)
         user.interests = data.get('interests', user.interests)
 
         user.save()

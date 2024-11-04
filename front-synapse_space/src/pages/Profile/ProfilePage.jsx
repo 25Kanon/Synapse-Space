@@ -11,7 +11,7 @@ import ActivitiesDisplay from '../../components/profile/ActivitiesDisplay';
 import AxiosInstance from "../../utils/AxiosInstance";
 
 const ProfilePage = () => {
-    const { user } = useContext(AuthContext); 
+    const { user, updateUser } = useContext(AuthContext); 
     const [userProfile, setUserProfile] = useState({});
     const [activities, setActivities] = useState({});
     const [activeTab, setActiveTab] = useState('overview');
@@ -39,7 +39,7 @@ const ProfilePage = () => {
                     <BannerProfile 
                         first_name={userProfile.first_name} // Use first_name from userProfile
                         last_name={userProfile.last_name} // Add last_name from userProfile
-                        username={user.username} // Pass username
+                        username={userProfile.username} // Pass username
                         profBanner={userProfile.bannerURL} 
                         profAvatar={userProfile.profile_pic}
                         bio={userProfile.bio}

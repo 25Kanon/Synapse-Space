@@ -18,7 +18,11 @@ const BannerProfile = ({ first_name, last_name, username, profAvatar, profBanner
             <div className="h-32 overflow-hidden rounded-t-lg">
                 <div className="h-32 rounded bg-neutral text-neutral-content">
                     {profBanner ? (
-                        <img className="object-cover object-top w-full h-full" src={profBanner} alt={`Banner-${first_name}`} />
+                        <img 
+                            className="object-cover object-top w-full h-full" 
+                            src={profBanner} 
+                            alt={`Banner-${first_name}`}
+                        />
                     ) : null}
                 </div>
             </div>
@@ -27,7 +31,7 @@ const BannerProfile = ({ first_name, last_name, username, profAvatar, profBanner
                 <div className="avatar placeholder">
                     <div className="h-32 rounded-full bg-neutral text-neutral-content">
                         {profAvatar ? (
-                            <img src={profAvatar} alt={`avatar-${first_name}`} />
+                            <img src={profAvatar} alt={`avatar-${first_name}`} /> // Use backticks for template literal
                         ) : (
                             <h2 className="text-lg font-bold">{getInitials(first_name)}{getInitials(last_name)}</h2>
                         )}
@@ -49,7 +53,7 @@ const BannerProfile = ({ first_name, last_name, username, profAvatar, profBanner
 BannerProfile.propTypes = {
     first_name: PropTypes.string.isRequired,
     last_name: PropTypes.string.isRequired,
-    username: PropTypes.string.isRequired, // Add username prop type
+    username: PropTypes.string.isRequired,
     profAvatar: PropTypes.string,
     profBanner: PropTypes.string,
     bio: PropTypes.string,
