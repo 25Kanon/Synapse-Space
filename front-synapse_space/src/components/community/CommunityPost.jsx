@@ -117,11 +117,11 @@ const CommunityPost = ({
                                     <img
                                         src={userAvatar}
                                         alt="User avatar"
-                                        className="w-full h-full object-cover rounded-full"
+                                        className="object-cover w-full h-full rounded-full"
                                     />
                                 ) : (
                                     <div
-                                        className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
+                                        className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
             <span className="text-sm font-semibold">
                 {getInitials(userName)}
             </span>
@@ -146,11 +146,11 @@ const CommunityPost = ({
                                     {role === "moderator" || role === "admin" ? (
                                         <li>
                                             {isPinned ? (
-                                                <button onClick={() => unpinPost()}>
+                                                <button onClick={() => unpinpost()}>
                                                     Unpin Post
                                                 </button>
                                             ) : (
-                                                <button onClick={() => pinPost()}>
+                                                <button onClick={() => pinpost()}>
                                                     Pin Post
                                                 </button>
                                             )}
