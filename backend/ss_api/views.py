@@ -716,6 +716,7 @@ class UserProfileView(APIView):
         user.username = data.get('username', user.username)
         user.program = data.get('program', user.program)
         user.bio = data.get('bio', user.bio)
+        user.profile_pic = data.get('profile_pic', user.profile_pic)
         user.interests = data.get('interests', user.interests)
 
         user.save()

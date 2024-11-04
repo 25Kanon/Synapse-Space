@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
+import { User, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
-import AuthContext from "../../context/AuthContext";
 import AxiosInstance from "../../utils/AxiosInstance";
+import AuthContext from "../../context/AuthContext";
 
 const EditProfile = () => {
     const { user } = useContext(AuthContext);
@@ -10,8 +10,9 @@ const EditProfile = () => {
     const [bio, setBio] = useState("");
     const [profilePic, setProfilePic] = useState("");
     const [profileBanner, setProfileBanner] = useState("");
+    const [newProfilePic, setNewProfilePic] = useState(null);
     const navigate = useNavigate();
-    
+
     useEffect(() => {
         // Fetch initial profile data for edit fields
         AxiosInstance.get(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, { withCredentials: true })
@@ -26,23 +27,40 @@ const EditProfile = () => {
     
     const handleSubmit = (e) => {
         e.preventDefault();
+        // Prepare data for profile update
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('bio', bio);
+        formData.append('profile_pic', newProfilePic || profilePic); // Use new image if available
+        formData.append('profile_banner', profileBanner);
+        
         // Logic to handle profile update
-        AxiosInstance.put(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, {
-            username,
-            bio,
-            profile_pic: profilePic,
-            profile_banner: profileBanner
-        }, { withCredentials: true })
+        AxiosInstance.put(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, formData, { withCredentials: true })
             .then(response => {
                 console.log("Profile updated successfully", response.data);
+                // Assuming updateUser function is defined elsewhere to update the user context
                 updateUser({ ...user, username });
                 if (onProfileUpdate) onProfileUpdate(); // Trigger profile data refresh if defined
+                navigate("/profile"); // Navigate back to ProfilePage after saving
             })
             .catch(error => console.error("Error updating profile:", error));
     };
+    
 
     const handleBackClick = () => {
         navigate("/profile"); // Navigate back to ProfilePage
+    };
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setNewProfilePic(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfilePic(reader.result); // Update profilePic state with the image URL for preview
+            };
+            reader.readAsDataURL(file); // Read the file as a data URL for preview
+        }
     };
 
     return (
@@ -71,17 +89,20 @@ const EditProfile = () => {
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="profilePic" className="block mb-1">Profile Picture URL</label>
+                    <label htmlFor="profilePic" className="block mb-1">Profile Picture</label>
+                    <div className="mb-2">
+                        {profilePic && <img src={profilePic} alt="Profile Preview" className="object-cover w-32 h-32 rounded-full" />}
+                    </div>
                     <input
-                        type="text"
+                        type="file"
                         id="profilePic"
-                        value={profilePic}
-                        onChange={(e) => setProfilePic(e.target.value)}
+                        accept="image/*"
+                        onChange={handleImageUpload}
                         className="input"
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="profileBanner" className="block mb-1">Profile Banner URL</label>
+                    <label htmlFor="profileBanner" className="block mb-1">Profile Banner</label>
                     <input
                         type="text"
                         id="profileBanner"
