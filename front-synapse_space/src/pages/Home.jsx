@@ -6,7 +6,6 @@ import Sidebar from "../components/Sidebar";
 import NavBar from "../components/NavBar";
 import FriendsList from "../components/FriendsList";
 import MainContentContainer from "../components/MainContentContainer";
-import axiosInstance from "../utils/AxiosInstance";
 import AxiosInstance from "../utils/AxiosInstance";
 import CommunityPost from "../components/community/CommunityPost";
 
@@ -52,8 +51,8 @@ export default function Home() {
     if (!isAuth || !user) {
         return (
             <div>
-                <div className="hero bg-base-200 min-h-screen">
-                    <p className="text-center text-xl">Welcome to Synapse Space. Please login to continue.</p>
+                <div className="min-h-screen hero bg-base-200">
+                    <p className="text-xl text-center">Welcome to Synapse Space. Please login to continue.</p>
                     {user}
                 </div>
             </div>
