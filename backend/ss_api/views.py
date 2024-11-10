@@ -38,6 +38,7 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest
+from .recommender.collaborative_model import CollaborativeFilteringModel
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -47,6 +48,8 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator
 
 from django.conf import settings
+
+from .services.utils import get_community_embeddings, get_user_embedding, rank_communities_by_similarity
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +169,7 @@ class CookieTokenRefreshView(jwt_views.TokenRefreshView):
                 data['refresh'] = refresh_token
 
             response = Response(data)
-            
+
             # Set the new refresh token in the cookie
             response.set_cookie(
                 'refresh',
@@ -184,7 +187,7 @@ class CookieTokenRefreshView(jwt_views.TokenRefreshView):
                 samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
                 secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
             )
-            
+
 
             return response
 
@@ -723,7 +726,7 @@ class UserProfileView(APIView):
 
         user_data = UserSerializer(user).data
         return Response(user_data)
-    
+
 class EditProfileView(generics.UpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -794,7 +797,7 @@ class JoinCommunityView(generics.CreateAPIView):
             return Response({"message": "Successfully joined the community.", "membership": serializer.data}, status=status.HTTP_201_CREATED)
         else:
             return Response({"message": "You are already a member of this community."}, status=status.HTTP_200_OK)
-        
+
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -1099,3 +1102,88 @@ class RespondToFriendRequestView(generics.UpdateAPIView):
 
         # If no valid action is specified, return an error
         return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RecommendationView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        # Fetch content-based and collaborative recommendations
+        content_based_recommendations = get_content_based_recommendations(user)
+        # collaborative_recommendations = get_collaborative_recommendations(user)
+
+        # Combine recommendations (you can tweak the combination logic if needed)
+        # combined_recommendations = combine_recommendations(content_based_recommendations, collaborative_recommendations)
+
+        return Response({"recommendations": content_based_recommendations}, status=status.HTTP_200_OK)
+
+
+def get_content_based_recommendations(user):
+    """
+    Get content-based recommendations for a user based on their interests.
+
+    Args:
+        user (User): The user object.
+
+    Returns:
+        list: A list of community IDs recommended based on content-based filtering.
+    """
+    # Fetch community descriptions and generate embeddings for each community
+    communities = Community.objects.all()
+    community_embeddings = []
+
+    for community in communities:
+        description = community.description
+        embedding = get_community_embeddings(description)  # Uses RoBERTa embeddings
+        community_embeddings.append((community.id, embedding))
+
+    # Get the user embedding based on their interests
+    user_interests = user.interests
+    user_embedding = get_user_embedding(user_interests)  # Get embedding for user interests
+
+    # Rank communities by similarity to the user's interests
+    ranked_communities = rank_communities_by_similarity(user_embedding, community_embeddings)
+
+
+    # Return only community IDs
+    return [community_id for community_id, _ in ranked_communities[:5]]  # Adjust top N as necessary
+
+
+def get_collaborative_recommendations(user):
+    """
+    Get collaborative filtering-based recommendations for a user.
+
+    Args:
+        user (User): The user object.
+
+    Returns:
+        list: A list of community IDs recommended based on collaborative filtering.
+    """
+    # You need to implement or call your collaborative filtering model here.
+    # For example, you might have a TensorFlow Recommenders model for this.
+    collaborative_model = CollaborativeFilteringModel(User, Community)
+
+    # Predict community IDs for the given user based on collaborative filtering model
+    recommendations = collaborative_model.predict(user.id)  # Adjust as per your model's API
+    return recommendations
+
+
+def combine_recommendations(content_based, collaborative):
+    """
+    Combine content-based and collaborative recommendations by merging their results.
+
+    Args:
+        content_based (list): List of content-based recommended community IDs.
+        collaborative (list): List of collaborative recommended community IDs.
+
+    Returns:
+        list: Combined list of recommended community IDs.
+    """
+    # Merge and deduplicate recommendations (combining both lists)
+    combined = set(content_based + collaborative)
+
+    # Optionally, you can apply more sophisticated merging strategies (like weighted merging)
+    return list(combined)
