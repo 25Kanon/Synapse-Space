@@ -10,7 +10,7 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
                     modResolveView, getJoinedCommunityPosts, AcceptMembershipView, BanMembershipView,
                     UnbanMembershipView, getPendingCommunityMembersListView, CheckPendingMembershipView, PinPostView,
-                    UnpinPostView)
+                    UnpinPostView, UserRecommendationsView)
 from django.contrib import admin
 
 
@@ -75,4 +75,7 @@ urlpatterns = [
     path('friend-requests/', ListSentFriendRequestsView.as_view(), name='list_friend_requests'),
     path('respond-request/<int:pk>/', RespondToFriendRequestView.as_view(), name='respond_to_friend_request'),
     path('friends/', ListFriendsView.as_view(), name='list_friends'),
+
+    path('recommendations/', UserRecommendationsView.as_view(), name='user-recommendations'),
+
 ]

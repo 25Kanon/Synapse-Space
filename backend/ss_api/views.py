@@ -43,8 +43,11 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
-                          ReportsSerializer, FriendRequestSerializer, FriendSerializer)
+                          ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator
+
+
+from .recommender import get_hybrid_recommendations
 
 from django.conf import settings
 
@@ -1099,3 +1102,29 @@ class RespondToFriendRequestView(generics.UpdateAPIView):
 
         # If no valid action is specified, return an error
         return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserRecommendationsView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
+
+    def get(self, request):
+        try:
+            # Get the current authenticated user
+            user = request.user  # The authenticated user from the request
+
+            # Fetch hybrid recommendations based on the current user
+            recommendations = get_hybrid_recommendations(user.id)
+
+            # Serialize the recommended communities data
+            serialized_communities = [
+                CommunityWithScoreSerializer(community[0], context={'similarity_score': community[1]}).data
+                for community in recommendations
+            ]
+
+            # Return the recommendations as a JSON response
+            return Response({"recommended_communities": serialized_communities}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            # Return error message if something goes wrong
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

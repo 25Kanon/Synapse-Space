@@ -25,9 +25,9 @@ const CommunityCard = ({ community, getInitials, isJoined }) => {
             <div className="avatar placeholder mr-2">
               <div className="bg-base-200 text-neutral-content w-10 h-10 rounded-full">
                 {community.imgURL ? (
-                  <img src={community.imgURL} alt={`avatar-${community.name}`} />
+                    <img src={community.imgURL} alt={`avatar-${community.name}`}/>
                 ) : (
-                  <h2 className="text-xs font-bold">{getInitials(community.name)}</h2>
+                    <h2 className="text-xs font-bold">{getInitials(community.name)}</h2>
                 )}
               </div>
             </div>
@@ -35,16 +35,21 @@ const CommunityCard = ({ community, getInitials, isJoined }) => {
               {community.name}
             </p>
           </div>
+          {community.similarity_score ? (
+              <p className="text-sm font-semibold text-green-500">
+                Similarity Score: {community.similarity_score.toFixed(2)}%
+              </p>
+          ) : (<></>)}
           <h5 className="card-title text-2xl font-bold tracking-tight text-primary">{community.name}</h5>
           <p className="mb-3 font-normal text-secondary" dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(marked(community.description))
-          }} />
+          }}/>
           <p className="text-sm text-gray-400 mt-2">{community.name} members • {community.date}</p>
           <div className="card-actions justify-end">
             {isJoined ? (
-              <span className="text-sm text-green-500">Joined</span>
+                <span className="text-sm text-green-500">Joined</span>
             ) : (
-              <JoinCommuinityBtn communityId={community.id} />
+                <JoinCommuinityBtn communityId={community.id}/>
             )}
           </div>
         </div>

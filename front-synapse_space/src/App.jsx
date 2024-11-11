@@ -14,10 +14,10 @@ import Create from './pages/Community/Create';
 import SearchCommunity from './pages/Community/SearchCommunity';
 import Community from './pages/Community/Community';
 import GetCommunityPost from "./pages/Community/GetCommunityPost";
-import DiscoverCommunity from './pages/Community/DiscoverCommunity';
 import { MembershipsProvider } from './context/MembershipContext';
 import ModDashboard from './pages/Community/ModDashboard';
 import { FriendProvider } from './context/FriendContext';
+import Discovery from "./pages/Discovery";
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -99,7 +99,7 @@ function App() {
                 <Route path="/search" element={<SearchCommunity />} />
               </Route>
               <Route path="/discover" element={<PrivateRoute />}>
-                <Route path="/discover" element={<DiscoverCommunity />} />
+                <Route path="/discover" element={<Discovery />} />
               </Route>
             </Routes>
           </FriendProvider>

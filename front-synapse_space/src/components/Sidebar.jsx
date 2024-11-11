@@ -28,7 +28,7 @@ const Sidebar = () => {
           </li>
 
           <li>
-            <button onClick={() => navigate('/community/discover')} className="flex items-center w-full p-2 rounded-full group mt-3  bg-white dark:text-neutral hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button onClick={() => navigate('/discover')} className="flex items-center w-full p-2 rounded-full group mt-3  bg-white dark:text-neutral hover:bg-gray-100 dark:hover:bg-gray-700">
               <FontAwesomeIcon icon={faCompass} />
               <span className="ms-3">Discover Communities</span>
             </button>
