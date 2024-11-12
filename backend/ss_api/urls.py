@@ -10,7 +10,11 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
                     modResolveView, getJoinedCommunityPosts, AcceptMembershipView, BanMembershipView,
                     UnbanMembershipView, getPendingCommunityMembersListView, CheckPendingMembershipView, PinPostView,
+<<<<<<< HEAD
                     UnpinPostView, RecommendationView)
+=======
+                    UnpinPostView, UserRecommendationsView)
+>>>>>>> fc53c52fc189a0396b868070244c64aebc9a1701
 from django.contrib import admin
 
 
@@ -76,6 +80,12 @@ urlpatterns = [
     path('respond-request/<int:pk>/', RespondToFriendRequestView.as_view(), name='respond_to_friend_request'),
     path('friends/', ListFriendsView.as_view(), name='list_friends'),
 
+<<<<<<< HEAD
 
     path('recommendations/communities/', RecommendationView.as_view(), name='recommend-communities'),
 ]
+=======
+    path('recommendations/', UserRecommendationsView.as_view(), name='user-recommendations'),
+
+]
+>>>>>>> fc53c52fc189a0396b868070244c64aebc9a1701
