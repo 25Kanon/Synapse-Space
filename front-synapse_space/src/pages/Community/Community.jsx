@@ -12,6 +12,8 @@ import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
 import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
 import AxiosInstance from "../../utils/AxiosInstance";
+import { useCallback } from 'react';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 export default function Community() {
     const API_URL = import.meta.env.VITE_API_BASE_URI;
@@ -23,33 +25,39 @@ export default function Community() {
     const [Error, setError] = useState(null);
     const [postCreated, setPostCreated] = useState(false);
 
+    const fetchPosts = useCallback(async (page) => {
+        try {
+            const response = await AxiosInstance.get(`/api/community/${id}/posts/?page=${page}`,
+                {},
+                { withCredentials: true }
+            );
+            setIsMember(true);
+            return response;
+        } catch (err) {
+            if (err.response?.status === 403) {
+                setIsMember(false);
+            }
+            throw err;
+        }
+    }, [id]);
+
+    const { loading, items: posts, hasMore, loadMore } = useInfiniteScroll(fetchPosts);
+
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const response = await AxiosInstance.get(`/api/community/${id}/posts/`, {}, { withCredentials: true,});
-                setIsMember(true)
-                setPosts(response.data);
-                console.log("posts:", response.data);
-                setPostCreated(false);
-            } catch (err) {
-                if (err.response.status === 403) {
-                    setIsMember(false);
-                } else {
-                    setError(err.message);
-                    console.error('Error fetching posts:', err);
-                }
+        const handleScroll = () => {
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+                loadMore();
             }
         };
 
-        if (communityDetails) {
-            fetchPosts();
-        }
-    }, [id, communityDetails, isMember, API_URL, postCreated]);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [loadMore]);
 
     useEffect(() => {
         const fetchCommunityDetails = async () => {
             try {
-                const response = await AxiosInstance.get(`/api/community/${id}`, {}, { withCredentials: true,});
+                const response = await AxiosInstance.get(`/api/community/${id}`, {}, { withCredentials: true, });
                 setCommunityDetails(response.data);
             } catch (error) {
                 setError(`Error fetching community details: ${error.message}`);
@@ -77,16 +85,16 @@ export default function Community() {
                 {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
                 <NavBar />
                 <Sidebar />
-                <MembersList id={id}/>
+                <MembersList id={id} />
                 <MainContentContainer>
                     <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
                     <div className="flex flex-col items-start 00 mx-10">
-                        <JoinCommuinityBtn communityId={communityDetails.id}/>
+                        <JoinCommuinityBtn communityId={communityDetails.id} />
                         <article className="prose prose-gray">
                             <h2 className="heading-3">About {communityDetails.name}</h2>
                             <p>{communityDetails.description}</p>
                         </article>
-                        <div className="divider"/>
+                        <div className="divider" />
                         <article className="prose prose-gray">
                             <h2 className="heading-3">Rules</h2>
                             <p>{communityDetails.rules}</p>
@@ -100,13 +108,13 @@ export default function Community() {
 
     return (
         <>
-            {Error && <ErrorAlert text={Error} classExtensions="fixed z-50"/>}
-            <NavBar/>
-            <Sidebar/>
-            <MembersList id={id}/>
+            {Error && <ErrorAlert text={Error} classExtensions="fixed z-50" />}
+            <NavBar />
+            <Sidebar />
+            <MembersList id={id} />
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL}
-                        commAvatar={communityDetails.imgURL} communityID={communityDetails.id}/>
+                    commAvatar={communityDetails.imgURL} communityID={communityDetails.id} />
                 <CreatePost userName={user.username} community={communityDetails.id} onPostCreated={() => setPostCreated(true)} />
                 {posts.map((post) => (
                     <CommunityPost
@@ -123,7 +131,8 @@ export default function Community() {
                     />
 
                 ))}
-
+            {loading && <div className="loading loading-spinner loading-lg"></div>}
+            {!hasMore && <div className="text-center mt-4">No more posts to load</div>}
             </MainContentContainer>
         </>
     );

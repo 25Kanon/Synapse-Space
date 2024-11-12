@@ -8,7 +8,7 @@ import FriendsList from "../components/FriendsList";
 import MainContentContainer from "../components/MainContentContainer";
 import AxiosInstance from "../utils/AxiosInstance";
 import CommunityPost from "../components/community/CommunityPost";
-
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 export default function Home() {
     const { isAuthenticated, user, error } = useContext(AuthContext);
@@ -22,9 +22,7 @@ export default function Home() {
     useEffect(() => {
         const getCommunityPost = async () => {
             try {
-                const response = await AxiosInstance.get(
-                    `/api/community/joined/posts/`,{},{withCredentials: true}
-                );
+                const response = await AxiosInstance.get(`/api/community/joined/posts/`,{},{withCredentials: true});
                 setPosts(response.data);
             } catch (error) {
                 setError(`Error fetching post: ${error.message}`);
@@ -61,13 +59,32 @@ export default function Home() {
 
     console.log(posts)
 
+    const fetchPosts = useCallback(async (page) => {
+        return await AxiosInstance.get(`/api/community/joined/posts/?page=${page}`, 
+          {}, 
+          { withCredentials: true }
+        );
+      }, []);
+    
+      const { loading, items: posts, hasMore, loadMore } = useInfiniteScroll(fetchPosts);
+    
+      useEffect(() => {
+        const handleScroll = () => {
+          if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+            loadMore();
+          }
+        };
+    
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, [loadMore]);
+
     return (
         <>
             {error || Error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
             <NavBar />
             <Sidebar />
             <FriendsList />
-
             <MainContentContainer>
                 {posts?.map((post) => (
                     <CommunityPost
@@ -83,6 +100,8 @@ export default function Home() {
                     />
 
                 ))}
+                 {loading && <div className="loading loading-spinner loading-lg"></div>}
+                 {!hasMore && <div className="text-center mt-4">No more posts to load</div>}
             </MainContentContainer>
         </>
     );

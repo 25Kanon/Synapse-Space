@@ -54,6 +54,8 @@ from django.conf import settings
 
 from .services.utils import get_community_embeddings, get_user_embedding, rank_communities_by_similarity
 
+from rest_framework.pagination import PageNumberPagination
+
 logger = logging.getLogger(__name__)
 
 
@@ -593,7 +595,13 @@ class MoveImageView(APIView):
             logger.error(f"Error moving image: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class PostPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 20
+
 class getCommunityPosts(generics.ListAPIView):
+    pagination_class = PostPagination
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, IsCommunityMember]
     serializer_class = CommunityPostSerializer
@@ -604,6 +612,7 @@ class getCommunityPosts(generics.ListAPIView):
 
 
 class getJoinedCommunityPosts(generics.ListAPIView):
+    pagination_class = PostPagination
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = CommunityPostSerializer
