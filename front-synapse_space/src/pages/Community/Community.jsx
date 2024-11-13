@@ -13,7 +13,7 @@ import CommunityPost from "../../components/community/CommunityPost";
 import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
 import AxiosInstance from "../../utils/AxiosInstance";
 import { useCallback } from 'react';
-import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 
 export default function Community() {
     const API_URL = import.meta.env.VITE_API_BASE_URI;
