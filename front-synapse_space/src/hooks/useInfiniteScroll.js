@@ -1,27 +1,34 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
-export function useInfiniteScroll(fetchCallback, initialPage = 1) {
+export const useInfiniteScroll = (fetchCallback) => {
     const [loading, setLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const [page, setPage] = useState(initialPage);
     const [items, setItems] = useState([]);
+    const [hasMore, setHasMore] = useState(true);
+    const [page, setPage] = useState(1);
+    const [error, setError] = useState(null);
 
-    const loadMore = useCallback(async () => {
+    useEffect(() => {
+        loadMore();
+    }, []);
+
+    const loadMore = async () => {
         if (loading || !hasMore) return;
 
         setLoading(true);
         try {
             const response = await fetchCallback(page);
             const newItems = response.data.results;
+            
             setItems(prev => [...prev, ...newItems]);
-            setHasMore(response.data.next !== null);
+            setHasMore(!!response.data.next);
             setPage(prev => prev + 1);
-        } catch (error) {
-            console.error('Error loading more items:', error);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
         } finally {
             setLoading(false);
         }
-    }, [fetchCallback, page, loading, hasMore]);
+    };
 
-    return { loading, hasMore, items, loadMore };
-}
+    return { loading, items, hasMore, loadMore, error };
+};
