@@ -146,7 +146,7 @@ const CommunityPost = ({
                                     {role === "moderator" || role === "admin" ? (
                                         <li>
                                             {isPinned ? (
-                                                <button onClick={() => unpinpost()}>
+                                                <button onClick={() => unpinPost()}>
                                                     Unpin Post
                                                 </button>
                                             ) : (

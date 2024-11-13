@@ -10,28 +10,58 @@ import Banner from '../../components/community/Banner';
 import MainContentContainer from "../../components/MainContentContainer";
 import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
-import JoinCommunityBtn from "../../components/community/JoinCommuinityBtn";
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
+import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
 
 export default function Community() {
     const { user, error: authError } = useContext(AuthContext);
     const { id } = useParams();
     const [isMember, setIsMember] = useState(false);
+    const [communityDetails, setCommunityDetails] = useState([]);
+    const [Error, setError] = useState(null);
+    const [postCreated, setPostCreated] = useState(false);
+
 
     const fetchCommunityPosts = useCallback(async (page) => {
-        return await AxiosInstance.get(`/api/community/${id}/posts/?page=${page}`, 
-            {}, 
-            { withCredentials: true }
-        );
+        try{
+            const response= await AxiosInstance.get(`/api/community/${id}/posts/?page=${page}`,
+                {},
+                { withCredentials: true }
+            );
+            setIsMember(true);
+            return response;
+        } catch (error){
+            setError(error?.status);
+            console.error(error.message);
+            setIsMember(false);
+        }
+    });
+
+
+    useEffect(() => {
+        const fetchCommunityDetails = async () => {
+            try {
+                console.log("fetching")
+                const response = await AxiosInstance.get(`/api/community/${id}`, {}, { withCredentials: true,});
+                setCommunityDetails(response.data);
+            } catch (error) {
+                setError(`Error fetching community details: ${error.message.split(':')[1]}}`);
+                console.error('Error fetching memberships:', error);
+            }
+        };
+
+        fetchCommunityDetails();
     }, [id]);
 
-    const { 
-        loading, 
-        items: communityPosts, 
-        hasMore, 
+
+    const {
+        loading,
+        items: communityPosts,
+        hasMore,
         loadMore,
-        error: scrollError 
-    } = useInfiniteScroll(fetchCommunityPosts);
+        error: scrollError
+    } = useInfiniteScroll(fetchCommunityPosts, [id]);
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -44,20 +74,57 @@ export default function Community() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [loadMore]);
 
+    if (!user) {
+        return (
+            <div>
+                <div className="hero bg-base-200 min-h-screen">
+                    <p className="text-center text-xl">Welcome to Synapse Space. Please login to continue.</p>
+                </div>
+            </div>
+        );
+    }
+    if (!isMember) {
+        return (
+            <>
+                {authError && <ErrorAlert text={authError} classExtensions="fixed z-50" />}
+                <NavBar />
+                <Sidebar />
+                <MembersList id={id}/>
+                <MainContentContainer>
+                    <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
+                    <div className="flex flex-col items-start 00 mx-10">
+                        <JoinCommuinityBtn communityId={communityDetails.id}/>
+                        <article className="prose prose-gray">
+                            <h2 className="heading-3">About {communityDetails.name}</h2>
+                            <p>{communityDetails.description}</p>
+                        </article>
+                        <div className="divider"/>
+                        <article className="prose prose-gray">
+                            <h2 className="heading-3">Rules</h2>
+                            <p>{communityDetails.rules}</p>
+                        </article>
+
+                    </div>
+                </MainContentContainer>
+            </>
+        );
+    }
+
     return (
         <>
-            {(authError || scrollError) && 
-                <ErrorAlert 
-                    text={authError || scrollError} 
-                    classExtensions="fixed z-50" 
+            {(scrollError || Error) &&
+                <ErrorAlert
+                    text={ scrollError || Error}
+                    classExtensions="fixed z-50"
                 />
             }
             <NavBar />
             <Sidebar />
-            <Banner />
-            <JoinCommunityBtn isMember={isMember} setIsMember={setIsMember} />
+            <MembersList id={id}/>
             <MainContentContainer>
-                {isMember && <CreatePost />}
+                <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL}
+                        commAvatar={communityDetails.imgURL} communityID={communityDetails.id}/>
+                <CreatePost userName={user.username} community={communityDetails?.id} onPostCreated={() => setPostCreated(true)} />
                 {communityPosts?.map((post) => (
                     <CommunityPost
                         key={post.id}
@@ -69,12 +136,12 @@ export default function Community() {
                         userID={user.id}
                         authorId={post.created_by}
                         userAvatar={post.userAvatar}
+                        isPinned={post.isPinned}
                     />
                 ))}
                 {loading && <div className="loading loading-spinner loading-lg"></div>}
                 {!hasMore && <div className="text-center mt-4">No more posts to load</div>}
             </MainContentContainer>
-            <MembersList />
         </>
     );
 }
