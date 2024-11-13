@@ -51,7 +51,6 @@ from .recommender import get_hybrid_recommendations
 
 from django.conf import settings
 
-from .services.utils import get_community_embeddings, get_user_embedding, rank_communities_by_similarity
 
 from rest_framework.pagination import PageNumberPagination
 
