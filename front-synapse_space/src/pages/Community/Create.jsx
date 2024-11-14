@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import AuthContext from "../../context/AuthContext";
 
-import CreateCommunity from '../../components/community/CreateCommunity';
+import CreateCommunity from "../../components/community/CreateCommunity";
 import ErrorAlert from '../../components/ErrorAlert';
 import NavBar from '../../components/NavBar';
 import Sidebar from '../../components/Sidebar'

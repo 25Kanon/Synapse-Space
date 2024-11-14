@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {Shield} from "lucide-react";
+import {Settings} from "lucide-react";
 import {useNavigate} from "react-router-dom";
 import AxiosInstance from "../../../utils/AxiosInstance";
 
-function ModEntryBtn({communityID}) {
+function AdminEntryBtn({communityID}) {
     const [role, setRole] = useState("");
     const navigate = useNavigate();
 
@@ -20,7 +20,7 @@ function ModEntryBtn({communityID}) {
         fetchMembership();
     }, [communityID]);
 
-    if (role !== 'moderator' && role !== 'admin' && role !== 'owner') {
+    if ( role !== 'admin' && role !== 'owner') {
         console.log({role});
         return null;
     }
@@ -28,11 +28,11 @@ function ModEntryBtn({communityID}) {
     return (
         <button
             className="inline-flex items-center px-4 py-2 mx-3 border border-transparent rounded-md shadow-sm text-sm font-medium btn btn-primary"
-            onClick={() => navigate(`/community/${communityID}/mod`)}>
-            <Shield className="w-4 h-4 mr-2"/>
-            Mod Dashboard
+            onClick={() => navigate(`/community/${communityID}/settings`)}>
+            <Settings className="w-4 h-4 mr-2"/>
+            Settings
         </button>
     )
 }
 
-export default ModEntryBtn;
+export default AdminEntryBtn;

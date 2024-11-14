@@ -1,7 +1,7 @@
 import React from "react";
 import {Navigate, useNavigate} from "react-router-dom";
 import ModEntryBtn from "../community/moderator/ModEntryBtn";
-
+import AdminEntryBtn from "../community/admin/AdminEntryBtn";
 
 const Banner = ({ communityName, commAvatar, commBanner, communityID }) => {
     const navigate = useNavigate();
@@ -42,6 +42,7 @@ const Banner = ({ communityName, commAvatar, commBanner, communityID }) => {
 
                 <div className="text-right">
                   <ModEntryBtn communityID={communityID}/>
+                    <AdminEntryBtn communityID={communityID}/>
                 </div>
             </div>
         </>

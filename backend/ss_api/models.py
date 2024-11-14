@@ -30,7 +30,8 @@ class Community(models.Model):
     bannerURL = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
     rules = models.TextField()
-    keyword = models.CharField(max_length=255)
+    keyword = ArrayField(models.CharField(max_length=200), blank=True)
+    privacy = models.CharField(max_length=255, default='public')
 
     def __str__(self):
         return self.name
@@ -41,6 +42,14 @@ class Community(models.Model):
             user=user,
             community=self,
             role__in=['admin', 'moderator']
+        ).exists()
+
+    def is_admin(self, user):
+        """Check if the user has an admin or moderator role in this community."""
+        return Membership.objects.filter(
+            user=user,
+            community=self,
+            role__in=['admin']
         ).exists()
 
 class Post(models.Model):

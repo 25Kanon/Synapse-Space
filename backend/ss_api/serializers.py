@@ -265,8 +265,22 @@ class MembershipSerializer(serializers.ModelSerializer):
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
-        fields = ['id','bannerURL','imgURL','name', 'description', 'rules', 'keyword']
+        fields = ['id','bannerURL','imgURL','name', 'description', 'rules', 'keyword', 'privacy']
 
+        def update(self, instance, validated_data):
+            # Handle update logic
+            if 'imgURL' in validated_data:
+                instance.imgURL = validated_data['imgURL']
+            if 'bannerURL' in validated_data:
+                instance.bannerURL = validated_data['bannerURL']
+            if 'description' in validated_data:
+                instance.description = validated_data['description']
+            if 'rules' in validated_data:
+                instance.rules = validated_data['rules']
+            if 'keyword' in validated_data:
+                instance.keyword = validated_data['keyword']
+            instance.save()
+            return instance
 
 class CommunityWithScoreSerializer(serializers.ModelSerializer):
     similarity_score = serializers.FloatField(read_only=True, required=False)

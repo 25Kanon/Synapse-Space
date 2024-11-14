@@ -10,7 +10,7 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
                     modResolveView, getJoinedCommunityPosts, AcceptMembershipView, BanMembershipView,
                     UnbanMembershipView, getPendingCommunityMembersListView, CheckPendingMembershipView, PinPostView,
-                    UserRecommendationsView, UnpinPostView)
+                    UserRecommendationsView, UnpinPostView, CommunityUpdateView)
 from django.contrib import admin
 
 
@@ -65,7 +65,7 @@ urlpatterns = [
     path('membership/unban/<int:community_id>/', UnbanMembershipView.as_view(), name='accept-membership'),
     path('community/<int:community_id>/post/<int:post_id>/pin/', PinPostView.as_view(), name='pin-post'),
     path('community/<int:community_id>/post/<int:post_id>/unpin/', UnpinPostView.as_view(), name='unpin-post'),
-
+    path('community/update/<int:community_id>/', CommunityUpdateView.as_view(), name='community-update'),
     # User URLs
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),
     path('users/', UserListView.as_view(), name='user-list'),

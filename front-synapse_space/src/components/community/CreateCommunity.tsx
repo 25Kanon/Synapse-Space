@@ -9,11 +9,13 @@ import AvatarCropper from "../avatarCropper";
 import BannerCropper from "./BannerCropper";
 import { useMemberships } from "../../context/MembershipContext";
 import AxiosInstance from "../../utils/AxiosInstance";
+import { TagInput } from '../TagInput';
 
 
 const CreateCommunity = () => {
     let [error, setError] = useState(null);
     let [success, setSuccess] = useState(null);
+    const [tags, setTags] = useState<string[]>([]);
     const API_URL = import.meta.env.VITE_API_BASE_URI;
     const { user } = useContext(AuthContext);
     const [communityName, setCommunityName] = useState("");
@@ -23,7 +25,6 @@ const CreateCommunity = () => {
     const [communityBannerBlob, setCommunityBannerBlob] = useState(null);
     const [description, setDescription] = useState("");
     const [rules, setRules] = useState("");
-    const [keyword, setKeyword] = useState("");
     const [imageSrc, setImageSrc] = useState(null);
     const { fetchMemberships } = useMemberships();
 
@@ -92,7 +93,9 @@ const CreateCommunity = () => {
         formData.append("name", DOMPurify.sanitize(communityName));
         formData.append("description", DOMPurify.sanitize(description));
         formData.append("rules", DOMPurify.sanitize(rules));
-        formData.append("keyword", DOMPurify.sanitize(keyword));
+        tags.forEach((tag, index) => {
+            formData.append(`keyword[${index}]`, tag);
+        });
 
         if (communityAvatar) {
             // Assuming `communityAvatar` is a Blob or File object after cropping
@@ -115,7 +118,7 @@ const CreateCommunity = () => {
                 setCommunityName("");
                 setDescription("");
                 setRules("");
-                setKeyword("");
+                setTags([]);
                 setCommunityAvatar(null);
                 setCommunityBanner(null);
                 setSuccess("Community created successfully");
@@ -224,17 +227,13 @@ const CreateCommunity = () => {
                     </div>
                     <div>
                         <label className="block text-sm font-bold mb-2" htmlFor="keyword">
-                            Community Keyword
-                            <p className="text-xs font-light mb-2">Seperate keywords with comma ","</p>
+                            Community Tags
                         </label>
 
-                        <input
-                            type="text"
-                            id="keyword"
-                            value={keyword}
-                            className="w-full p-3 rounded-lg border text-black border-gray-600 focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter keywords"
-                            onChange={(e) => setKeyword(e.target.value)}
+                        <TagInput
+                            value={tags}
+                            onChange={setTags}
+                            placeholder="Add tags (e.g., 'react', 'typescript')..."
                         />
                     </div>
                     <div className="text-center">

@@ -16,6 +16,7 @@ import Community from './pages/Community/Community';
 import GetCommunityPost from "./pages/Community/GetCommunityPost";
 import { MembershipsProvider } from './context/MembershipContext';
 import ModDashboard from './pages/Community/ModDashboard';
+import CommunitySettings from './pages/Community/CommunitySettings';
 import { FriendProvider } from './context/FriendContext';
 import Discovery from "./pages/Discovery";
 import {ConversationsWithMessagesWrapper} from "./components/Conversations";
@@ -105,6 +106,9 @@ function App() {
               </Route>
               <Route path="/community/" element={<PrivateRoute />}>
                 <Route path="/community/:community_id/mod" element={<ModDashboard />} />
+              </Route>
+              <Route path="/community/:community_id/settings" element={<PrivateRoute />}>
+                <Route path="/community/:community_id/settings" element={<CommunitySettings />} />
               </Route>
               <Route path="/community" element={<PrivateRoute />}>
                 <Route path="/community/create" element={<Create />} />

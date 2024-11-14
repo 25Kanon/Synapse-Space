@@ -13,7 +13,7 @@ from django.utils import timezone
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.decorators import api_view
 from rest_framework import exceptions as rest_exceptions, response, decorators as rest_decorators, permissions as rest_permissions
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, UpdateAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt import tokens, views as jwt_views, serializers as jwt_serializers, exceptions as jwt_exceptions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -1173,3 +1173,21 @@ class UserRecommendationsView(APIView):
             # Return error message if something goes wrong
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class CommunityUpdateView(UpdateAPIView):
+    serializer_class = CommunitySerializer
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    authentication_classes = [CookieJWTAuthentication]
+
+    def get_object(self):
+        community_id = self.kwargs.get('community_id')  # Get community_id from URL kwargs
+        return Community.objects.get(id=community_id)  # Fetch the community instance by community_id
+
+    def update(self, request, *args, **kwargs):
+        community = self.get_object()  # Get the community instance using community_id
+        serializer = self.get_serializer(community, data=request.data, partial=True)  # Partial update
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
