@@ -18,3 +18,4 @@ numpy
 tensorflow
 tensorflow-recommenders
 scikit-learn
+requests

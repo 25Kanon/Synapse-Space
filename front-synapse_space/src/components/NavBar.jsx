@@ -88,12 +88,16 @@ const NavBar = () => {
 
                     <div className="flex items-center justify-center ms-3 bg-base-200 px-3 rounded-full my-auto dropdown-left sm:block hidden ">
                         <div className="flex items-center py-1 px-2 z-40">
-                            <FontAwesomeIcon icon={faMessage} className="h-5 mr-5 z-40" />
+
+                            <Link to="/messages" className="link">
+                                <FontAwesomeIcon icon={faMessage} className="h-5 mr-5 z-40"/>
+                            </Link>
                             <details className="dropdown dropdown-end dropdown-bottom z-40">
                                 <summary className="btn h-5 flex items-center">
-                                    <FontAwesomeIcon icon={faBell} className="h-5" />
+                                    <FontAwesomeIcon icon={faBell} className="h-5"/>
                                     {filteredFriendRequests.length > 0 && (
-                                        <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center z-40">
+                                        <span
+                                            className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center z-40">
                       {filteredFriendRequests.length}
                     </span>
                                     )}
@@ -115,7 +119,8 @@ const NavBar = () => {
                                                                     className="w-full h-full object-cover rounded-full"
                                                                 />
                                                             ) : (
-                                                                <div className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
+                                                                <div
+                                                                    className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
                                   <span className="text-sm font-semibold">
                                     {getInitials(request.sender_name)}
                                   </span>
@@ -134,14 +139,14 @@ const NavBar = () => {
                                                         onClick={() => acceptFriendRequest(request.id)}
                                                         className="btn btn-xs btn-primary flex items-center gap-1"
                                                     >
-                                                        <FontAwesomeIcon icon={faCheck} />
+                                                        <FontAwesomeIcon icon={faCheck}/>
                                                         Accept
                                                     </button>
                                                     <button
                                                         onClick={() => rejectFriendRequest(request.id)}
                                                         className="btn btn-xs btn-error flex items-center gap-1"
                                                     >
-                                                        <FontAwesomeIcon icon={faTimes} />
+                                                        <FontAwesomeIcon icon={faTimes}/>
                                                         Reject
                                                     </button>
                                                 </div>
@@ -164,7 +169,8 @@ const NavBar = () => {
                                                     className="w-full h-full object-cover rounded-full"
                                                 />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
+                                                <div
+                                                    className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
                           <span className="text-sm font-semibold">
                             {getInitials(user.username)}
                           </span>
@@ -175,7 +181,7 @@ const NavBar = () => {
                                     <p className="text-sm font-semibold flex items-center">
                                         {user.username}
                                         <span>
-                      <FontAwesomeIcon icon={faChevronDown} className="ms-3" />
+                      <FontAwesomeIcon icon={faChevronDown} className="ms-3"/>
                     </span>
                                     </p>
                                 </summary>

@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@codesandbox/sandpack-client": "^2.19.8",
+    "@cometchat/calls-sdk-javascript": "^4.0.10",
+    "@cometchat/chat-uikit-react": "^4.3.21",
     "@editorjs/checklist": "^1.6.0",
     "@editorjs/code": "^2.9.2",
     "@editorjs/delimiter": "^1.4.2",

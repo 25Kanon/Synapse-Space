@@ -18,12 +18,18 @@ import { MembershipsProvider } from './context/MembershipContext';
 import ModDashboard from './pages/Community/ModDashboard';
 import { FriendProvider } from './context/FriendContext';
 import Discovery from "./pages/Discovery";
+import {ConversationsWithMessagesWrapper} from "./components/Conversations";
+
+import {CometChatTheme, CometChatUsersWithMessages} from "@cometchat/chat-uikit-react";
 
 function App() {
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [CometTheme, setCometTheme] = useState(new CometChatTheme({}));
   const [theme, setTheme] = useState(() => {
     const systemPreference = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     return localStorage.getItem('theme') || systemPreference;
   });
+
 
   useEffect(() => {
     // Set the initial theme based on user preference or system preference
@@ -58,6 +64,14 @@ function App() {
       setTheme(systemTheme);
     }
   }, []);
+
+  const getConversationsWithMessages = () => {
+    return <ConversationsWithMessagesWrapper isMobileView={isMobileView} />;
+  }
+
+  function getUsersWithMessages() {
+    return <CometChatUsersWithMessages isMobileView={isMobileView} />;
+  }
 
   return (
     <Router>
@@ -100,6 +114,9 @@ function App() {
               </Route>
               <Route path="/discover" element={<PrivateRoute />}>
                 <Route path="/discover" element={<Discovery />} />
+              </Route>
+              <Route path="/messages" element={<PrivateRoute />}>
+                <Route path="/messages" element={getConversationsWithMessages()} />
               </Route>
             </Routes>
           </FriendProvider>

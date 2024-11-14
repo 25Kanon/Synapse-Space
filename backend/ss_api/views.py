@@ -2,6 +2,7 @@ import hashlib
 
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.contrib.contenttypes.models import ContentType
+import requests
 from django.db.models import Q
 from django.conf import settings
 import os
@@ -101,6 +102,39 @@ class VerifyAccountView(APIView):
             user.is_verified = serializer.validated_data.get('is_verified', user.is_verified)
 
             user.save()
+
+            # Prepare the payload for CometChat
+            payload = {
+                "metadata": {
+                    "@private": {
+                        "email": user.email,  # Use user's email
+                    }
+                },
+                "uid": user.username,  # Use username as the UID
+                "name": user.username,  # Use username or full name if needed
+                "avatar": user.profile_pic if user.profile_pic else None  # URL to the profile pic
+            }
+
+            # Headers for CometChat API
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "apikey": os.getenv('COMET_CHAT_KEY')
+            }
+
+            # Send the POST request to CometChat
+            cometAppID = os.getenv('COMET_CHAT_APP_ID')
+            url = f"https://{cometAppID}.api-in.cometchat.io/v3/users"
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+
+                # Check if the request was successful
+                if response.status_code == 200:
+                    logger.info(f"CometChat user created successfully for {user.username}")
+                else:
+                    logger.error(f"Failed to create CometChat user: {response.status_code} - {response.text}")
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Error sending request to CometChat: {e}")
 
             return Response({'message': 'User details updated successfully.'}, status=status.HTTP_200_OK)
 
@@ -1138,3 +1172,4 @@ class UserRecommendationsView(APIView):
         except Exception as e:
             # Return error message if something goes wrong
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
