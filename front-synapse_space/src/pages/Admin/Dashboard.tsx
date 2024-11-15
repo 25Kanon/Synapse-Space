@@ -3,10 +3,62 @@ import { Users, MessageSquare, TrendingUp, UserPlus } from 'lucide-react';
 import { fetchCommunityStats, fetchRecentActivities } from '../../utils/admin/api';//TEMPORARY WILL PATCH WITH REAL DATA LATER
 import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
+import AxiosInstance from "../../utils/AxiosInstance";
+import ErrorAlert from "../../components/ErrorAlert"
+import SuccessAlert from "../../components/SuccessAlert"
 
 const Dashboard = () => {
     const [stats, setStats] = useState<any>(null);
     const [activities, setActivities] = useState<any[]>([]);
+    const [postCount, setPostCount] = useState(0);
+    const [userCount, setUserCount] = useState(0);
+    const [newUserCount, setNewUserCount] = useState(0);
+    const [engagementRate, setEngagementRate] = useState(0);
+    const [Error, setError] = useState(null);
+
+    const fetchPostCount = async () => {
+        try {
+            const response = await AxiosInstance.get('/api/admin/posts/count', { withCredentials: true });
+            setPostCount(response.data.post_count);
+        } catch (err) {
+            const errorMessage = err.response?.data ? Object.values(err.response.data)[0] : err.message;
+            setError(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage || 'An error occurred');
+            console.log(errorMessage);
+        }
+    }
+
+    const fetchUserCount = async () => {
+        try {
+            const response = await AxiosInstance.get('/api/admin/users/count', { withCredentials: true });
+            setUserCount(response.data.user_count);
+        } catch (err) {
+            const errorMessage = err.response?.data ? Object.values(err.response.data)[0] : err.message;
+            setError(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage || 'An error occurred');
+            console.log(errorMessage);
+        }
+    }
+
+    const fetchNewUserCount = async () => {
+        try {
+            const response = await AxiosInstance.get('/api/admin/new-users/count', { withCredentials: true });
+            setNewUserCount(response.data.new_users);
+        } catch (err) {
+            const errorMessage = err.response?.data ? Object.values(err.response.data)[0] : err.message;
+            setError(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage || 'An error occurred');
+            console.log(errorMessage);
+        }
+    }
+
+    const fetchEngagementRate = async () => {
+        try {
+            const response = await AxiosInstance.get('/api/admin/engagement-rate', { withCredentials: true });
+            setEngagementRate(response.data.engagement_rate);
+        } catch (err) {
+            const errorMessage = err.response?.data ? Object.values(err.response.data)[0] : err.message;
+            setError(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage || 'An error occurred');
+            console.log(errorMessage);
+        }
+    }
 
     useEffect(() => {
         const loadData = async () => {
@@ -16,6 +68,10 @@ const Dashboard = () => {
             ]);
             setStats(statsData.data);
             setActivities(activitiesData.data);
+            await fetchPostCount();
+            await fetchUserCount();
+            await fetchNewUserCount();
+            await fetchEngagementRate()
         };
         loadData();
     }, []);
@@ -56,25 +112,25 @@ const Dashboard = () => {
                             <StatCard
                                 icon={Users}
                                 label="Total Users"
-                                value={stats.totalUsers}
+                                value={userCount}
                                 trend="12"
                             />
                             <StatCard
                                 icon={UserPlus}
-                                label="New Users Today"
-                                value={stats.newUsersToday}
+                                label="New Users This Week"
+                                value={newUserCount}
                                 trend="8"
                             />
                             <StatCard
                                 icon={MessageSquare}
                                 label="Total Posts"
-                                value={stats.totalPosts}
+                                value={postCount}
                                 trend="15"
                             />
                             <StatCard
                                 icon={TrendingUp}
                                 label="Engagement Rate"
-                                value={stats.engagementRate}
+                                value={engagementRate}
                             />
                         </div>
 

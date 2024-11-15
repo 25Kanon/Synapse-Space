@@ -11,7 +11,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     modResolveView, getJoinedCommunityPosts, AcceptMembershipView, BanMembershipView,
                     UnbanMembershipView, getPendingCommunityMembersListView, CheckPendingMembershipView, PinPostView,
                     UserRecommendationsView, UnpinPostView, CommunityUpdateView, AllUsersView, UpdateAccountView,
-                    DeleteAccountView, CreateAccountView)
+                    DeleteAccountView, CreateAccountView, PostCountView, UserCountView, NewUserCountView,
+                    EngagementRateView)
 from django.contrib import admin
 
 
@@ -83,5 +84,9 @@ urlpatterns = [
     path('admin/users', AllUsersView.as_view(), name='all-users'),
     path('admin/account/update/', UpdateAccountView.as_view(), name='update-account'),
     path('admin/account/delete/<int:user_id>', DeleteAccountView.as_view(), name='delete-account'),
-    path('admin/account/create/', CreateAccountView.as_view(), name='create-account')
+    path('admin/account/create/', CreateAccountView.as_view(), name='create-account'),
+    path('admin/posts/count/', PostCountView.as_view(), name='post-count'),
+    path('admin/users/count/', UserCountView.as_view(), name='users-count'),
+    path('admin/new-users/count', NewUserCountView.as_view(), name='new-users-count'),
+    path('admin/engagement-rate/', EngagementRateView.as_view(), name='engagement-rate'),
 ]

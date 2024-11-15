@@ -1299,3 +1299,53 @@ class CreateAccountView(APIView):
             user = serializer.save()
             return Response({"message": "User created successfully.", "user": DetailedUserSerializer(user).data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostCountView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request):
+        post_count = Post.objects.all().count()
+        return Response({"post_count": post_count}, status=status.HTTP_200_OK)
+
+
+class UserCountView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request):
+        user_count = User.objects.all().count()
+        return Response({"user_count": user_count}, status=status.HTTP_200_OK)
+
+
+class NewUserCountView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request):
+        new_users = User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).count()
+        return Response({"new_users": new_users}, status=status.HTTP_200_OK)
+
+
+class EngagementRateView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request):
+        active_users = User.objects.filter(is_active=True).count()
+
+        # Engagement Actions
+        total_posts = Post.objects.count()
+        total_comments = Comment.objects.count()
+        total_likes = Likes.objects.count()
+        total_friendships = Friendship.objects.count()
+        total_reports = Reports.objects.count()
+
+        total_engagements = total_posts + total_comments + total_likes + total_friendships + total_reports
+
+        engagement_rate = total_engagements / active_users if active_users > 0 else 0
+
+        return Response({"engagement_rate": engagement_rate}, status=status.HTTP_200_OK)
+
+
