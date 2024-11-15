@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from "react";
-import { User, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AxiosInstance from "../../utils/AxiosInstance";
 import AuthContext from "../../context/AuthContext";
@@ -11,10 +10,16 @@ const EditProfile = () => {
     const [profilePic, setProfilePic] = useState("");
     const [profileBanner, setProfileBanner] = useState("");
     const [newProfilePic, setNewProfilePic] = useState(null);
+    const [newProfileBanner, setNewProfileBanner] = useState(null);
+    
+    // State for password change
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmNewPassword, setConfirmNewPassword] = useState("");
+    
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch initial profile data for edit fields
         AxiosInstance.get(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, { withCredentials: true })
             .then(response => {
                 const { bio, profile_pic, profile_banner } = response.data;
@@ -25,42 +30,88 @@ const EditProfile = () => {
             .catch(error => console.error("Error fetching profile data:", error));
     }, []);
     
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Prepare data for profile update
+    const handleFileUpload = (file, type) => {
         const formData = new FormData();
-        formData.append('username', username);
-        formData.append('bio', bio);
-        formData.append('profile_pic', newProfilePic || profilePic); // Use new image if available
-        formData.append('profile_banner', profileBanner);
+        formData.append(type, file);
         
-        // Logic to handle profile update
+        return AxiosInstance.post(`${import.meta.env.VITE_API_BASE_URI}/api/upload/`, formData, {
+            withCredentials: true,
+            headers: { "Content-Type": "multipart/form-data" }
+        })
+        .then(response => response.data.file_url)
+        .catch(error => {
+            console.error(`Error uploading ${type}:`, error);
+            return null;
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        let uploadedProfilePic = profilePic;
+        let uploadedProfileBanner = profileBanner;
+
+        if (newProfilePic) {
+            uploadedProfilePic = await handleFileUpload(newProfilePic, 'profile_pic');
+        }
+        
+        if (newProfileBanner) {
+            uploadedProfileBanner = await handleFileUpload(newProfileBanner, 'profile_banner');
+        }
+
+        const formData = {
+            username,
+            bio,
+            profile_pic: uploadedProfilePic,
+            profile_banner: uploadedProfileBanner,
+        };
+        
         AxiosInstance.put(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, formData, { withCredentials: true })
             .then(response => {
                 console.log("Profile updated successfully", response.data);
-                // Assuming updateUser function is defined elsewhere to update the user context
-                updateUser({ ...user, username });
-                if (onProfileUpdate) onProfileUpdate(); // Trigger profile data refresh if defined
-                navigate("/profile"); // Navigate back to ProfilePage after saving
+                navigate("/profile");
             })
             .catch(error => console.error("Error updating profile:", error));
+        
+        // Handle password change if fields are filled
+        if (currentPassword && newPassword === confirmNewPassword) {
+            AxiosInstance.put(`${import.meta.env.VITE_API_BASE_URI}/api/change-password/`, 
+                { current_password: currentPassword, new_password: newPassword }, 
+                { withCredentials: true }
+            )
+            .then(() => console.log("Password changed successfully"))
+            .catch(error => console.error("Error changing password:", error));
+        } else if (newPassword !== confirmNewPassword) {
+            console.error("New password and confirmation do not match.");
+        }
     };
-    
 
-    const handleBackClick = () => {
-        navigate("/profile"); // Navigate back to ProfilePage
-    };
-
-    const handleImageUpload = (e) => {
+    const handleProfilePicChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setNewProfilePic(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                setProfilePic(reader.result); // Update profilePic state with the image URL for preview
+                setProfilePic(reader.result);
             };
-            reader.readAsDataURL(file); // Read the file as a data URL for preview
+            reader.readAsDataURL(file);
         }
+    };
+
+    const handleBannerChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setNewProfileBanner(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfileBanner(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleBackClick = () => {
+        navigate("/profile");
     };
 
     return (
@@ -97,20 +148,54 @@ const EditProfile = () => {
                         type="file"
                         id="profilePic"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={handleProfilePicChange}
                         className="input"
                     />
                 </div>
                 <div className="mb-4">
                     <label htmlFor="profileBanner" className="block mb-1">Profile Banner</label>
                     <input
-                        type="text"
+                        type="file"
                         id="profileBanner"
-                        value={profileBanner}
-                        onChange={(e) => setProfileBanner(e.target.value)}
+                        accept="image/*"
+                        onChange={handleBannerChange}
                         className="input"
                     />
                 </div>
+                
+                {/* Change Password Section */}
+                <h3 className="mt-4 text-lg font-semibold">Change Password</h3>
+                <div className="mb-4">
+                    <label htmlFor="currentPassword" className="block mb-1">Current Password</label>
+                    <input
+                        type="password"
+                        id="currentPassword"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className="input"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="newPassword" className="block mb-1">New Password</label>
+                    <input
+                        type="password"
+                        id="newPassword"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="input"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="confirmNewPassword" className="block mb-1">Confirm New Password</label>
+                    <input
+                        type="password"
+                        id="confirmNewPassword"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        className="input"
+                    />
+                </div>
+
                 <button type="submit" className="btn btn-primary">Save Changes</button>
                 <button type="button" onClick={handleBackClick} className="mb-4 btn btn-secondary">Back</button>
             </form>

@@ -98,17 +98,17 @@ const CreateCommunity = () => {
         });
 
         if (communityAvatar) {
-            // Assuming `communityAvatar` is a Blob or File object after cropping
+            // Assuming communityAvatar is a Blob or File object after cropping
             formData.append("img", communityAvatarBlob, "avatar.png");
         }
 
         if (communityBanner) {
-            // Assuming `communityBanner` is a Blob or File object after cropping
+            // Assuming communityBanner is a Blob or File object after cropping
             formData.append("banner", communityBannerBlob, "banner.png");
         }
 
         try {
-            const response = await AxiosInstance.post(`/api/community/create/`, formData, { withCredentials: true,
+            const response = await AxiosInstance.post('/api/community/create/', formData, { withCredentials: true,
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
@@ -137,8 +137,8 @@ const CreateCommunity = () => {
 
 
     return (
-        <main className="p-5 mt-20 sm:mx-64 flex justify-center items-center">
-            <div className="bg-base-200 p-10 rounded-lg shadow-lg w-full max-w-3xl">
+        <main className="flex items-center justify-center p-5 mt-20 sm:mx-64">
+            <div className="w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
                 {error && <ErrorAlert text={error} />}
                 {success && <SuccessAlert text={success} />}
                 <dialog id="avatar-cropper" className="modal modal-bottom sm:modal-middle">
@@ -153,33 +153,33 @@ const CreateCommunity = () => {
 
                     )}
                 </dialog>
-                <h1 className="text-3xl font-bold mb-8">Create Community</h1>
+                <h1 className="mb-8 text-3xl font-bold">Create Community</h1>
 
-                <form onSubmit={handleSubmit} className="form-control space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6 form-control">
                     <Banner communityName={communityName} commAvatar={communityAvatar} commBanner={communityBanner} />
 
                     <div className="flex flex-row justify-center gap-3">
                         <div>
-                            <label className="block text-sm font-bold mb-2" htmlFor="commImg">
+                            <label className="block mb-2 text-sm font-bold" htmlFor="commImg">
                                 Community Avatar</label>
                             <input
                                 type="file"
                                 id="commImg"
                                 onChange={handleAvatarChange}
-                                className="file-input file-input-bordered file-input-accent w-full max-w-xs"
+                                className="w-full max-w-xs file-input file-input-bordered file-input-accent"
                                 accept="image/png, image/jpeg"
                             />
 
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold mb-2" htmlFor="commBanner">
+                            <label className="block mb-2 text-sm font-bold" htmlFor="commBanner">
                                 Community Banner</label>
                             <input
                                 type="file"
                                 id="commBanner"
                                 onChange={handleBannerChange}
-                                className="file-input file-input-bordered file-input-accent w-full max-w-xs"
+                                className="w-full max-w-xs file-input file-input-bordered file-input-accent"
                                 accept="image/png, image/jpeg"
                             />
                         </div>
@@ -187,38 +187,38 @@ const CreateCommunity = () => {
 
 
                     <div>
-                        <label className="block text-sm font-bold mb-2" htmlFor="communityName">
+                        <label className="block mb-2 text-sm font-bold" htmlFor="communityName">
                             Community Name
                         </label>
                         <input
                             type="text"
                             id="communityName"
                             value={communityName}
-                            className="w-full p-3 rounded-lg border text-black border-gray-600 focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter community name"
                             onChange={(e) => setCommunityName(e.target.value)}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold mb-2" htmlFor="description">
+                        <label className="block mb-2 text-sm font-bold" htmlFor="description">
                             Description
                         </label>
                         <input
                             type="text"
                             id="description"
                             value={description}
-                            className="w-full p-3 rounded-lg border text-black border-gray-600 focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                             placeholder="Describe your community"
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold mb-2" htmlFor="rules">
+                        <label className="block mb-2 text-sm font-bold" htmlFor="rules">
                             Community Rules and Regulations
                         </label>
                         <textarea
                             id="rules"
-                            className="w-full p-3 rounded-lg border text-black border-gray-600 focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                             value={rules}
                             placeholder="Enter community rules"
                             rows="4"
@@ -226,7 +226,7 @@ const CreateCommunity = () => {
                         ></textarea>
                     </div>
                     <div>
-                        <label className="block text-sm font-bold mb-2" htmlFor="keyword">
+                        <label className="block mb-2 text-sm font-bold" htmlFor="keyword">
                             Community Tags
                         </label>
 
@@ -237,7 +237,7 @@ const CreateCommunity = () => {
                         />
                     </div>
                     <div className="text-center">
-                        <button type="submit" className="btn btn-primary text-white px-6 py-3 rounded-lg">
+                        <button type="submit" className="px-6 py-3 text-white rounded-lg btn btn-primary">
                             Create
                         </button>
                     </div>

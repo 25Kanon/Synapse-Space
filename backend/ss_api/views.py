@@ -9,6 +9,10 @@ import os
 from datetime import datetime, timedelta
 
 from django.utils import timezone
+
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.password_validation import validate_password
+
 # Rest Framework imports
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.decorators import api_view
@@ -23,6 +27,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.serializers import ValidationError
 
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
@@ -384,6 +389,37 @@ class LogoutView(APIView):
             response.delete_cookie('refresh')
         return response
 
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        # Check that old password is correct
+        if not user.check_password(old_password):
+            return Response({"error": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate new password
+        if new_password != confirm_password:
+            return Response({"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            validate_password(new_password, user)
+        except ValidationError as e:
+            return Response({"error": e.messages}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Set the new password
+        user.set_password(new_password)
+        user.save()
+        
+        # Update the session with new password hash
+        update_session_auth_hash(request, user)
+        
+        return Response({"message": "Password changed successfully"}, status=status.HTTP_200_OK)
+    
 class CommunityCreateView(generics.CreateAPIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]

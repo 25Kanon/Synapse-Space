@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
+from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, CommunityCreateView,
                     MembershipListView,
                     CommunityDetailView, CommunityMembersListView, PostCreateView, getCommunityPosts, UserProfileView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
@@ -31,6 +31,7 @@ urlpatterns = [
      # User Profile URLs
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('activities/', UserActivitiesView.as_view(), name='user-activities'),
+    path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),
 
     # Community URLs
     path('community/create/', CommunityCreateView.as_view(), name='community-create'),
