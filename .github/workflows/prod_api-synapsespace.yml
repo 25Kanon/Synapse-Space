@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python app to Azure Web App - api-synapsespace
 
 on:
@@ -28,6 +24,21 @@ jobs:
         run: |
           cd backend
           pip install -r requirements.txt
+        env:
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          AZURE_ACS_CONNECTION_STRING: ${{ secrets.AZURE_ACS_CONNECTION_STRING }}
+          AZURE_ACS_SENDER_EMAIL: ${{ secrets.AZURE_ACS_SENDER_EMAIL }}
+          AZURE_BLOB_ACCOUNT_KEY: ${{ secrets.AZURE_BLOB_ACCOUNT_KEY }}
+          AZURE_BLOB_ACCOUNT_NAME: ${{ secrets.AZURE_BLOB_ACCOUNT_NAME }}
+          AZURE_BLOB_ACCOUNT_URL: ${{ secrets.AZURE_BLOB_ACCOUNT_URL }}
+          AZURE_BLOB_CREDENTIAL: ${{ secrets.AZURE_BLOB_CREDENTIAL }}
+          AZURE_POSTGRESQL_CONNECTIONSTRING: ${{ secrets.AZURE_POSTGRESQL_CONNECTIONSTRING }}
+          COMET_CHAT_APP_ID: ${{ secrets.COMET_CHAT_APP_ID }}
+          COMET_CHAT_KEY: ${{ secrets.COMET_CHAT_KEY }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
       # Optional: Run tests here (e.g., Django tests or PyTest)
       # - name: Run tests
@@ -40,6 +51,21 @@ jobs:
         run: |
           cd backend
           python manage.py collectstatic --noinput
+        env:
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          AZURE_ACS_CONNECTION_STRING: ${{ secrets.AZURE_ACS_CONNECTION_STRING }}
+          AZURE_ACS_SENDER_EMAIL: ${{ secrets.AZURE_ACS_SENDER_EMAIL }}
+          AZURE_BLOB_ACCOUNT_KEY: ${{ secrets.AZURE_BLOB_ACCOUNT_KEY }}
+          AZURE_BLOB_ACCOUNT_NAME: ${{ secrets.AZURE_BLOB_ACCOUNT_NAME }}
+          AZURE_BLOB_ACCOUNT_URL: ${{ secrets.AZURE_BLOB_ACCOUNT_URL }}
+          AZURE_BLOB_CREDENTIAL: ${{ secrets.AZURE_BLOB_CREDENTIAL }}
+          AZURE_POSTGRESQL_CONNECTIONSTRING: ${{ secrets.AZURE_POSTGRESQL_CONNECTIONSTRING }}
+          COMET_CHAT_APP_ID: ${{ secrets.COMET_CHAT_APP_ID }}
+          COMET_CHAT_KEY: ${{ secrets.COMET_CHAT_KEY }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
       # Optional: Add any other build steps you might need, like building a frontend or other assets.
 
@@ -48,6 +74,21 @@ jobs:
         run: |
           cd backend
           zip -r release.zip ./*
+        env:
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          AZURE_ACS_CONNECTION_STRING: ${{ secrets.AZURE_ACS_CONNECTION_STRING }}
+          AZURE_ACS_SENDER_EMAIL: ${{ secrets.AZURE_ACS_SENDER_EMAIL }}
+          AZURE_BLOB_ACCOUNT_KEY: ${{ secrets.AZURE_BLOB_ACCOUNT_KEY }}
+          AZURE_BLOB_ACCOUNT_NAME: ${{ secrets.AZURE_BLOB_ACCOUNT_NAME }}
+          AZURE_BLOB_ACCOUNT_URL: ${{ secrets.AZURE_BLOB_ACCOUNT_URL }}
+          AZURE_BLOB_CREDENTIAL: ${{ secrets.AZURE_BLOB_CREDENTIAL }}
+          AZURE_POSTGRESQL_CONNECTIONSTRING: ${{ secrets.AZURE_POSTGRESQL_CONNECTIONSTRING }}
+          COMET_CHAT_APP_ID: ${{ secrets.COMET_CHAT_APP_ID }}
+          COMET_CHAT_KEY: ${{ secrets.COMET_CHAT_KEY }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
@@ -98,8 +139,22 @@ jobs:
         run: |
           cd backend
           python manage.py migrate --noinput
-
-      # Restart the app service if necessary
+        env:
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          AZURE_ACS_CONNECTION_STRING: ${{ secrets.AZURE_ACS_CONNECTION_STRING }}
+          AZURE_ACS_SENDER_EMAIL: ${{ secrets.AZURE_ACS_SENDER_EMAIL }}
+          AZURE_BLOB_ACCOUNT_KEY: ${{ secrets.AZURE_BLOB_ACCOUNT_KEY }}
+          AZURE_BLOB_ACCOUNT_NAME: ${{ secrets.AZURE_BLOB_ACCOUNT_NAME }}
+          AZURE_BLOB_ACCOUNT_URL: ${{ secrets.AZURE_BLOB_ACCOUNT_URL }}
+          AZURE_BLOB_CREDENTIAL: ${{ secrets.AZURE_BLOB_CREDENTIAL }}
+          AZURE_POSTGRESQL_CONNECTIONSTRING: ${{ secrets.AZURE_POSTGRESQL_CONNECTIONSTRING }}
+          COMET_CHAT_APP_ID: ${{ secrets.COMET_CHAT_APP_ID }}
+          COMET_CHAT_KEY: ${{ secrets.COMET_CHAT_KEY }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      # Restart Azure Web App (optional)
       - name: Restart Azure Web App
         uses: azure/azure-cli-action@v1
         with:
