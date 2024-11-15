@@ -181,12 +181,17 @@ function EditUserModal({ user }) {
                                 <div className="w-100 mx-3">
                                     <div className="form-control">
                                         <label className="label">
-                                            <span className="label-text">Profile Picture</span>
+                                            <span className="label-text"><Image size={18}/>Profile Picture</span>
                                         </label>
                                         <div className="input-group">
-                                            <span>
-                                                <Image size={18} />
-                                            </span>
+                                            {profilePic && (
+                                                <div className="avatar w-full">
+                                                    <div className="w-24 rounded-xl mx-auto">
+                                                        <img src={profilePic} alt="Profile Preview"
+                                                             className="w-24 h-24 rounded-full"/>
+                                                    </div>
+                                                </div>
+                                            )}
                                             <input
                                                 type="file"
                                                 name="profile_pic"
@@ -195,11 +200,6 @@ function EditUserModal({ user }) {
                                                 accept="image/*"
                                             />
                                         </div>
-                                        {profilePic && (
-                                            <div className="mt-4">
-                                                <img src={profilePic} alt="Profile Preview" className="w-24 h-24 rounded-full" />
-                                            </div>
-                                        )}
                                     </div>
 
                                     <div className="form-control mt-4">
@@ -286,6 +286,7 @@ function EditUserModal({ user }) {
                             >
                                 Next
                             </button>
+
                         </div>
                     ) : (
                         <div className="flex flex-col w-full max-w-xl h-100">
@@ -328,6 +329,13 @@ function EditUserModal({ user }) {
                                 </select>
                             </div>
 
+                            <button
+                                type="button"
+                                onClick={() => setStep(1)}
+                                className="btn btn-primary w-full mt-6"
+                            >
+                                Back
+                            </button>
                             <button
                                 type="submit"
                                 className="btn btn-primary w-full mt-6"

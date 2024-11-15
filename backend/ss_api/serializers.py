@@ -1,3 +1,4 @@
+import logging
 import os
 
 import pyotp
@@ -25,6 +26,8 @@ from azure.communication.email import EmailClient
 from azure.core.exceptions import HttpResponseError
 import time
 
+
+logger = logging.getLogger(__name__)
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -443,4 +446,26 @@ class FriendSerializer(serializers.ModelSerializer):
 class DetailedUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'program', 'interests', 'is_verified', 'last_login', 'date_joined', 'is_superuser', 'registration_form']  
+        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'program', 'interests', 'is_verified', 'last_login', 'date_joined', 'is_superuser', 'registration_form']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+class CreateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'program', 'interests', 'is_verified', 'date_joined', 'is_superuser', 'registration_form', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        print("Validated data:", validated_data)
+        logger.info("Validated data: %s", validated_data)
+        password = validated_data.pop('password', None)
+        user = User(**validated_data)
+        user.is_google = False
+        if password is not None:
+            user.set_password(password)
+        user.save()
+        return user

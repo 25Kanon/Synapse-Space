@@ -11,7 +11,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     modResolveView, getJoinedCommunityPosts, AcceptMembershipView, BanMembershipView,
                     UnbanMembershipView, getPendingCommunityMembersListView, CheckPendingMembershipView, PinPostView,
                     UserRecommendationsView, UnpinPostView, CommunityUpdateView, AllUsersView, UpdateAccountView,
-                    DeleteAccountView)
+                    DeleteAccountView, CreateAccountView)
 from django.contrib import admin
 
 
@@ -83,4 +83,5 @@ urlpatterns = [
     path('admin/users', AllUsersView.as_view(), name='all-users'),
     path('admin/account/update/', UpdateAccountView.as_view(), name='update-account'),
     path('admin/account/delete/<int:user_id>', DeleteAccountView.as_view(), name='delete-account'),
+    path('admin/account/create/', CreateAccountView.as_view(), name='create-account')
 ]

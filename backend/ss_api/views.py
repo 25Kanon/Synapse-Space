@@ -50,7 +50,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
-                          DetailedUserSerializer)
+                          DetailedUserSerializer, CreateUserSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser
 
@@ -1288,3 +1288,14 @@ class DeleteAccountView (APIView):
         user = get_object_or_404(User, id=user_id)
         user.delete()
         return Response({"message": "User deleted successfully."}, status=status.HTTP_200_OK)
+
+
+class CreateAccountView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+    def post(self, request):
+        serializer = CreateUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({"message": "User created successfully.", "user": DetailedUserSerializer(user).data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

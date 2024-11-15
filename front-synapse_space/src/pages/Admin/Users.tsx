@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {User, Shield, MoreVertical, Edit, Trash2, UserPlus, MessageSquare, TrendingUp} from 'lucide-react';
 import { User as UserType } from '../../components/admin/types'
+import CreateAccountModal from '../../components/admin/CreateAccountModal'
 import Sidebar from "../../components/admin/Sidebar";
 import Header from "../../components/admin/Header";
 import AxiosInstance from "../../utils/AxiosInstance";
@@ -52,10 +53,6 @@ const Users = () => {
         document.getElementById('edit-user').showModal();
     };
 
-    const handleCreate = () => {
-        setSelectedUser(null);
-        setIsModalOpen(true);
-    };
 
 
     return (
@@ -71,7 +68,7 @@ const Users = () => {
                         <div className="flex justify-between items-center mb-6">
                             <h1 className="text-2xl font-bold">Users</h1>
                             <button
-                                onClick={handleCreate}
+                                onClick={() => setIsModalOpen(true)}
                                 className="btn btn-primary flex items-center gap-2"
                             >
                                 <UserPlus className="w-4 h-4"/>
@@ -174,7 +171,9 @@ const Users = () => {
 
             <dialog id="edit-user" className="modal modal-bottom sm:modal-middle">
                 <EditUserModal user={selectedUser}/>
-            </dialog>
+            </dialog>            <CreateAccountModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}/>
         </div>
     );
 };
