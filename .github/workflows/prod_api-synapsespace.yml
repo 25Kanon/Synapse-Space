@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      # Install dependencies
+      # Install dependencies globally (no virtual environment)
       - name: Install dependencies
         run: |
           cd backend
@@ -55,7 +55,6 @@ jobs:
           name: python-app
           path: |
             backend/release.zip
-            !venv/
 
   deploy:
     runs-on: ubuntu-latest
