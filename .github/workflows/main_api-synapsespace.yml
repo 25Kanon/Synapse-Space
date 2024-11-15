@@ -17,32 +17,50 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Set up Python version
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
+      # Create and activate virtual environment
       - name: Create and start virtual environment
         run: |
           python -m venv venv
           source venv/bin/activate
-      
-      - name: Install dependencies
-        run:  |
-            cd backend
-            pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      # Optional: Run tests here (e.g., Django tests or PyTest)
+      # - name: Run tests
+      #   run: |
+      #     cd backend
+      #     python manage.py test
+
+      # Collect static files for deployment
+      - name: Collect static files
+        run: |
+          cd backend
+          python manage.py collectstatic --noinput
+
+      # Optional: Add any other build steps you might need, like building a frontend or other assets.
+
+      # Zip artifact for deployment
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: |
+          cd backend
+          zip -r release.zip ./*
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
           path: |
-            release.zip
+            backend/release.zip
             !venv/
 
   deploy:
@@ -52,7 +70,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -60,10 +78,12 @@ jobs:
         with:
           name: python-app
 
+      # Unzip artifact for deployment
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: |
+          unzip release.zip -d backend/
 
-      
+      # Azure login using GitHub secrets (make sure to set these in your GitHub repository settings)
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -71,10 +91,25 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0B13F023D8F443AA882FFB5A610E3721 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_06358B22DD5849998AE1C4EB7903D0AE }}
 
+      # Deploy to Azure Web App
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'api-synapsespace'
           slot-name: 'Production'
-          
+          package: './backend'
+
+      # Run migrations after deployment
+      - name: Apply database migrations
+        run: |
+          cd backend
+          python manage.py migrate --noinput
+
+      # Restart the app service if necessary
+      - name: Restart Azure Web App
+        uses: azure/azure-cli-action@v1
+        with:
+          azcliversion: '2.42.0'
+          inlineScript: |
+            az webapp restart --name api-synapsespace --resource-group SynapseSpace
