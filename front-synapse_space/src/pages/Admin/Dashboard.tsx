@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users, MessageSquare, TrendingUp, UserPlus } from 'lucide-react';
-import { fetchCommunityStats, fetchRecentActivities } from '../../utils/admin/api';
+import { fetchCommunityStats, fetchRecentActivities } from '../../utils/admin/api';//TEMPORARY WILL PATCH WITH REAL DATA LATER
 import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
 

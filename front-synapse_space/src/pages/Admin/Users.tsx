@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {User, Shield, MoreVertical, Edit, Trash2, UserPlus, MessageSquare, TrendingUp} from 'lucide-react';
-import { fetchUsers, deleteUser } from '../../utils/admin/api';
 import { User as UserType } from '../../components/admin/types'
 import Sidebar from "../../components/admin/Sidebar";
 import Header from "../../components/admin/Header";
@@ -132,7 +131,14 @@ const Users = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-sm"> {` ${user.is_verified}`}</span>
+                                            <span className="text-sm"> {user.is_verified ?
+                                                <>
+                                                    <span className="text-sm text-primary">Verified</span>
+                                                </> :
+                                                <>
+                                                    <span className="text-sm text-warning">Not Verified</span>
+                                                </>
+                                            }</span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-500">
                                             {new Date(user.last_login).toLocaleDateString()}
