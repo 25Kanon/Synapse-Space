@@ -48,6 +48,29 @@ class IsCommunityAdminORModerator(permissions.BasePermission):
         return self.has_permission(request, view)
 
 
+class IsCommunityAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            return False
+
+        # Fetch community_id from URL kwargs
+        community_id = view.kwargs.get('community_id')
+        if not community_id:
+            return False
+
+        # Fetch the community instance and use the `is_admin_or_moderator` method
+        try:
+            community = Community.objects.get(id=community_id)
+            return community.is_community_admin(request.user)
+        except Community.DoesNotExist:
+            return False
+
+    def has_object_permission(self, request, view, obj):
+        # Reuse `has_permission` logic for object-level permissions
+        return self.has_permission(request, view)
+
+
 class CookieJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
         header = self.get_header(request)
@@ -60,4 +83,8 @@ class CookieJWTAuthentication(JWTAuthentication):
 
         validated_token = self.get_validated_token(raw_token)
         return self.get_user(validated_token), validated_token
+
+class IsSuperUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_superuser
 

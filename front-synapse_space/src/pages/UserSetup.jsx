@@ -240,7 +240,7 @@ function UserSetup() {
                                 <div className="w-100 flex justify-center items-center mx-3">
                                     <div className="form-control">
                                         <div className="form-control mt-4">
-                                            <div className="mx-auto bg-red-300 p-4 object-none ">
+                                            <div className="mx-auto p-4 object-none ">
                                                 <img className="h-80 w-80" src={regForm} alt="regform" />
                                             </div>
                                             <div className="input-group">

@@ -4,8 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import './App.css';
 import PrivateRoute from './utils/PrivateRoute';
 import PublicRoute from './utils/PublicRoute';
+import AdminRoute from './utils/AdminRoute';
 import Home from './pages/Home';
-import UserSetup from "./pages/UserSetup";
 import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
 import ProfilePage from './pages/Profile/ProfilePage';
@@ -20,6 +20,11 @@ import CommunitySettings from './pages/Community/CommunitySettings';
 import { FriendProvider } from './context/FriendContext';
 import Discovery from "./pages/Discovery";
 import {ConversationsWithMessagesWrapper} from "./components/Conversations";
+
+
+import Dashboard from "./pages/Admin/Dashboard"
+import Users from "./pages/Admin/Users"
+
 
 import {CometChatTheme, CometChatUsersWithMessages} from "@cometchat/chat-uikit-react";
 
@@ -121,6 +126,17 @@ function App() {
               </Route>
               <Route path="/messages" element={<PrivateRoute />}>
                 <Route path="/messages" element={getConversationsWithMessages()} />
+              </Route>
+
+
+              {/*admin routes*/}
+
+              <Route path="/admin" element={<AdminRoute />}>
+                <Route path="/admin" element={<Dashboard/>} />
+              </Route>
+
+              <Route path="/admin/users" element={<AdminRoute />}>
+                <Route path="/admin/users" element={<Users/>} />
               </Route>
             </Routes>
           </FriendProvider>

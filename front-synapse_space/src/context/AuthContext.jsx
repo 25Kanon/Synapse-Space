@@ -158,10 +158,16 @@ export const AuthProvider = ({ children }) => {
         return (user.isVerified)
     }
 
+    const isAdmin = async () => {
+        const currentUser = user || await checkAuthentication();
+        return currentUser?.is_superuser;
+    };
+
     return (
         <AuthContext.Provider value={{
             isAuthenticated,
             isVerified,
+            isAdmin,
             user,
             isLoggedinWithGoogle,
             loading,

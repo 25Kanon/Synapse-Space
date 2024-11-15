@@ -44,7 +44,7 @@ class Community(models.Model):
             role__in=['admin', 'moderator']
         ).exists()
 
-    def is_admin(self, user):
+    def is_community_admin(self, user):
         """Check if the user has an admin or moderator role in this community."""
         return Membership.objects.filter(
             user=user,

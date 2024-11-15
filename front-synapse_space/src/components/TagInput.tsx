@@ -15,8 +15,6 @@ export function TagInput({
     const [input, setInput] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
-
-
     const handleKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && input.trim()) {
             e.preventDefault();

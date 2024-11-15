@@ -10,7 +10,8 @@ from .views import (RegisterView, LoginView, LogoutView, CommunityCreateView,
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
                     modResolveView, getJoinedCommunityPosts, AcceptMembershipView, BanMembershipView,
                     UnbanMembershipView, getPendingCommunityMembersListView, CheckPendingMembershipView, PinPostView,
-                    UserRecommendationsView, UnpinPostView, CommunityUpdateView)
+                    UserRecommendationsView, UnpinPostView, CommunityUpdateView, AllUsersView, UpdateAccountView,
+                    DeleteAccountView)
 from django.contrib import admin
 
 
@@ -78,4 +79,7 @@ urlpatterns = [
 
     path('recommendations/', UserRecommendationsView.as_view(), name='user-recommendations'),
 
+    path('admin/users', AllUsersView.as_view(), name='all-users'),
+    path('admin/account/update/', UpdateAccountView.as_view(), name='update-account'),
+    path('admin/account/delete/<int:user_id>', DeleteAccountView.as_view(), name='delete-account'),
 ]

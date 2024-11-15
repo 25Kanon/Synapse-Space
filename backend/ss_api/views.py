@@ -44,9 +44,10 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
-                          ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer)
-from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator
-
+                          ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
+                          DetailedUserSerializer)
+from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
+    IsSuperUser
 
 from .recommender import get_hybrid_recommendations
 
@@ -291,6 +292,7 @@ class CheckAuthView(APIView):
                 'isVerified': request.user.is_verified,
                 'exp': expiration_time.isoformat() if expiration_time else None,
                 'pic': request.user.profile_pic,
+                'is_superuser': request.user.is_superuser,
             }
         })
 
@@ -1176,7 +1178,7 @@ class UserRecommendationsView(APIView):
 
 class CommunityUpdateView(UpdateAPIView):
     serializer_class = CommunitySerializer
-    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+    permission_classes = [IsAuthenticated, IsCommunityAdmin]
     authentication_classes = [CookieJWTAuthentication]
 
     def get_object(self):
@@ -1191,3 +1193,62 @@ class CommunityUpdateView(UpdateAPIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AllUsersView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = DetailedUserSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
+    def get(self, request):
+        users = User.objects.all()
+        serializer = DetailedUserSerializer(users, many=True)
+        return Response(serializer.data)
+
+
+class UpdateAccountView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def put(self, request):
+        user_id = request.data.get('id')
+        if not user_id:
+            return Response({"error": "User ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = VerifyAccountSerializer(data=request.data, partial=True)  # Allows partial updates
+
+        if serializer.is_valid():
+            # Update the fields for the user
+            user.student_number = serializer.validated_data.get('student_number', user.student_number)
+            user.username = serializer.validated_data.get('username', user.username)
+            user.registration_form = serializer.validated_data.get('registration_form', user.registration_form)
+            user.profile_pic = serializer.validated_data.get('profile_pic', user.profile_pic)
+
+            # Handle interests as an array
+            interests = serializer.validated_data.get('interests', user.interests)
+            if isinstance(interests, list):
+                user.interests = interests  # Assign the list directly
+
+            user.bio = serializer.validated_data.get('bio', user.bio)
+            user.program = serializer.validated_data.get('program', user.program)
+            user.is_verified = serializer.validated_data.get('is_verified', user.is_verified)
+
+            user.save()
+            return Response({"message": "Account updated successfully."}, status=status.HTTP_200_OK)
+
+        logger.error(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteAccountView (APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+    def delete(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        user.delete()
+        return Response({"message": "User deleted successfully."}, status=status.HTTP_200_OK)
