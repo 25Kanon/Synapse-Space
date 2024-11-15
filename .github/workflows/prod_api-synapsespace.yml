@@ -117,7 +117,7 @@ jobs:
         run: |
           unzip release.zip -d backend/
 
-      # Azure login using GitHub secrets (make sure to set these in your GitHub repository settings)
+      # Azure login using GitHub secrets
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -154,10 +154,12 @@ jobs:
           GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      # Restart Azure Web App (optional)
+
+      # Restart Azure Web App (using the azure CLI action)
       - name: Restart Azure Web App
-        uses: azure/azure-cli-action@v1
+        uses: azure/cli@v1
         with:
           azcliversion: '2.42.0'
           inlineScript: |
             az webapp restart --name api-synapsespace --resource-group SynapseSpace
+  
