@@ -38,6 +38,7 @@ jobs:
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
       # Optional: Run tests here (e.g., Django tests or PyTest)
       # - name: Run tests
@@ -64,6 +65,7 @@ jobs:
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
       # Optional: Add any other build steps you might need, like building a frontend or other assets.
 
@@ -86,6 +88,7 @@ jobs:
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
@@ -150,7 +153,7 @@ jobs:
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
-
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
       # Restart Azure Web App (optional)
       - name: Restart Azure Web App
         uses: azure/azure-cli-action@v1
