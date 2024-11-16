@@ -28,6 +28,7 @@ import {ConversationsWithMessagesWrapper} from "./components/Conversations";
 import Dashboard from "./pages/Admin/Dashboard"
 import Users from "./pages/Admin/Users"
 import Programs from "./pages/Admin/Programs"
+import Verifications from "./pages/Admin/Verifications"
 
 
 import {CometChatTheme, CometChatUsersWithMessages} from "@cometchat/chat-uikit-react";
@@ -154,6 +155,10 @@ function App() {
 
               <Route path="/admin/programs" element={<AdminRoute />}>
                 <Route path="/admin/programs" element={<Programs/>} />
+              </Route>
+
+              <Route path="/admin/verifications" element={<AdminRoute />}>
+                <Route path="/admin/verifications" element={<Verifications/>} />
               </Route>
               
 

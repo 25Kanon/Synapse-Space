@@ -7,7 +7,7 @@ const Sidebar = () => {
         { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
         { icon: Users, label: 'Users', path: '/admin/users' },
         { icon: MessageSquare, label: 'Posts', path: '/admin/posts' },
-        { icon: BadgeCheck, label: 'Student Verification', path: '/admin/reports' },
+        { icon: BadgeCheck, label: 'Student Verification', path: '/admin/verifications' },
         { icon: GraduationCap, label: 'Programs', path: '/admin/programs' },
         { icon: Settings, label: 'Settings', path: '/admin/settings' },
     ];

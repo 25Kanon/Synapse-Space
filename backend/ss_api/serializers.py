@@ -460,7 +460,7 @@ class DetailedUserSerializer(serializers.ModelSerializer):
             'id', 'student_number', 'first_name', 'last_name', 'email',
             'username', 'bio', 'profile_pic', 'profile_banner', 'program',
             'interests', 'is_verified', 'last_login', 'date_joined',
-            'is_superuser', 'registration_form', 'is_staff'
+            'is_superuser', 'registration_form', 'is_staff', 'is_rejected'
         ]
         extra_kwargs = {
             'password': {'write_only': True},

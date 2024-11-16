@@ -1482,4 +1482,23 @@ class ProgramDeleteView(APIView):
         return Response({"message": "Program deleted successfully."}, status=status.HTTP_200_OK)
 
 
+class UnverifiedStudentsViewSet(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
 
+    serializer_class = DetailedUserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(is_verified=False)
+
+    def get(self, request):
+        users = self.get_queryset()
+        serializer = DetailedUserSerializer(users, many=True)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        user = User.objects.get(id=request.data.get('id'))
+        user.is_verified = request.data.get('is_verified', user.is_verified)
+        user.is_rejected = request.data.get('is_rejected', user.is_rejected)
+        user.save()
+        return Response({"message": "User verified successfully."}, status=status.HTTP_200_OK)

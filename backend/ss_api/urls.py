@@ -13,7 +13,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     UserRecommendationsView, UnpinPostView, CommunityUpdateView, AllStudentsView, UpdateAccountView,
                     DeleteAccountView, CreateAccountView, PostCountView, UserCountView, NewUserCountView,
                     EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
-                    ProgramCreateView)
+                    ProgramCreateView, UnverifiedStudentsViewSet)
 from django.contrib import admin
 
 
@@ -95,4 +95,5 @@ urlpatterns = [
     path('admin/program/create/', ProgramCreateView.as_view(), name='program-create'),
     path('admin/program/update/<int:program_id>/', ProgramEditView.as_view(), name='program-update'),
     path('admin/program/delete/<int:program_id>/', ProgramDeleteView.as_view(), name='program-delete'),
+    path('admin/users/unverified', UnverifiedStudentsViewSet.as_view(), name='unverified-users'),
 ]

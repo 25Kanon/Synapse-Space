@@ -5,7 +5,21 @@ export interface User {
     role: 'Admin' | 'Moderator' | 'Member';
     status: 'Active' | 'Inactive';
     lastActive: string;
+    student_number: number;
+    first_name: string;
+    last_name: string;
+    username: string;
+    bio: string;
+    profile_pic: string;
+    profile_banner: string;
+    program: string;
+    interests: string[];
+    approval: 'pending' | 'approved' | 'rejected';
+    is_verified: boolean;
+    registration_form: string;
+    is_rejected: boolean;
 }
+
 
 export interface CommunityStats {
     totalUsers: number;
