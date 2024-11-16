@@ -7,6 +7,7 @@ import PublicRoute from './utils/PublicRoute';
 import AdminRoute from './utils/AdminRoute';
 import Home from './pages/Home';
 import UserLogin from './pages/UserLogin';
+import ResetPassword from './pages/ResetPasswordForm';
 import UserRegister from './pages/UserRegister';
 import ProfilePage from './pages/Profile/ProfilePage';
 import EditProfile from './pages/Profile/EditProfile';
@@ -99,6 +100,9 @@ function App() {
               </Route>
               <Route path="/" element={<PublicRoute />}>
                 <Route path="/login" element={<UserLogin />} />
+              </Route>
+              <Route path="/" element={<PublicRoute />}>
+                <Route path="/reset-password" element={<ResetPassword />} />
               </Route>
               <Route path="/" element={<PublicRoute />}>
                 <Route path="/register" element={<UserRegister />} />
