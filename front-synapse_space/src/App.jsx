@@ -7,6 +7,8 @@ import PublicRoute from './utils/PublicRoute';
 import AdminRoute from './utils/AdminRoute';
 import Home from './pages/Home';
 import UserLogin from './pages/UserLogin';
+import TermsOfUse from "./pages/TermsOfUse";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ResetPassword from './pages/ResetPasswordForm';
 import UserRegister from './pages/UserRegister';
 import ProfilePage from './pages/Profile/ProfilePage';
@@ -106,6 +108,12 @@ function App() {
               </Route>
               <Route path="/" element={<PublicRoute />}>
                 <Route path="/register" element={<UserRegister />} />
+              </Route>
+              <Route path="/" element={<PublicRoute  />}>
+                <Route path="/terms-of-use" element={<TermsOfUse />} />
+              </Route>
+              <Route path="/" element={<PublicRoute  />}>
+                <Route path="privacy-policy" element={<PrivacyPolicy />} />
               </Route>
               <Route path="/community" element={<PrivateRoute />}>
                 <Route path="/community/:id" element={<Community />} />

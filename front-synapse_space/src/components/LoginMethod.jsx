@@ -46,24 +46,28 @@ export default function LoginMethod() {
         return (
             <div>
             <div className="flex flex-col">
-                    <h2 className="card-title justify-start mb-5">Welcome Back!</h2>
+                    <h2 className="justify-start mb-5 card-title">Welcome Back!</h2>
 
 
-                    <div className="card-actions py-10 flex-col justify-center">
+                    <div className="flex-col justify-center py-10 card-actions">
                         <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
                             <GoogleBtn/>
                         </GoogleOAuthProvider>
                         <div className="divider">or</div>
-                        <button className="btn w-full" onClick={handleLoginWithEmail}>
+                        <button className="w-full btn" onClick={handleLoginWithEmail}>
                             Login with Email
                         </button>
                     </div>
-                    <article className="prose text-center max-w-sm text-sm justify-self-end self-center">
+                    <article className="self-center max-w-sm text-sm prose text-center justify-self-end">
                         <p>
-                            By Signing in, you agree to the Terms of Use, Community Rules, and Privacy Policy
+                            By Signing in, you agree to the 
+                            <a href="/terms-of-use" className="text-blue-600 hover:underline"> Terms of Use</a>, 
+                            Community Rules, and 
+                            <a href="/privacy-policy" className="text-blue-600 hover:underline"> Privacy Policy</a>.
                         </p>
                     </article>
-                    <Link className="text-center justify-center text-xs text-gray-500 mt-4" to='/register'>
+
+                    <Link className="justify-center mt-4 text-xs text-center text-gray-500" to='/register'>
                         Don’t have an account? Sign up
                     </Link>
     
