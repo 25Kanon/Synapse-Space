@@ -2,6 +2,9 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AxiosInstance from "../../utils/AxiosInstance";
 import AuthContext from "../../context/AuthContext";
+import MainContentContainer from "../../components/MainContentContainer";
+import AvatarCropper from "../../components/avatarCropper";
+import BannerCropper from "../../components/community/BannerCropper";
 
 const EditProfile = () => {
     const { user } = useContext(AuthContext);
@@ -11,6 +14,9 @@ const EditProfile = () => {
     const [profileBanner, setProfileBanner] = useState("");
     const [newProfilePic, setNewProfilePic] = useState(null);
     const [newProfileBanner, setNewProfileBanner] = useState(null);
+    const [newProfilePicBlob, setnewProfilePicBlob] = useState(null);
+    const [newProfileBannerBlob, setnewProfileBannerBlob] = useState(null);
+    const [imageSrc, setImageSrc] = useState(null);
     
     // State for password change
     const [currentPassword, setCurrentPassword] = useState("");
@@ -69,20 +75,32 @@ const EditProfile = () => {
         AxiosInstance.put(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, formData, { withCredentials: true })
             .then(response => {
                 console.log("Profile updated successfully", response.data);
-                navigate("/profile");
             })
             .catch(error => console.error("Error updating profile:", error));
-        
-        // Handle password change if fields are filled
-        if (currentPassword && newPassword === confirmNewPassword) {
+    };
+
+    const handlePasswordChange = () => {
+        // Check if all password fields are filled and passwords match
+        if (currentPassword && newPassword && newPassword === confirmNewPassword) {
+            // Send the current password, new password, and confirm password to the backend
             AxiosInstance.put(`${import.meta.env.VITE_API_BASE_URI}/api/change-password/`, 
-                { current_password: currentPassword, new_password: newPassword }, 
-                { withCredentials: true }
+                { 
+                    current_password: currentPassword, 
+                    new_password: newPassword,
+                    confirm_password: confirmNewPassword 
+                }, 
+                { withCredentials: true } // Ensure credentials are sent with the request
             )
-            .then(() => console.log("Password changed successfully"))
-            .catch(error => console.error("Error changing password:", error));
+            .then(response => {
+                console.log("Password changed successfully:", response.data.message);
+            })
+            .catch(error => {
+                console.error("Error changing password:", error.response?.data);
+            });
         } else if (newPassword !== confirmNewPassword) {
             console.error("New password and confirmation do not match.");
+        } else {
+            console.error("Please fill in all fields.");
         }
     };
 
@@ -115,91 +133,110 @@ const EditProfile = () => {
     };
 
     return (
-        <div className="p-4">
-            <h2 className="text-xl font-semibold">Edit Profile</h2>
-            <form onSubmit={handleSubmit} className="mt-4">
-                <div className="mb-4">
-                    <label htmlFor="username" className="block mb-1">Username</label>
-                    <input
-                        type="text"
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="input"
-                        required
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="bio" className="block mb-1">Bio</label>
-                    <textarea
-                        id="bio"
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        className="textarea"
-                        rows="4"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="profilePic" className="block mb-1">Profile Picture</label>
-                    <div className="mb-2">
-                        {profilePic && <img src={profilePic} alt="Profile Preview" className="object-cover w-32 h-32 rounded-full" />}
+        <MainContentContainer>
+            <div className="p-6">
+                <h2 className="text-xl font-semibold">Edit Profile</h2>
+                <form onSubmit={handleSubmit} className="mt-4">
+                    <div className="mb-4">
+                        <label htmlFor="username" className="block mb-1">Username</label>
+                        <input
+                            type="text"
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="input"
+                            required
+                        />
                     </div>
-                    <input
-                        type="file"
-                        id="profilePic"
-                        accept="image/*"
-                        onChange={handleProfilePicChange}
-                        className="input"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="profileBanner" className="block mb-1">Profile Banner</label>
-                    <input
-                        type="file"
-                        id="profileBanner"
-                        accept="image/*"
-                        onChange={handleBannerChange}
-                        className="input"
-                    />
-                </div>
-                
-                {/* Change Password Section */}
-                <h3 className="mt-4 text-lg font-semibold">Change Password</h3>
-                <div className="mb-4">
-                    <label htmlFor="currentPassword" className="block mb-1">Current Password</label>
-                    <input
-                        type="password"
-                        id="currentPassword"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="input"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="newPassword" className="block mb-1">New Password</label>
-                    <input
-                        type="password"
-                        id="newPassword"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="input"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="confirmNewPassword" className="block mb-1">Confirm New Password</label>
-                    <input
-                        type="password"
-                        id="confirmNewPassword"
-                        value={confirmNewPassword}
-                        onChange={(e) => setConfirmNewPassword(e.target.value)}
-                        className="input"
-                    />
-                </div>
+                    <div className="mb-4">
+                        <label htmlFor="bio" className="block mb-1">Bio</label>
+                        <textarea
+                            id="bio"
+                            value={bio}
+                            onChange={(e) => setBio(e.target.value)}
+                            className="textarea"
+                            rows="4"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="profilePic" className="block mb-1">
+                            Profile Picture
+                        </label>
+                        <div className="mb-2">
+                            {profilePic && (
+                            <img
+                                src={profilePic}
+                                alt="Profile Preview"
+                                className="object-cover w-32 h-32 rounded-full"
+                            />
+                            )}
+                        </div>
+                        <input
+                            type="file"
+                            id="profilePic"
+                            accept="image/*"
+                            onChange={handleProfilePicChange}
+                            className="input"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="profileBanner" className="block mb-1">Profile Banner</label>
+                        <div className="mb-2">
+                            {profileBanner && (
+                                <img 
+                                    src={profileBanner} 
+                                    alt="Banner Preview" 
+                                    className="object-cover w-1/2 h-[20rem] mx-auto rounded-lg" 
+                                />
+                            )}
+                        </div>
+                        <input
+                            type="file"
+                            id="profileBanner"
+                            accept="image/*"
+                            onChange={handleBannerChange}
+                            className="input"
+                        />
+                    </div>
+                    
+                    {/* Change Password Section */}
+                    <h3 className="mt-4 text-lg font-semibold">Change Password</h3>
+                    <div className="mb-4">
+                        <label htmlFor="currentPassword" className="block mb-1">Current Password</label>
+                        <input
+                            type="password"
+                            id="currentPassword"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            className="input"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="newPassword" className="block mb-1">New Password</label>
+                        <input
+                            type="password"
+                            id="newPassword"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="input"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="confirmNewPassword" className="block mb-1">Confirm New Password</label>
+                        <input
+                            type="password"
+                            id="confirmNewPassword"
+                            value={confirmNewPassword}
+                            onChange={(e) => setConfirmNewPassword(e.target.value)}
+                            className="input"
+                        />
+                    </div>
 
-                <button type="submit" className="btn btn-primary">Save Changes</button>
-                <button type="button" onClick={handleBackClick} className="mb-4 btn btn-secondary">Back</button>
-            </form>
-        </div>
+                    <button type="submit" className="btn btn-primary">Save Changes</button>
+                    <button type="button" onClick={handleBackClick} className="mb-4 btn btn-secondary">Back</button>
+                </form>
+            </div>
+        </MainContentContainer>
     );
 };
 

@@ -49,8 +49,8 @@ const ActivitiesDisplay = ({ activeTab }) => {
             {activeTab === 'overview' && (
                 <div>
                     <h2 className="font-semibold">All Activities</h2>
-                    {posts.length > 0 ? (
-                        posts.map(post => (
+                    {userPosts.length > 0 ? (
+                        userPosts.map(post => (
                             <CommunityPost
                                 key={post.id}
                                 userName={post.created_by_username}

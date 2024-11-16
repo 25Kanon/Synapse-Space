@@ -397,20 +397,21 @@ class LogoutView(APIView):
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def put(self, request):
         user = request.user
-        old_password = request.data.get("old_password")
+        current_password = request.data.get("current_password")
         new_password = request.data.get("new_password")
         confirm_password = request.data.get("confirm_password")
 
-        # Check that old password is correct
-        if not user.check_password(old_password):
-            return Response({"error": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+        # Check that the current password is correct
+        if not user.check_password(current_password):
+            return Response({"error": "Current password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate new password
+        # Validate that the new password and confirm password match
         if new_password != confirm_password:
-            return Response({"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "New passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Validate the new password according to Django's password validation rules
         try:
             validate_password(new_password, user)
         except ValidationError as e:
@@ -419,10 +420,10 @@ class ChangePasswordView(APIView):
         # Set the new password
         user.set_password(new_password)
         user.save()
-        
-        # Update the session with new password hash
+
+        # Update the session to reflect the new password hash
         update_session_auth_hash(request, user)
-        
+
         return Response({"message": "Password changed successfully"}, status=status.HTTP_200_OK)
     
 class CommunityCreateView(generics.CreateAPIView):
@@ -818,11 +819,79 @@ class EditProfileView(generics.UpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
+    def __init__(self):
+        self.account_url = os.getenv('AZURE_BLOB_ACCOUNT_URL')
+        self.credential = os.getenv('AZURE_BLOB_CREDENTIAL')
+        self.account_name = os.getenv('AZURE_BLOB_ACCOUNT_NAME')
+        self.account_key = os.getenv('AZURE_BLOB_ACCOUNT_KEY')
+        self.container_name = 'synapsespace-storage'
+
+    def generate_presigned_url(self, blob_name):
+        """Generates a pre-signed URL for Azure Blob Storage"""
+        blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
+        sas_token = generate_blob_sas(
+            account_name=self.account_name,
+            container_name=self.container_name,
+            blob_name=blob_name,
+            account_key=self.account_key,
+            permission=BlobSasPermissions(write=True),
+            expiry=datetime.utcnow() + timedelta(hours=1)
+        )
+        return f"https://{blob_service_client.account_name}.blob.core.windows.net/{self.container_name}/{blob_name}?{sas_token}"
+
     def get_object(self):
         return self.request.user  # Get the current authenticated user
 
+    def perform_update(self, serializer):
+        blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.credential)
+        container_client = blob_service_client.get_container_client(self.container_name)
+
+        profile_pic_url = None
+        profile_banner_url = None
+
+        try:
+            # Fetch files from the request
+            profile_pic_file = self.request.FILES.get('profile_pic')
+            profile_banner_file = self.request.FILES.get('profile_banner')
+
+            # Handle profile picture upload
+            if profile_pic_file:
+                profile_pic_blob_name = f"profile_pictures/{uuid.uuid4()}-{profile_pic_file.name}"
+                container_client.upload_blob(profile_pic_blob_name, profile_pic_file, overwrite=True)
+                profile_pic_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_client.container_name}/{profile_pic_blob_name}"
+
+            # Handle banner upload
+            if profile_banner_file:
+                banner_blob_name = f"profile_banners/{uuid.uuid4()}-{profile_banner_file.name}"
+                container_client.upload_blob(banner_blob_name, profile_banner_file, overwrite=True)
+                profile_banner_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_client.container_name}/{banner_blob_name}"
+
+            # Save updated user data
+            serializer.save(
+                profile_pic=profile_pic_url if profile_pic_url else serializer.instance.profile_pic,
+                profile_banner=profile_banner_url if profile_banner_url else serializer.instance.profile_banner,
+            )
+        except Exception as e:
+            # If there's an error, clean up uploaded blobs
+            if profile_pic_url:
+                blob_client = container_client.get_blob_client(profile_pic_blob_name)
+                blob_client.delete_blob()
+            if profile_banner_url:
+                blob_client = container_client.get_blob_client(banner_blob_name)
+                blob_client.delete_blob()
+            raise e
+
     def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_update(serializer)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserActivitiesView(APIView):
     authentication_classes = [CookieJWTAuthentication]
