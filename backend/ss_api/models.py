@@ -6,13 +6,20 @@ from django.contrib.contenttypes.models import ContentType
 import pyotp
 
 
+class Program(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class User(AbstractUser):
     # Add any additional fields here
     student_number = models.IntegerField(unique=True, null=True)
     first_name = models.CharField(max_length=200, null=False, blank=False)
     last_name = models.CharField(max_length=200, null=False, blank=False)
     email = models.CharField(max_length=200, null=False, blank=False, unique=True)
-    program = models.CharField(max_length=200, null=True, blank=True)
+    program = models.ForeignKey(Program, max_length=200, null=True, blank=True, on_delete=models.CASCADE)
     registration_form = models.URLField(max_length=None, null=True, blank=True)
     profile_pic = models.URLField(max_length=None, null=True, blank=True)
     profile_banner = models.URLField(max_length=None, null=True, blank=True)
@@ -21,8 +28,14 @@ class User(AbstractUser):
     otp_secret = models.CharField(max_length=32, default=pyotp.random_base32)
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    is_google = models.BooleanField(default=True)
-    pass
+    is_google = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.is_verified = True
+            self.is_staff = True
+        super().save(*args, **kwargs)
+
 
 class Community(models.Model):
     name = models.CharField(max_length=255)
@@ -52,6 +65,7 @@ class Community(models.Model):
             role__in=['admin']
         ).exists()
 
+
 class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
@@ -59,6 +73,7 @@ class Post(models.Model):
     created_by = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     posted_in = models.ForeignKey(Community, on_delete=models.CASCADE)
     isPinned = models.BooleanField(default=False)
+
 
 class Membership(models.Model):
     user = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
@@ -71,9 +86,11 @@ class Membership(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.community.name}"
 
+
 class Likes(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
 
 class Comment(models.Model):
     content = models.TextField()
@@ -86,10 +103,12 @@ class Comment(models.Model):
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post.id}"
 
+
 class SavedPost(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
 
 class LikedPost(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='liked_posts')
@@ -133,7 +152,6 @@ class Reports(models.Model):
         return f"Report by {self.author.username} on {self.type}: {self.reason}"
 
 
-
 class FriendRequest(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -151,7 +169,8 @@ class FriendRequest(models.Model):
 
     class Meta:
         unique_together = ('sender', 'receiver')  # A user cannot send multiple requests to the same user
-        
+
+
 class Friendship(models.Model):
     user1 = models.ForeignKey(User, related_name='friendships1', on_delete=models.CASCADE)
     user2 = models.ForeignKey(User, related_name='friendships2', on_delete=models.CASCADE)
@@ -159,5 +178,6 @@ class Friendship(models.Model):
 
     def __str__(self):
         return f"{self.user1} is friends with {self.user2}"
-    
-    
+
+
+

@@ -27,6 +27,7 @@ import {ConversationsWithMessagesWrapper} from "./components/Conversations";
 
 import Dashboard from "./pages/Admin/Dashboard"
 import Users from "./pages/Admin/Users"
+import Programs from "./pages/Admin/Programs"
 
 
 import {CometChatTheme, CometChatUsersWithMessages} from "@cometchat/chat-uikit-react";
@@ -149,6 +150,10 @@ function App() {
 
               <Route path="/admin/users" element={<AdminRoute />}>
                 <Route path="/admin/users" element={<Users/>} />
+              </Route>
+
+              <Route path="/admin/programs" element={<AdminRoute />}>
+                <Route path="/admin/programs" element={<Programs/>} />
               </Route>
               
 

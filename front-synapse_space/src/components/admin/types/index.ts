@@ -23,8 +23,3 @@ export interface Activity {
     type: 'post' | 'report' | 'join' | 'other';
 }
 
-export interface ApiError {
-    message: string;
-    code?: string;
-    status?: number;
-}

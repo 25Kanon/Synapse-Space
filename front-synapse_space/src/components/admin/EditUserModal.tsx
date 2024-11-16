@@ -3,7 +3,7 @@ import { User, Briefcase, Image, Plus } from "lucide-react";
 import ErrorAlert from "../ErrorAlert";
 import SuccessAlert from "../SuccessAlert";
 import AuthContext from "../../context/AuthContext";
-import axiosInstance from "../../utils/AxiosInstance";
+import AxiosInstance from "../../utils/AxiosInstance";
 import { useNavigate } from "react-router-dom";
 import { TagInput } from "../TagInput";
 
@@ -14,7 +14,7 @@ function EditUserModal({ user }) {
     const [formData, setFormData] = useState({
         username: "",
         student_number: 0,
-        program: "",
+        program: null,
         profile_pic: "",
         registration_form: "",
         interests: [],
@@ -27,6 +27,7 @@ function EditUserModal({ user }) {
     const [Success, setSuccess] = useState(null);
     const [willUploadPfp, setWillUploadPfp] = useState(false);
     const [willUploadReg, setWillUploadReg] = useState(false);
+    const [programs, setPrograms]= useState<program[]>([]);
 
     // Handle form field changes
     const handleInputChange = (e) => {
@@ -45,6 +46,20 @@ function EditUserModal({ user }) {
         }
     };
 
+    useEffect(() => {
+        try {
+            AxiosInstance.get('/api/admin/program/')
+                .then(response => {
+                    setPrograms(response.data);
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        } catch (error) {
+            console.log(error);
+        }
+
+    }, []);
     // Handle registration form upload
     const handleRegFormFileChange = (e) => {
         if (e.target.files) {
@@ -65,7 +80,7 @@ function EditUserModal({ user }) {
         formData.append("img", file);
 
         try {
-            const response = await axiosInstance.post("/api/upload/", formData, {
+            const response = await AxiosInstance.post("/api/upload/", formData, {
                 withCredentials: true,
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -100,7 +115,7 @@ function EditUserModal({ user }) {
 
             if (formData.username !== user.username) payload.username = formData.username;
             if (formData.student_number !== user.student_number) payload.student_number = formData.student_number;
-            if (formData.program !== user.program) payload.program = formData.program;
+            if (formData.program !== user?.program?.id) payload.program = formData.program;
             if (formData.bio !== user.bio) payload.bio = formData.bio;
             if (formData.is_verified !== user.is_verified) payload.is_verified = formData.is_verified;
             if (tags !== user.interests) payload.interests = tags;
@@ -128,15 +143,15 @@ function EditUserModal({ user }) {
             payload.id = user.id; // Include the user's ID in the payload
 
             // Send the final payload to the server
-            const response = await axiosInstance.put(
+            const response = await AxiosInstance.put(
                 `/api/admin/account/update/`,
                 payload,
                 { withCredentials: true }
             );
 
+
             setSuccess("User updated successfully");
 
-            // Optional: Delay reload to let success message show
             setTimeout(() => {
                 window.location.reload();
             }, 2000);
@@ -152,7 +167,7 @@ function EditUserModal({ user }) {
             setFormData({
                 username: user.username || '',
                 student_number: user.student_number || 0,
-                program: user.program || '',
+                program: user?.program?.id || '',
                 profile_pic: user.profile_pic || '',
                 registration_form: user.registration_form || '',
                 interests: user.interests || [],
@@ -244,10 +259,11 @@ function EditUserModal({ user }) {
                                             required
                                         >
                                             <option value="">Select program</option>
-                                            <option value="Computer Science">Computer Science</option>
-                                            <option value="Engineering">Engineering</option>
-                                            <option value="Business">Business</option>
-                                            <option value="Arts">Arts</option>
+                                            {programs?.map((program) => (
+                                                <option key={program.id} value={program.id}>
+                                                    {program.name}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>

@@ -1,20 +1,27 @@
 import React, {useEffect, useState} from 'react';
 import { X, Loader2, Eye, EyeOff } from 'lucide-react';
 import { TagInput } from "../TagInput";
-import axiosInstance from "../../utils/AxiosInstance";
+import AxiosInstance from "../../utils/AxiosInstance";
 
 interface CreateAccountModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-export default function CreateAccountModal({ isOpen, onClose }: CreateAccountModalProps) {
+interface program {
+    id: number,
+    name: string
+}
+
+export default function CreateStudentModal({ isOpen, onClose }: CreateAccountModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [tags, setTags] = useState<string[]>([]);
+    const [programs, setPrograms]= useState<program[]>([]);
     const [formData, setFormData] = useState({
-        student_number: null,
+        student_number: '',
         first_name: '',
         last_name: '',
         email: '',
@@ -26,9 +33,7 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
         profile_banner: '',
         program: null,
         registration_form: '',
-        is_verified: true,
-        is_superuser: false,
-        is_staff: true,
+        is_verified: false,
     });
 
     const uploadFile = async (file: File): Promise<string> => {
@@ -37,7 +42,7 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
         console.log("uploading: ",file.name)
 
         try {
-            const response = await axiosInstance.post("/api/upload/", formData, {
+            const response = await AxiosInstance.post("/api/upload/", formData, {
                 withCredentials: true,
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -52,6 +57,21 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
             throw new Error('Image upload failed');
         }
     };
+
+    useEffect(() => {
+        try {
+            AxiosInstance.get('/api/admin/program/')
+                .then(response => {
+                    setPrograms(response.data);
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        } catch (error) {
+            console.log(error);
+        }
+
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -82,14 +102,18 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
                 profile_pic: pfp,
                 profile_banner: banner,
                 registration_form: regform,
+                interests: tags,
                 is_verified: formData.is_verified,
-                is_superuser: formData.is_superuser, // Send the is_superuser value based on role
-                is_staff: formData.is_staff, // Send the is_staff value based on role
+                last_login: new Date().toISOString(),
                 date_joined: new Date().toISOString(),
             };
 
+            if (tags.length < 1) {
+                setError('Provide at least one interest');
+                throw new Error('Provide at least one interest');
+            }
 
-            const response = await axiosInstance.post("/api/admin/account/create/", payload, {
+            const response = await AxiosInstance.post("/api/admin/account/create/", payload, {
                 withCredentials: true,
                 headers: {
                     "Content-Type": "application/json",
@@ -135,10 +159,19 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium">Student Number</label>
+                            <input
+                                type="number"
+                                required
+                                className="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                value={formData.student_number}
+                                onChange={(e) => setFormData({...formData, student_number: e.target.value})}
+                            />
+                        </div>
 
-
-                        <div className="md:col-span-2">
-                            <label className="block col-span-2 text-sm font-medium">Username</label>
+                        <div>
+                            <label className="block text-sm font-medium">Username</label>
                             <input
                                 type="text"
                                 required
@@ -225,6 +258,16 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
                             </div>
                         </div>
 
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium">Bio</label>
+                            <textarea
+                                className="textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                rows={3}
+                                value={formData.bio}
+                                onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                            />
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium">Profile Picture (Optional)</label>
                             <input
@@ -251,20 +294,61 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
                             />
                         </div>
 
+                        <div>
+                            <label className="block text-sm font-medium">Program</label>
+                            <select
+                                required
+                                className="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                value={formData.program}
+                                onChange={(e) => setFormData({...formData, program: e.target.value})}
+                            >
+                                <option value="">Select Program</option>
+                                {programs?.map((program) => (
+                                <option key={program.id} value={program.id}>
+                                    {program.name}
+                                </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium">Registration Form URL</label>
+                            <input
+                                type="file"
+                                className="file-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                accept="image/*"
+                                onChange={(e) => e.target.files && setFormData({
+                                    ...formData,
+                                    registration_form: e.target.files[0]
+                                })}
+                                required
+                            />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium">Interests (Press Enter to add)</label>
+                            <TagInput
+                                value={tags}
+                                onChange={setTags}
+                                placeholder="Add tags (e.g., 'react', 'typescript')..."
+                            />
+                        </div>
+
+
                         <div className="flex items-center">
-                            <label htmlFor="is_verified" className="ml-3  text-sm">
-                                Is Super user?
-                            </label>
                             <input
                                 type="checkbox"
                                 id="is_verified"
-                                className="checkbox checkbox-warning mx-1"
-                                checked={formData.is_superuser} // Bind to is_verified
+                                className="checkbox checkbox-warning"
+                                checked={formData.is_verified} // Bind to is_verified
                                 onChange={(e) => setFormData({
                                     ...formData,
-                                    is_superuser: e.target.checked
+                                    is_verified: e.target.checked
                                 })} // Update formData when toggled
                             />
+                            <label htmlFor="is_verified" className="ml-2 text-sm">
+                                Verify User
+                            </label>
                         </div>
                     </div>
 

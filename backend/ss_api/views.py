@@ -43,16 +43,17 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 
 from . import adapters
 # Local imports
-from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest
+from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
+    Program
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
-                          DetailedUserSerializer, CreateUserSerializer)
+                          DetailedUserSerializer, CreateUserSerializer, ProgramSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
-    IsSuperUser, RefreshCookieJWTAuthentication
+    IsSuperUser, RefreshCookieJWTAuthentication, IsStaff
 
 from .recommender import get_hybrid_recommendations
 
@@ -1305,20 +1306,33 @@ class CommunityUpdateView(UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AllUsersView(generics.ListAPIView):
-    queryset = User.objects.all()
+class AllStudentsView(generics.ListAPIView):
+    queryset = User.objects.filter(is_staff=False, is_superuser=False)
     serializer_class = DetailedUserSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [CookieJWTAuthentication]
+
     def get(self, request):
-        users = User.objects.all()
+        users = self.get_queryset()
+        serializer = DetailedUserSerializer(users, many=True)
+        return Response(serializer.data)
+
+
+class AllStaffsView(generics.ListAPIView):
+    queryset = User.objects.filter(is_staff=True)
+    serializer_class = DetailedUserSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
+
+    def get(self, request):
+        users = self.get_queryset()
         serializer = DetailedUserSerializer(users, many=True)
         return Response(serializer.data)
 
 
 class UpdateAccountView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated, IsSuperUser or IsStaff]
 
     def put(self, request):
         user_id = request.data.get('id')
@@ -1421,5 +1435,51 @@ class EngagementRateView(APIView):
         engagement_rate = total_engagements / active_users if active_users > 0 else 0
 
         return Response({"engagement_rate": engagement_rate}, status=status.HTTP_200_OK)
+
+
+class ProgramListView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        programs = Program.objects.all()
+        serializer = ProgramSerializer(programs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProgramCreateView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def post(self, request):
+        serializer = ProgramSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Program created successfully.", "program": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProgramEditView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def put(self, request, program_id):
+        program = get_object_or_404(Program, id=program_id)
+        serializer = ProgramSerializer(program, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Program updated successfully.", "program": serializer.data}, status=status.HTTP_200_OK)
+
+
+class ProgramDeleteView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def delete(self, request, program_id):
+        program = get_object_or_404(Program, id=program_id)
+        program.delete()
+        return Response({"message": "Program deleted successfully."}, status=status.HTTP_200_OK)
+
 
 

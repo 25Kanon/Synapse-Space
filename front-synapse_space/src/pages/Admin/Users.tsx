@@ -4,6 +4,8 @@ import { User as UserType } from '../../components/admin/types'
 import CreateAccountModal from '../../components/admin/CreateAccountModal'
 import Sidebar from "../../components/admin/Sidebar";
 import Header from "../../components/admin/Header";
+import Students from "../../components/admin/Students"
+import Staffs from "../../components/admin/Staffs"
 import AxiosInstance from "../../utils/AxiosInstance";
 import EditUserModal from "../../components/admin/EditUserModal";
 import ErrorAlert from "../../components/ErrorAlert"
@@ -62,118 +64,24 @@ const Users = () => {
             <div className="flex-1">
                 <Header/>
                 <main>
-                    {error && <ErrorAlert text={error}/>}
-                    {success && <SuccessAlert text={success}/>}
-                    <div className="p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-2xl font-bold">Users</h1>
-                            <button
-                                onClick={() => setIsModalOpen(true)}
-                                className="btn btn-primary flex items-center gap-2"
-                            >
-                                <UserPlus className="w-4 h-4"/>
-                                Add User
-                            </button>
+
+                    <div role="tablist" className="tabs tabs-lifted m-3">
+                        <input type="radio" name="my_tabs_2" role="tab" className="tab card-title" aria-label="Students" defaultChecked/>
+
+                        <div role="tabpanel" className="tab-content bg-base-100 border-base-300 rounded-box p-6">
+                            <Students/>
                         </div>
 
-                        <div className="bg-base-100 rounded-xl shadow-sm overflow-hidden">
-                            <table className="w-full">
-                                <thead className="bg-secondary">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-content uppercase tracking-wider">User</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-content uppercase tracking-wider">Role</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-content uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-content uppercase tracking-wider">Last
-                                        Active
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-secondary-content uppercase tracking-wider">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                {users.map((user) => (
-                                    <tr key={user.id}>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center">
-                                                <div className="h-10 w-10 flex-shrink-0">
-                                                    <div
-                                                        className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                                        <User className="h-5 w-5 text-gray-500"/>
-                                                        {user.profile_pic ?
-                                                            <>
-                                                                <img className="avatar rounded-full"
-                                                                     src={user.profile_pic}/>
-                                                            </> :
-                                                            <></>}
-                                                    </div>
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="font-medium">{user.username}</div>
-                                                    <div className="text-sm text-gray-500">{user.email}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center">
-                                                {user.is_superuser ?
-                                                    <>
-                                                        <Shield className="h-4 w-4 text-gray-400 mr-2"/>
-                                                        <span className="text-sm">Admin</span>
-                                                    </> :
-                                                    <>
-                                                        <User className="h-4 w-4 text-gray-400 mr-2"/>
-                                                        <span className="text-sm">Student</span>
-                                                    </>
-                                                }
+                        <input type="radio" name="my_tabs_2" role="tab" className="tab card-title" aria-label="Staffs"/>
 
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm"> {user.is_verified ?
-                                                <>
-                                                    <span className="text-sm text-primary">Verified</span>
-                                                </> :
-                                                <>
-                                                    <span className="text-sm text-warning">Not Verified</span>
-                                                </>
-                                            }</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">
-                                            {new Date(user.last_login).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 text-right text-sm font-medium">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => handleEdit(user)}
-                                                    className="text-gray-400 hover:text-blue-600"
-                                                >
-                                                    <Edit className="h-4 w-4"/>
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(user.id)}
-                                                    className="text-gray-400 hover:text-red-600"
-                                                >
-                                                    <Trash2 className="h-4 w-4"/>
-                                                </button>
-                                                <button className="text-gray-400 hover:text-gray-600">
-                                                    <MoreVertical className="h-4 w-4"/>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
+                        <div role="tabpanel" className="tab-content bg-base-100 border-base-300 rounded-box p-6">
+                            <Staffs/>
                         </div>
 
                     </div>
                 </main>
             </div>
 
-            <dialog id="edit-user" className="modal modal-bottom sm:modal-middle">
-                <EditUserModal user={selectedUser}/>
-            </dialog>            <CreateAccountModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}/>
         </div>
     );
 };

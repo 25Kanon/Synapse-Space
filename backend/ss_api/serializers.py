@@ -15,9 +15,9 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-from .models import (User, Community, Membership, 
+from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
-                     Reports, FriendRequest)
+                     Reports, FriendRequest, Program)
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -443,18 +443,33 @@ class FriendSerializer(serializers.ModelSerializer):
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
 
+class ProgramSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Program
+        fields = ['id', 'name']
+        extra_kwargs = {
+            'id': {'read_only': True}
+        }
+
 class DetailedUserSerializer(serializers.ModelSerializer):
+    program = ProgramSerializer(read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'program', 'interests', 'is_verified', 'last_login', 'date_joined', 'is_superuser', 'registration_form']
+        fields = [
+            'id', 'student_number', 'first_name', 'last_name', 'email',
+            'username', 'bio', 'profile_pic', 'profile_banner', 'program',
+            'interests', 'is_verified', 'last_login', 'date_joined',
+            'is_superuser', 'registration_form', 'is_staff'
+        ]
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
         }
 
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'program', 'interests', 'is_verified', 'date_joined', 'is_superuser', 'registration_form', 'password']
+        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'program', 'interests', 'is_verified', 'date_joined', 'is_superuser', 'registration_form', 'password', 'is_staff']
         extra_kwargs = {
             'password': {'write_only': True}
         }

@@ -10,9 +10,10 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
                     modResolveView, getJoinedCommunityPosts, AcceptMembershipView, BanMembershipView,
                     UnbanMembershipView, getPendingCommunityMembersListView, CheckPendingMembershipView, PinPostView,
-                    UserRecommendationsView, UnpinPostView, CommunityUpdateView, AllUsersView, UpdateAccountView,
+                    UserRecommendationsView, UnpinPostView, CommunityUpdateView, AllStudentsView, UpdateAccountView,
                     DeleteAccountView, CreateAccountView, PostCountView, UserCountView, NewUserCountView,
-                    EngagementRateView)
+                    EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
+                    ProgramCreateView)
 from django.contrib import admin
 
 
@@ -81,12 +82,17 @@ urlpatterns = [
 
     path('recommendations/', UserRecommendationsView.as_view(), name='user-recommendations'),
 
-    path('admin/users', AllUsersView.as_view(), name='all-users'),
+    path('admin/users', AllStudentsView.as_view(), name='all-users'),
+    path('admin/users/staffs', AllStaffsView.as_view(), name='all-staffs'),
     path('admin/account/update/', UpdateAccountView.as_view(), name='update-account'),
-    path('admin/account/delete/<int:user_id>', DeleteAccountView.as_view(), name='delete-account'),
+    path('admin/account/delete/<int:user_id>/', DeleteAccountView.as_view(), name='delete-account'),
     path('admin/account/create/', CreateAccountView.as_view(), name='create-account'),
     path('admin/posts/count/', PostCountView.as_view(), name='post-count'),
     path('admin/users/count/', UserCountView.as_view(), name='users-count'),
     path('admin/new-users/count', NewUserCountView.as_view(), name='new-users-count'),
     path('admin/engagement-rate/', EngagementRateView.as_view(), name='engagement-rate'),
+    path('admin/program/', ProgramListView.as_view(), name='program-list'),
+    path('admin/program/create/', ProgramCreateView.as_view(), name='program-create'),
+    path('admin/program/update/<int:program_id>/', ProgramEditView.as_view(), name='program-update'),
+    path('admin/program/delete/<int:program_id>/', ProgramDeleteView.as_view(), name='program-delete'),
 ]

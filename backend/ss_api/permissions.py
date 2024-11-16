@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import permissions
 from .models import Membership, Community
 from rest_framework.authentication import BaseAuthentication
@@ -77,11 +79,11 @@ class CookieJWTAuthentication(JWTAuthentication):
         header = self.get_header(request)
         if header is None:
             raw_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE']) or None
-            raw_refreshToken = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH']) or None
         else:
             raw_token = self.get_raw_token(header)
         if raw_token is None:
             return None
+
         validated_token = self.get_validated_token(raw_token)
         return self.get_user(validated_token), validated_token
 
@@ -103,4 +105,8 @@ class RefreshCookieJWTAuthentication(JWTAuthentication):
 class IsSuperUser(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_superuser
+
+class IsStaff(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_staff
 

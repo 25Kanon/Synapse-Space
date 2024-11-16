@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, MessageSquare, Flag, Settings, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, MessageSquare, Flag, Settings, Zap, GraduationCap} from 'lucide-react';
 
 const Sidebar = () => {
     const navItems = [
@@ -8,7 +8,10 @@ const Sidebar = () => {
         { icon: Users, label: 'Users', path: '/admin/users' },
         { icon: MessageSquare, label: 'Posts', path: '/admin/posts' },
         { icon: Flag, label: 'Reports', path: '/admin/reports' },
+        { icon: GraduationCap, label: 'Programs', path: '/admin/programs'},
         { icon: Settings, label: 'Settings', path: '/admin/settings' },
+
+
     ];
 
     return (
