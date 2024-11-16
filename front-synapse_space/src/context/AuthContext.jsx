@@ -17,44 +17,28 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
 
 
-    const refreshToken = useCallback(async () => {
-        try {
-            console.log('refreshing token')
-            const response = await AxiosInstance.post('/api/auth/token/refresh/', {}, { withCredentials: true });
-            return response;
-        } catch (error) {
-            console.error('Error refreshing token:', error);
-            console.log('Error refreshing token:', error)
-            setError('Error refreshing token:', error);
-            setUser(null);
-            throw error;
-        } finally {
-            checkAuthentication()
-        }
-    }, []);
+    // const refreshToken = useCallback(async () => {
+    //     try {
+    //         console.log('refreshing token')
+    //         const response = await AxiosInstance.post('/api/auth/token/refresh/', {}, { withCredentials: true });
+    //         return response;
+    //     } catch (error) {
+    //         console.error('Error refreshing token:', error);
+    //         console.log('Error refreshing token:', error)
+    //         setError('Error refreshing token:', error);
+    //         setUser(null);
+    //         throw error;
+    //     } finally {
+    //         checkAuthentication()
+    //     }
+    // }, []);
 
-    const scheduleTokenRefresh = useCallback((expDate) => {
-        const date = new Date(expDate);
-        const expirationTime = date.getTime();
-        console.log('expirationTime', expirationTime)
-        const currentTime = Date.now();
-        const timeUntilRefresh = expirationTime - currentTime - 60000; // Refresh 1 minute before expiry
-        console.log('timeUntilRefresh', timeUntilRefresh)
-        setTimeout(() => {
-            refreshToken()
-                .then(scheduleTokenRefresh)
-                .catch(console.error);
-        }, timeUntilRefresh);
-    }, []);
 
     const checkAuthentication = useCallback(async () => {
         try {
             const response = await AxiosInstance.get('/api/auth/check-auth/', { withCredentials: true });
             console.log(response.data.user)
             setUser(response.data.user);
-            if (!inSetup) {
-                scheduleTokenRefresh(response.data.user.exp);
-            }
             return true;
         } catch (error) {
             console.error('Authentication check failed:', error);
@@ -173,7 +157,6 @@ export const AuthProvider = ({ children }) => {
             loading,
             loginUser,
             logout,
-            refreshToken,
             requireOTP,
             error
         }}>

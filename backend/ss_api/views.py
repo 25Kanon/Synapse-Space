@@ -52,7 +52,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
                           DetailedUserSerializer, CreateUserSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
-    IsSuperUser
+    IsSuperUser, RefreshCookieJWTAuthentication
 
 from .recommender import get_hybrid_recommendations
 
@@ -187,19 +187,24 @@ class LoginView(TokenObtainPairView):
         return response
 
 class CookieTokenRefreshView(jwt_views.TokenRefreshView):
-    authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+
+    authentication_classes = [RefreshCookieJWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     serializer_class = CookieTokenRefreshSerializer
 
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get('refresh')
-
+        logger.error(f"Refresh token: {refresh_token}")
         if not refresh_token:
             return Response({"detail": "Refresh token not found in cookies."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             refresh = RefreshToken(refresh_token)
             data = {'access': str(refresh.access_token)}
+
+            if refresh.check_exp():
+                return Response({"detail": str("Token expired")}, status=status.HTTP_401_UNAUTHORIZED)
+
 
             if settings.SIMPLE_JWT['ROTATE_REFRESH_TOKENS']:
                 # Create a new refresh token
@@ -225,7 +230,7 @@ class CookieTokenRefreshView(jwt_views.TokenRefreshView):
             response.set_cookie(
                 'access',
                 data['access'],
-                 max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
+                max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
                 httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
                 samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
                 secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']

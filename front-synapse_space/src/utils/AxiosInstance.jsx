@@ -8,13 +8,39 @@ const AxiosInstance = axios.create({
     },
 });
 
-// Add a request interceptor
-AxiosInstance.interceptors.request.use(function (config) {
-    // Log the headers being sent
-    console.log('Request headers:', config.headers);
+AxiosInstance.interceptors.request.use((config) => {
     return config;
-}, function (error) {
+}, (error) => {
     return Promise.reject(error);
 });
+
+AxiosInstance.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+
+            try {
+                const refreshResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URI}/api/auth/token/refresh/`, {}, { withCredentials: true });
+                const newAccessToken = refreshResponse.data.access;
+                const newRefreshToken = refreshResponse.data.refresh;
+
+                AxiosInstance.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`;
+
+                originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                return AxiosInstance(originalRequest);
+            } catch (refreshError) {
+                console.error('Error refreshing token:', refreshError);
+                return Promise.reject(refreshError);
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
 
 export default AxiosInstance;
