@@ -37,11 +37,11 @@ function PrivateRoute() {
 
     if (isAuth && !isUserVerified) {
         switch (isUserRejected) {
-            case null:
+            case null: //isUserRejected is null, setup the account
                 return <UserSetup />;
-            case true:
+            case true://isUserRejected is true, show rejected message
                 return <><h1>You have been rejected</h1></>;
-            case false:
+            case false://isUserRejected is false, show waiting for approval message
                 return <><h1>Wait for approval</h1></>;
             default:
                 return null; // Optional fallback
