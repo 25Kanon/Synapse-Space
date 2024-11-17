@@ -142,6 +142,10 @@ export const AuthProvider = ({ children }) => {
         return (user.isVerified)
     }
 
+    const isRejected = async () => {
+        return (user.is_rejected)
+    }
+
     const isAdmin = async () => {
         const currentUser = user || await checkAuthentication();
         return currentUser?.is_superuser;
@@ -152,6 +156,7 @@ export const AuthProvider = ({ children }) => {
             isAuthenticated,
             isVerified,
             isAdmin,
+            isRejected,
             user,
             isLoggedinWithGoogle,
             loading,

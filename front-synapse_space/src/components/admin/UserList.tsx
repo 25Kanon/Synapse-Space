@@ -15,7 +15,7 @@ export function UserList({ users, selectedUser, onSelectUser }: UserListProps) {
             case true:
                 return <CheckCircle className="w-5 h-5 text-green-500" />;
             case false:
-                if(selectedUser.is_rejected)
+                if(selectedUser?.is_rejected)
                     return <XCircle className="w-5 h-5 text-red-500" />;
                 return <Clock className="w-5 h-5 text-yellow-500" />;
 

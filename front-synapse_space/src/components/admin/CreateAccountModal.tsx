@@ -85,6 +85,7 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
                 is_verified: formData.is_verified,
                 is_superuser: formData.is_superuser, // Send the is_superuser value based on role
                 is_staff: formData.is_staff, // Send the is_staff value based on role
+                is_rejected: false,
                 date_joined: new Date().toISOString(),
             };
 

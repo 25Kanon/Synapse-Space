@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Loader2, Eye, EyeOff } from 'lucide-react';
 import { TagInput } from "../TagInput";
 import AxiosInstance from "../../utils/AxiosInstance";
@@ -8,9 +8,9 @@ interface CreateAccountModalProps {
     onClose: () => void;
 }
 
-interface program {
-    id: number,
-    name: string
+interface Program {
+    id: number;
+    name: string;
 }
 
 export default function CreateStudentModal({ isOpen, onClose }: CreateAccountModalProps) {
@@ -19,7 +19,7 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [tags, setTags] = useState<string[]>([]);
-    const [programs, setPrograms]= useState<program[]>([]);
+    const [programs, setPrograms] = useState<Program[]>([]);
     const [formData, setFormData] = useState({
         student_number: '',
         first_name: '',
@@ -31,7 +31,7 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
         bio: '',
         profile_pic: '',
         profile_banner: '',
-        program: null,
+        program: null as Program | null, // `program` now stores the Program object or null
         registration_form: '',
         is_verified: false,
     });
@@ -39,7 +39,7 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
     const uploadFile = async (file: File): Promise<string> => {
         const formData = new FormData();
         formData.append('img', file);
-        console.log("uploading: ",file.name)
+        console.log("uploading: ", file.name);
 
         try {
             const response = await AxiosInstance.post("/api/upload/", formData, {
@@ -48,8 +48,6 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                     "Content-Type": "multipart/form-data",
                 },
             });
-
-
             return response.data.url;
         } catch (err) {
             setError('Image upload failed');
@@ -70,7 +68,6 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
         } catch (error) {
             console.log(error);
         }
-
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -95,8 +92,12 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
             let banner = formData.profile_banner ? await uploadFile(formData.profile_banner) : null;
             let regform = formData.registration_form ? await uploadFile(formData.registration_form) : null;
 
-            const { confirmPassword, profile_pic, profile_banner, registration_form, ...submitData } = formData;
+            const { confirmPassword, profile_pic, profile_banner, registration_form, program, ...submitData } = formData;
 
+            // Determine the value for `is_rejected` based on `is_verified`
+            const isRejected = formData.is_verified ? false : null;
+
+            // Prepare the payload with only the program ID
             const payload = {
                 ...submitData,
                 profile_pic: pfp,
@@ -104,8 +105,10 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                 registration_form: regform,
                 interests: tags,
                 is_verified: formData.is_verified,
+                is_rejected: isRejected,  // Add the is_rejected field here
                 last_login: new Date().toISOString(),
                 date_joined: new Date().toISOString(),
+                program: formData.program ? formData.program.id : null,  // Only attach the `id` of the program
             };
 
             if (tags.length < 1) {
@@ -155,7 +158,6 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                         </div>
                     </div>
                 )}
-
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -258,82 +260,60 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                             </div>
                         </div>
 
-                        <div className="md:col-span-2">
+                        <div>
                             <label className="block text-sm font-medium">Bio</label>
                             <textarea
                                 className="textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                rows={3}
                                 value={formData.bio}
                                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium">Profile Picture (Optional)</label>
+                            <label className="block text-sm font-medium">Profile Picture</label>
                             <input
                                 type="file"
-                                className="file-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                accept="image/*"
-                                onChange={(e) => e.target.files && setFormData({
-                                    ...formData,
-                                    profile_pic: e.target.files[0]
-                                })}
+                                className="file-input mt-1 block w-full"
+                                onChange={(e) => setFormData({...formData, profile_pic: e.target.files ? e.target.files[0] : null})}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium">Profile Banner (Optional)</label>
+                            <label className="block text-sm font-medium">Profile Banner</label>
                             <input
                                 type="file"
-                                className="file-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                accept="image/*"
-                                onChange={(e) => e.target.files && setFormData({
-                                    ...formData,
-                                    profile_banner: e.target.files[0]
-                                })}
+                                className="file-input mt-1 block w-full"
+                                onChange={(e) => setFormData({...formData, profile_banner: e.target.files ? e.target.files[0] : null})}
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium">Program</label>
                             <select
-                                required
-                                className="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                value={formData.program}
-                                onChange={(e) => setFormData({...formData, program: e.target.value})}
+                                className="select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                value={formData.program?.id || ''}
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    program: programs.find(p => p.id === Number(e.target.value)) || null
+                                })}
                             >
                                 <option value="">Select Program</option>
-                                {programs?.map((program) => (
-                                <option key={program.id} value={program.id}>
-                                    {program.name}
-                                </option>
+                                {programs.map((program) => (
+                                    <option key={program.id} value={program.id}>
+                                        {program.name}
+                                    </option>
                                 ))}
                             </select>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium">Registration Form URL</label>
-                            <input
-                                type="file"
-                                className="file-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                accept="image/*"
-                                onChange={(e) => e.target.files && setFormData({
-                                    ...formData,
-                                    registration_form: e.target.files[0]
-                                })}
-                                required
-                            />
-                        </div>
-
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium">Interests (Press Enter to add)</label>
+                            <label className="block text-sm font-medium">Interests</label>
                             <TagInput
                                 value={tags}
                                 onChange={setTags}
                                 placeholder="Add tags (e.g., 'react', 'typescript')..."
                             />
                         </div>
-
 
                         <div className="flex items-center">
                             <input

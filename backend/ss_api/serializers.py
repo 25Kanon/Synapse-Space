@@ -469,7 +469,7 @@ class DetailedUserSerializer(serializers.ModelSerializer):
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'program', 'interests', 'is_verified', 'date_joined', 'is_superuser', 'registration_form', 'password', 'is_staff']
+        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'program', 'interests', 'is_verified', 'date_joined', 'is_superuser', 'registration_form', 'password', 'is_staff', 'is_rejected']
         extra_kwargs = {
             'password': {'write_only': True}
         }

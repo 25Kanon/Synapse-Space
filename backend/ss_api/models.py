@@ -29,7 +29,7 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_google = models.BooleanField(default=False)
-    is_rejected = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(null=True)
     def save(self, *args, **kwargs):
         if self.is_superuser:
             self.is_verified = True

@@ -269,6 +269,7 @@ class CheckAuthView(APIView):
                     'isVerified': request.user.is_verified,
                     'username': request.user.username,
                     'pic': request.user.profile_pic,
+                    'is_rejected': request.user.is_rejected,
                 }
             })
 
@@ -304,6 +305,8 @@ class CheckAuthView(APIView):
                 'exp': expiration_time.isoformat() if expiration_time else None,
                 'pic': request.user.profile_pic,
                 'is_superuser': request.user.is_superuser,
+                'is_staff': request.user.is_staff,
+                'is_rejected': request.user.is_rejected,
             }
         })
 
@@ -1489,7 +1492,7 @@ class UnverifiedStudentsViewSet(generics.ListAPIView):
     serializer_class = DetailedUserSerializer
 
     def get_queryset(self):
-        return User.objects.filter(is_verified=False)
+        return User.objects.filter(is_rejected=False, is_verified=False)
 
     def get(self, request):
         users = self.get_queryset()
