@@ -1310,6 +1310,7 @@ class RespondToFriendRequestView(generics.UpdateAPIView):
                     "friend": {
                         "id": request.user.id,
                         "username": request.user.username,
+                        "profile_pic": request.user.profile_pic if request.user.profile_pic else None,
                     }
                 },
             )

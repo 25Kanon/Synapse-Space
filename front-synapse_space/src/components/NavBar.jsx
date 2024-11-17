@@ -198,14 +198,20 @@ const NavBar = () => {
 
                                                     onClick={() => markAsRead(notification.id)}
                                                 >
-                                                    {/* Community Image */}
+                                                    {/* Profile or Community Image */}
                                                     <div className="flex-shrink-0">
                                                         <div className="avatar placeholder">
                                                             <div className="rounded-full h-10 w-10">
-                                                                {notification.community_imgURL ? (
+                                                                {notification.message?.friend?.profile_pic ? (
+                                                                    <img
+                                                                        src={notification.message.friend.profile_pic}
+                                                                        alt="User"
+                                                                        className="w-full h-full object-cover rounded-full"
+                                                                    />
+                                                                ) : notification.community_imgURL ? (
                                                                     <img
                                                                         src={notification.community_imgURL}
-                                                                        alt={`Community`}
+                                                                        alt="Community"
                                                                         className="w-full h-full object-cover rounded-full"
                                                                     />
                                                                 ) : (
