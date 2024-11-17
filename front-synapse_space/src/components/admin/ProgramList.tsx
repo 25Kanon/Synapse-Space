@@ -44,7 +44,7 @@ export function ProgramList({ programs, onDelete, onEdit }: ProgramListProps) {
 
     return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {programs.map((program: program) => (
+            {programs?.map((program: program) => (
                 <div
                     key={program.id}
                     className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"

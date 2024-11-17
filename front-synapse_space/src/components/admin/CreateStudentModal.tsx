@@ -298,7 +298,7 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                                 })}
                             >
                                 <option value="">Select Program</option>
-                                {programs.map((program) => (
+                                {programs?.map((program) => (
                                     <option key={program.id} value={program.id}>
                                         {program.name}
                                     </option>

@@ -198,7 +198,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 class VerifyAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['student_number', 'username','registration_form', 'profile_pic', 'interests', 'bio', 'program', 'is_verified']
+        fields = ['student_number', 'username','registration_form', 'profile_pic', 'interests', 'bio', 'program', 'is_verified', 'is_rejected']
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):

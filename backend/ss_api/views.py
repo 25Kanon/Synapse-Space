@@ -107,6 +107,9 @@ class VerifyAccountView(APIView):
             user.bio = serializer.validated_data.get('bio', user.bio)
             user.program = serializer.validated_data.get('program', user.program)
             user.is_verified = serializer.validated_data.get('is_verified', user.is_verified)
+            user.is_rejected = serializer.validated_data.get('is_rejected', user.is_rejected)
+
+            logger.error(user)
 
             user.save()
 
@@ -119,8 +122,11 @@ class VerifyAccountView(APIView):
                 },
                 "uid": user.username,  # Use username as the UID
                 "name": user.username,  # Use username or full name if needed
-                "avatar": user.profile_pic if user.profile_pic else None  # URL to the profile pic
             }
+
+            # Include avatar if profile_pic is present
+            if user.profile_pic:
+                payload["avatar"] = user.profile_pic
 
             # Headers for CometChat API
             headers = {

@@ -1,11 +1,12 @@
-import React, { useContext, useState } from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import { User, Briefcase, Image, Plus } from "lucide-react";
 import ErrorAlert from "../components/ErrorAlert";
 import SuccessAlert from "../components/SuccessAlert";
+import Loading from "../components/Loading";
 import AuthContext from "../context/AuthContext";
-import axiosInstance from "../utils/AxiosInstance";
+import AxiosInstance from "../utils/AxiosInstance";
 import {useNavigate} from "react-router-dom";
-
+import { TagInput } from "../components/TagInput";
 
 const interestOptions = [
     "Sports", "Music", "Art", "Technology", "Science", "Literature", "Travel", "Cooking", "Photography", "Gaming"
@@ -15,16 +16,21 @@ const interestOptions = [
 function UserSetup() {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
+    const [tags, setTags] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const dialogRef = useRef(null);
     const { user } = useContext(AuthContext);
+    const [programs, setPrograms] = useState([]);
     const [formData, setFormData] = useState({
         username: "",              // Matches 'username'
         student_number: 0,         // Matches 'student_number'
-        program: "",                // Matches 'program'
+        program: null,                // Matches 'program'
         profile_pic: "",            // Temporary Blob URL for 'profile_pic'
         registration_form: "",      // Temporary Blob URL for 'registration_form'
         interests: [],              // Matches 'interests'
         bio: "",                    // Matches 'bio'
-        is_verified: true,         // Matches 'is_verified'
+        is_verified: false,
+        is_rejected: false// Matches 'is_verified'
     });
     const [profilePic, setProfilePic] = useState("https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp");
     const [regForm, setRegForm] = useState("https://placehold.jp/300x300.png");
@@ -35,6 +41,11 @@ function UserSetup() {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleTagChange = (newTags) => {
+        setTags(newTags);
+        setFormData(prev => ({ ...prev, interests: newTags }));
     };
 
     const handleFileChange = (e) => {
@@ -55,41 +66,21 @@ function UserSetup() {
         }
     };
 
-    const handleInterestChange = (interest) => {
-        setFormData((prev) => ({
-            ...prev,
-            interests: prev.interests.includes(interest)
-                ? prev.interests.filter((i) => i !== interest)
-                : [...prev.interests, interest],
-        }));
-    };
-
-    const handleAddCustomInterest = () => {
-        if (customInterest && !formData.interests.includes(customInterest)) {
-            setFormData((prev) => ({
-                ...prev,
-                interests: [...prev.interests, customInterest],
-            }));
-            setCustomInterest("");
-        }
-    };
-
 
     const handleFileUpload = async (file) => {
         const formData = new FormData();
         formData.append('img', file);
 
+
         try {
-            const response = await axiosInstance.post('/api/upload/', formData, {
+            const response = await AxiosInstance.post('/api/upload/', formData, {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            console.log(response)
             return response.data.url; // Assuming the response returns the uploaded file URL
         } catch (error) {
-            console.error('Error uploading file:', error);
             setError('Error uploading file: ' + error.message);
             throw error;
         }
@@ -100,15 +91,14 @@ function UserSetup() {
         setError(null);
         setSuccess(null);
         const { username, student_number, program, interests } = formData;
-
         if (!username || !student_number || !program || interests.length === 0) {
             setError("Please fill out all fields.");
             return;
         }
-
+        setLoading(true)
         try {
             // Upload profile picture and registration form
-            const profilePicUrl = await handleFileUpload(formData.profile_pic);
+            const profilePicUrl = formData.profile_pic ? await handleFileUpload(formData.profile_pic):"";
             const regFormUrl = await handleFileUpload(formData.registration_form);
 
             // Prepare the final payload
@@ -118,7 +108,7 @@ function UserSetup() {
                 registration_form: regFormUrl,
             };
             // Send the final payload to the server
-            const response = await axiosInstance.put(`/api/verify/account/`, payload, {
+            const response = await AxiosInstance.put(`/api/verify/account/`, payload, {
                 withCredentials: true,
             });
             setSuccess("User setup successful");
@@ -127,6 +117,7 @@ function UserSetup() {
 
         } catch (error) {
             console.error('Error submitting form:', error);
+            setLoading(false);
 
             if (error.response) {
                 // Assuming error.response.data is the object you provided
@@ -147,14 +138,56 @@ function UserSetup() {
                 // Fallback for network or other errors
                 setError('Error submitting form: ' + error.message);
             }
+        } finally {
+            setLoading(false);
+            document.getElementById('loading-modal').close();
         }
-        console.log("Form submitted:", formData);
     };
+
+
+    useEffect(() => {
+        try {
+            AxiosInstance.get('/api/admin/program/')
+                .then(response => {
+                    setPrograms(response.data);
+                    // Set the program to the first item in the response
+                    if (response.data && response.data.length > 0) {
+                        setFormData(prevData => ({
+                            ...prevData,
+                            program: response.data[0].id
+                        }));
+                    }
+                })
+                .catch(error => {
+                    setError(error)
+                });
+        } catch (error) {
+            setError(error)
+        }
+    }, []);
+
+    useEffect(() => {
+        if (loading) {
+            document.getElementById('loading-modal').showModal();
+        }
+    }, [loading]);
 
     return (
         <div className="min-h-screen bg-base-200 flex flex-col items-center justify-center p-4">
-            {Error && <ErrorAlert text={Error} />}
-            {Success && <SuccessAlert text={Success} />}
+            {Error && <ErrorAlert text={Error}/>}
+            {Success && <SuccessAlert text={Success}/>}
+            <dialog
+                ref={dialogRef}
+                id="loading-modal"
+                className="modal modal-bottom sm:modal-middle"
+                onClose={(e) => e.preventDefault()}
+                onCancel={(e) => e.preventDefault()}
+            >
+                <form method="dialog" className="modal-box" onSubmit={(e) => e.preventDefault()}>
+                    <Loading loadingText="Please wait..."/>
+                </form>
+            </dialog>
+
             <div className="bg-base-100 shadow-xl flex flex-col rounded-lg p-6 w-full max-w-xl">
                 <h2 className="text-lg font-bold mb-4 text-center">Setup your Account</h2>
                 <h2 className="text-sm font-bold mb-4 text-center">{step === 1 ? "Step 1 of 2" : "Step 2 of 2"}</h2>
@@ -167,14 +200,14 @@ function UserSetup() {
                                         <div className="form-control mt-4">
                                             <div className="avatar">
                                                 <div className="w-24 rounded-full mx-auto">
-                                                    <img src={profilePic} alt="profilePic" />
+                                                    <img src={profilePic} alt="profilePic"/>
                                                 </div>
                                             </div>
                                             <label className="label">
                                                 <span className="label-text">Profile Picture</span>
                                             </label>
                                             <div className="input-group">
-                                                <span><Image size={18} /></span>
+                                                <span><Image size={18}/></span>
                                                 <input
                                                     type="file"
                                                     name="profile_pic"
@@ -188,13 +221,13 @@ function UserSetup() {
                                             <span className="label-text">Username</span>
                                         </label>
                                         <div className="input-group">
-                                            <span><User size={18} /></span>
+                                            <span><User size={18}/></span>
                                             <input
                                                 type="text"
                                                 name="username"
                                                 value={formData.username}
                                                 onChange={handleInputChange}
-                                                placeholder={user.username ? user.username : 'Enter your username'}
+                                                placeholder='Enter your username'
                                                 className="input input-bordered w-full"
                                                 required
                                             />
@@ -205,7 +238,7 @@ function UserSetup() {
                                             <span className="label-text">Student Number</span>
                                         </label>
                                         <div className="input-group">
-                                            <span><Briefcase size={18} /></span>
+                                            <span><Briefcase size={18}/></span>
                                             <input
                                                 type="number"
                                                 name="student_number"
@@ -223,16 +256,16 @@ function UserSetup() {
                                         </label>
                                         <select
                                             name="program"
-                                            value={formData.program}
+                                            value={formData?.program}
                                             onChange={handleInputChange}
                                             className="select select-bordered w-full"
                                             required
                                         >
-                                            <option value="">Select program</option>
-                                            <option value="Computer Science">Computer Science</option>
-                                            <option value="Engineering">Engineering</option>
-                                            <option value="Business">Business</option>
-                                            <option value="Arts">Arts</option>
+                                            {programs?.map((program) => (
+                                                <option key={program?.id} value={program?.id}>
+                                                    {program?.name}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>
@@ -241,7 +274,7 @@ function UserSetup() {
                                     <div className="form-control">
                                         <div className="form-control mt-4">
                                             <div className="mx-auto p-4 object-none ">
-                                                <img className="h-80 w-80" src={regForm} alt="regform" />
+                                                <img className="h-80 w-80" src={regForm} alt="regform"/>
                                             </div>
                                             <div className="input-group">
                                                 <span><span>Upload Registration Form</span></span>
@@ -268,50 +301,18 @@ function UserSetup() {
                         </div>
                     ) : (
                         <>
-                            <div className="form-control">
-                                <label className="label"><span className="label-text">Select your interests</span></label>
-                                <div className="flex flex-wrap gap-2">
-                                    {interestOptions.map((interest) => (
-                                        <div
-                                            key={interest}
-                                            className={`chip ${formData.interests.includes(interest) ? "bg-primary text-primary-content" : "bg-base-200"} p-2 rounded-full cursor-pointer hover:bg-primary hover:text-primary-content transition-colors duration-200`}
-                                            onClick={() => handleInterestChange(interest)}
-                                        >
-                                            {interest}
-                                        </div>
-                                    ))}
-                                    {formData.interests.filter((interest) => !interestOptions.includes(interest))
-                                        .map((interest) => (
-                                            <div
-                                                key={interest}
-                                                className="chip bg-secondary text-secondary-content cursor-pointer  p-2 rounded-full hover:bg-secondary-focus transition-colors duration-200"
-                                                onClick={() => handleInterestChange(interest)}
-                                            >
-                                                {interest}
-                                            </div>
-                                        ))}
-                                </div>
-                            </div>
+                            <label className="block text-sm font-medium">
+                                <span>Interests</span>
+                                <label className="block text-sm font-medium">
+                                    <span className="text-xs text-secondary">Press Enter to add an interest</span>
+                                </label>
+                            </label>
 
-                            <div className="form-control mt-4">
-                                <label className="label"><span className="label-text">Add custom interest</span></label>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        value={customInterest}
-                                        onChange={(e) => setCustomInterest(e.target.value)}
-                                        className="input input-bordered w-full"
-                                        placeholder="Type and press add"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleAddCustomInterest}
-                                        className="btn btn-primary"
-                                    >
-                                        <Plus size={18}/>
-                                    </button>
-                                </div>
-                            </div>
+                            <TagInput
+                                value={tags}
+                                onChange={handleTagChange}
+                                placeholder="Add tags (e.g., 'react', 'typescript')..."
+                            />
 
                             <div className="form-control mt-4">
                                 <label className="label"><span className="label-text">Bio</span></label>

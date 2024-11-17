@@ -58,7 +58,7 @@ function Programs() {
                 { withCredentials: true }
             );
             setSuccess('Program updated successfully');
-            setPrograms(programs.map(program =>
+            setPrograms(programs?.map(program =>
                 program.id === id ? { ...program, name: newName } : program
             ));
         } catch (error: any) {

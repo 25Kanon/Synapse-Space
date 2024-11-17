@@ -24,7 +24,7 @@ function PrivateRoute() {
         };
 
         checkAuth();
-    }, [isAuthenticated, isVerified, contextLoading, isRejected]);
+    }, [isAuthenticated, isVerified, contextLoading]);
 
     if (loading || contextLoading) {
         return <div>Loading...</div>; // Show a loading state while checking authentication
