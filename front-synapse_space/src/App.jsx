@@ -31,7 +31,11 @@ import Programs from "./pages/Admin/Programs"
 import Verifications from "./pages/Admin/Verifications"
 
 
+
 import { CometChatTheme, CometChatUsersWithMessages } from "@cometchat/chat-uikit-react";
+import Chat from "./pages/Chat";
+import {initCometChat} from "./lib/cometchat";
+import ChatWindow from "./components/CometChat/ChatWindow";
 
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
@@ -40,7 +44,18 @@ function App() {
     const systemPreference = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     return localStorage.getItem('theme') || systemPreference;
   });
+  useEffect(() => {
+    const initializeCometChatAsync = async () => {
+      try {
+        await initCometChat();
+        console.log('CometChat initialized successfully');
+      } catch (error) {
+        console.error('Error initializing CometChat:', error);
+      }
+    };
 
+    initializeCometChatAsync();
+  }, []);
 
   useEffect(() => {
     // Set the initial theme based on user preference or system preference
@@ -143,6 +158,16 @@ function App() {
                   <Route path="/messages" element={getConversationsWithMessages()} />
                 </Route>
 
+                <Route path="/chat" element={<PrivateRoute />}>
+                  <Route path="/chat" element={<Chat />}>
+                    <Route index element={
+                      <div className="flex-1 flex items-center justify-center text-gray-500">
+                        Select a conversation to start messaging
+                      </div>
+                    } />
+                    <Route path=":uid" element={<ChatWindow />} />
+                  </Route>
+                </Route>
 
                 {/*admin routes*/}
 

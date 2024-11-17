@@ -274,7 +274,10 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                             <input
                                 type="file"
                                 className="file-input mt-1 block w-full"
-                                onChange={(e) => setFormData({...formData, profile_pic: e.target.files ? e.target.files[0] : null})}
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    profile_pic: e.target.files ? e.target.files[0] : null
+                                })}
                             />
                         </div>
 
@@ -283,7 +286,10 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                             <input
                                 type="file"
                                 className="file-input mt-1 block w-full"
-                                onChange={(e) => setFormData({...formData, profile_banner: e.target.files ? e.target.files[0] : null})}
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    profile_banner: e.target.files ? e.target.files[0] : null
+                                })}
                             />
                         </div>
 
@@ -296,6 +302,7 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                                     ...formData,
                                     program: programs.find(p => p.id === Number(e.target.value)) || null
                                 })}
+                                required
                             >
                                 <option value="">Select Program</option>
                                 {programs?.map((program) => (
@@ -304,6 +311,19 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                                     </option>
                                 ))}
                             </select>
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium">Registration Form</label>
+                            <input
+                                type="file"
+                                className="file-input mt-1 block w-full"
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    registration_form: e.target.files ? e.target.files[0] : null
+                                })}
+                                required
+                            />
                         </div>
 
                         <div className="md:col-span-2">
@@ -338,7 +358,7 @@ export default function CreateStudentModal({ isOpen, onClose }: CreateAccountMod
                             onClick={onClose}
                             className="px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
-                            Cancel
+                        Cancel
                         </button>
                         <button
                             type="submit"

@@ -113,46 +113,108 @@ class VerifyAccountView(APIView):
 
             user.save()
 
-            # Prepare the payload for CometChat
-            payload = {
-                "metadata": {
-                    "@private": {
-                        "email": user.email,  # Use user's email
-                    }
-                },
-                "uid": user.username,  # Use username as the UID
-                "name": user.username,  # Use username or full name if needed
-            }
-
-            # Include avatar if profile_pic is present
-            if user.profile_pic:
-                payload["avatar"] = user.profile_pic
-
-            # Headers for CometChat API
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "apikey": os.getenv('COMET_CHAT_KEY')
-            }
-
-            # Send the POST request to CometChat
-            cometAppID = os.getenv('COMET_CHAT_APP_ID')
-            url = f"https://{cometAppID}.api-in.cometchat.io/v3/users"
-            try:
-                response = requests.post(url, json=payload, headers=headers)
-
-                # Check if the request was successful
-                if response.status_code == 200:
-                    logger.info(f"CometChat user created successfully for {user.username}")
-                else:
-                    logger.error(f"Failed to create CometChat user: {response.status_code} - {response.text}")
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Error sending request to CometChat: {e}")
-
-            return Response({'message': 'User details updated successfully.'}, status=status.HTTP_200_OK)
-
-        logger.error(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def create_cometchat_user(user):
+    # Prepare the payload for CometChat
+    payload = {
+        "metadata": {
+            "@private": {
+                "email": user.email,  # Use user's email
+            }
+        },
+        "uid": "ss"+user.id,
+        "name": user.username,  # Use username or full name if needed
+    }
+
+    # Include avatar if profile_pic is present
+    if user.profile_pic:
+        payload["avatar"] = user.profile_pic
+
+    # Headers for CometChat API
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "apikey": os.getenv('COMET_CHAT_KEY')
+    }
+
+    # Send the POST request to CometChat
+    cometAppID = os.getenv('COMET_CHAT_APP_ID')
+    url = f"https://{cometAppID}.api-in.cometchat.io/v3/users"
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            logger.info(f"CometChat user created successfully for {user.username}")
+        else:
+            logger.error(f"Failed to create CometChat user: {response.status_code} - {response.text}")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error sending request to CometChat: {e}")
+
+
+def update_cometchat_user(user):
+    # Prepare the payload for updating the CometChat user
+    payload = {
+        "metadata": {
+            "@private": {
+                "email": user.email,  # Use user's email
+            }
+        },
+        "unset": ["avatar"],  # Unset the avatar field
+        "name": user.username,  # Use username or full name if needed
+        "avatar": user.profile_pic if user.profile_pic else None  # Include avatar if profile_pic is present
+    }
+
+    # Headers for CometChat API
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "apikey": os.getenv('COMET_CHAT_KEY')
+    }
+
+    # Send the PUT request to CometChat
+    cometAppID = os.getenv('COMET_CHAT_APP_ID')
+    url = f"https://{cometAppID}.api-in.cometchat.io/v3/users/{user.id}"
+    try:
+        response = requests.put(url, json=payload, headers=headers)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            logger.info(f"CometChat user updated successfully for {user.username}")
+        else:
+            logger.error(f"Failed to update CometChat user: {response.status_code} - {response.text}")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error sending request to CometChat: {e}")
+
+
+def delete_cometchat_user(user):
+    # Prepare the payload for deleting the CometChat user
+    payload = {
+        "permanent": "false"
+    }
+
+    # Headers for CometChat API
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "apikey": os.getenv('COMET_CHAT_KEY')
+    }
+
+    # Send the DELETE request to CometChat
+    cometAppID = os.getenv('COMET_CHAT_APP_ID')
+    url = f"https://{cometAppID}.api-in.cometchat.io/v3/users/{user.id}"
+    try:
+        response = requests.delete(url, json=payload, headers=headers)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            logger.info(f"CometChat user deleted successfully for {user.username}")
+        else:
+            logger.error(f"Failed to delete CometChat user: {response.status_code} - {response.text}")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error sending request to CometChat: {e}")
 
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -1433,6 +1495,9 @@ class UpdateAccountView(APIView):
             user.is_verified = serializer.validated_data.get('is_verified', user.is_verified)
 
             user.save()
+
+            update_cometchat_user(user)
+
             return Response({"message": "Account updated successfully."}, status=status.HTTP_200_OK)
 
         logger.error(serializer.errors)
@@ -1444,6 +1509,8 @@ class DeleteAccountView (APIView):
     permission_classes = [IsAuthenticated, IsSuperUser]
     def delete(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
+
+        delete_cometchat_user(user)
         user.delete()
         return Response({"message": "User deleted successfully."}, status=status.HTTP_200_OK)
 
@@ -1455,6 +1522,10 @@ class CreateAccountView(APIView):
         serializer = CreateUserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+
+            if user.is_verified or user.is_staff or user.is_superuser:
+                create_cometchat_user(user)
+
             return Response({"message": "User created successfully.", "user": DetailedUserSerializer(user).data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1571,6 +1642,10 @@ class UnverifiedStudentsViewSet(generics.ListAPIView):
         user.is_verified = request.data.get('is_verified', user.is_verified)
         user.is_rejected = request.data.get('is_rejected', user.is_rejected)
         user.save()
+
+        if user.is_verified:
+            create_cometchat_user(user)
+
         return Response({"message": "User verified successfully."}, status=status.HTTP_200_OK)
 
 class NotificationListView(APIView):

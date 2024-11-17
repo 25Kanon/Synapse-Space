@@ -15,7 +15,7 @@ export default function GoogleBtn() {
                     access_token: token,
                 });
                 console.log('Google login successful:', res.data);
-                isLoggedinWithGoogle()
+                await isLoggedinWithGoogle()
             } catch (error) {
                 const errorMessage = error.response?.data?.non_field_errors || 'Google login failed';
                 console.error('Google login failed:', errorMessage);

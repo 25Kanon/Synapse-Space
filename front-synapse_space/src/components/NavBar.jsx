@@ -91,7 +91,7 @@ const NavBar = () => {
                     <div className="flex items-center justify-center ms-3 bg-base-200 px-3 rounded-full my-auto dropdown-left sm:block hidden ">
                         <div className="flex items-center py-1 px-2 z-40">
 
-                            <Link to="/messages" className="link">
+                            <Link to="/chat" className="link">
                                 <FontAwesomeIcon icon={faMessage} className="h-5 mr-5 z-40" />
                             </Link>
                             <details className="dropdown dropdown-end dropdown-bottom z-40">

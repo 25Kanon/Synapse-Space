@@ -4,11 +4,12 @@ import { AuthContext } from "../context/AuthContext";
 import UserSetup from ".././pages/UserSetup";
 
 function PrivateRoute() {
-    const { isAuthenticated, isVerified, isRejected,loading: contextLoading } = useContext(AuthContext);
+    const { isAuthenticated, isVerified, isRejected, isCometChatLogin,loading: contextLoading } = useContext(AuthContext);
     const [isAuth, setIsAuth] = useState(false);
     const [isUserVerified, setIsUserVerified] = useState(false);
     const [isUserRejected, setIsUserRejected] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isCometChatLoggedIn, setIsCometChatLoggedIn] = useState(false);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -16,6 +17,8 @@ function PrivateRoute() {
                 const authStatus = await isAuthenticated();
                 const verificationStatus = await isVerified();
                 const RejectStatus = await isRejected();
+                const cometChatStatus = await isCometChatLogin();
+                setIsCometChatLoggedIn(cometChatStatus);
                 setIsAuth(authStatus);
                 setIsUserVerified(verificationStatus);
                 setIsUserRejected(RejectStatus)
@@ -33,7 +36,6 @@ function PrivateRoute() {
     if (!isAuth) {
         return <Navigate to="/login" />; 
     }
-
 
     if (isAuth && !isUserVerified) {
         switch (isUserRejected) {

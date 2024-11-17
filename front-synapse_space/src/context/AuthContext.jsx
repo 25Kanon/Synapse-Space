@@ -3,6 +3,8 @@ import AxiosInstance from '../utils/AxiosInstance';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import { Navigate, useNavigate } from "react-router-dom";
+import { loginUser as cometLogin } from '../lib/cometchat';
+import { useAuthStore } from '../store/useAuthStore';
 
 export const AuthContext = createContext();
 
@@ -15,29 +17,11 @@ export const AuthProvider = ({ children }) => {
     const [authWithGoogle, setAuthWithGoogle] = useState(false);
     const [inSetup, setInSetup] = useState(true);
     const navigate = useNavigate();
-
-
-    // const refreshToken = useCallback(async () => {
-    //     try {
-    //         console.log('refreshing token')
-    //         const response = await AxiosInstance.post('/api/auth/token/refresh/', {}, { withCredentials: true });
-    //         return response;
-    //     } catch (error) {
-    //         console.error('Error refreshing token:', error);
-    //         console.log('Error refreshing token:', error)
-    //         setError('Error refreshing token:', error);
-    //         setUser(null);
-    //         throw error;
-    //     } finally {
-    //         checkAuthentication()
-    //     }
-    // }, []);
-
+    const {  setCometUser } = useAuthStore();
 
     const checkAuthentication = useCallback(async () => {
         try {
             const response = await AxiosInstance.get('/api/auth/check-auth/', { withCredentials: true });
-            console.log(response.data.user)
             setUser(response.data.user);
             return true;
         } catch (error) {
@@ -50,9 +34,10 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        checkAuthentication();
-
-    }, [loginData, authWithGoogle]);
+        if (loading) {
+            checkAuthentication();
+        }
+    }, [loading]);
 
     const loginUser = async (e) => {
         e.preventDefault();
@@ -103,6 +88,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+
     const logout = async () => {
         try {
             await AxiosInstance.post('/api/auth/logout/', {}, { withCredentials: true, });
@@ -120,9 +106,10 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const isLoggedinWithGoogle = () => {
+    const isLoggedinWithGoogle = async () => {
         setAuthWithGoogle(true)
         console.log(authWithGoogle)
+
         return authWithGoogle;
     }
 
@@ -130,6 +117,23 @@ export const AuthProvider = ({ children }) => {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
         if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    const isCometChatLogin = async () => {
+        if(!user){
+            return await checkAuthentication();
+        }else {
+            try {
+                if (!user.id) return false;
+                const cometUser = await cometLogin(user?.id);
+                setCometUser(cometUser);
+                console.log('connected to chat')
+                return true
+            } catch (error) {
+                console.error('Login error:', error);
+                return false;
+            }
+        }
     }
 
     const isAuthenticated = async () => {
@@ -161,6 +165,7 @@ export const AuthProvider = ({ children }) => {
             isVerified,
             isAdmin,
             isRejected,
+            isCometChatLogin,
             user,
             isLoggedinWithGoogle,
             loading,
