@@ -13,11 +13,16 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     UserRecommendationsView, UnpinPostView, CommunityUpdateView, AllStudentsView, UpdateAccountView,
                     DeleteAccountView, CreateAccountView, PostCountView, UserCountView, NewUserCountView,
                     EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
-                    ProgramCreateView, UnverifiedStudentsViewSet)
+                    ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView)
 from django.contrib import admin
 
 
 urlpatterns = [
+    
+    
+    path('notifications/', NotificationListView.as_view(), name='notification-list'),
+    path('notifications/<int:pk>/read/', MarkAsReadView.as_view(), name='mark-as-read'),
+
     # Auth URLs
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', LoginView.as_view(), name='login'),
@@ -59,7 +64,6 @@ urlpatterns = [
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
     path('comments/<int:pk>/update/', CommentUpdateView.as_view(), name='comment-update'),
     path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
-
 
     path('<int:community_id>/create-report/', ReportsListCreateView.as_view(), name='report-create'),
     path('community/<int:community_id>/reports/resolve/<int:pk>/', modResolveView.as_view(), name='mod-approve'),

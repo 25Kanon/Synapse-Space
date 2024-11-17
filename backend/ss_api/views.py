@@ -44,14 +44,14 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
-    Program
+    Program, Notification
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
-                          DetailedUserSerializer, CreateUserSerializer, ProgramSerializer)
+                          DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsStaff
 
@@ -1000,8 +1000,44 @@ class ReportsListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # Attach the author (logged-in user) to the report
+        report = serializer.save(author=self.request.user)
+        logger.info(f"Report created by {self.request.user.email}: {report}")
 
-        serializer.save(author=self.request.user)
+        # Check the type of the report (post or comment) and create a notification
+        if report.type == "post":
+            # Fetch the post and notify its creator
+            post = get_object_or_404(Post, id=report.object_id)
+            Notification.objects.create(
+                user=post.created_by,
+                title="Your Post Was Reported",
+                message={
+                    "action": "post_reported",
+                    "post_id": post.id,
+                    "post_title": post.title,
+                    "community_id": post.posted_in.id,
+                    "reason": report.reason,
+                }
+            )
+            logger.info(f"Notification created for post author {post.created_by.email} about reported post ID {post.id}")
+
+        elif report.type == "comment":
+            # Fetch the comment and notify its author
+            comment = get_object_or_404(Comment, id=report.object_id)
+            Notification.objects.create(
+                user=comment.author,
+                title="Your Comment Was Reported",
+                message={
+                    "action": "comment_reported",
+                    "comment_id": comment.id,
+                    "comment_content": comment.content,
+                    "community_id": comment.post.posted_in.id,  # Use the related post's community ID
+                    "post_id": comment.post.id,
+                    "reason": report.reason,
+                }
+            )
+            logger.info(f"Notification created for comment author {comment.author.email} about reported comment ID {comment.id}")
+        else:
+            logger.warning(f"Invalid report type: {report.type}")
 
 
 class getReportsView(generics.ListAPIView):
@@ -1123,6 +1159,18 @@ class BanMembershipView(APIView):
             membership.status = 'banned'
             membership.save()
             updated_memberships.append(membership)
+            
+            # Create a notification for the banned user
+            Notification.objects.create(
+                user=membership.user,
+                title="You Have Been Banned",
+                message={
+                    "action": "banned_from_community",
+                    "community_id": community.id,
+                    "community_name": community.name,
+                    "reason": "Violation of community rules"  # Optional: Include ban reason if applicable
+                }
+            )
 
         serializer = MembershipSerializer(updated_memberships, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1252,7 +1300,19 @@ class RespondToFriendRequestView(generics.UpdateAPIView):
             # Create a mutual friendship between sender and receiver
             Friendship.objects.create(user1=friend_request.sender, user2=friend_request.receiver)
             Friendship.objects.create(user1=friend_request.receiver, user2=friend_request.sender)
-
+            
+            # Create a notification for the sender with a JSON object as the message
+            Notification.objects.create(
+                user=friend_request.sender,
+                title="Friend Request Accepted",
+                message={
+                    "action": "friend_request_accepted",
+                    "friend": {
+                        "id": request.user.id,
+                        "username": request.user.username,
+                    }
+                },
+            )
             return Response({"detail": "Friend request accepted."}, status=status.HTTP_200_OK)
 
         elif action == 'reject':
@@ -1505,3 +1565,32 @@ class UnverifiedStudentsViewSet(generics.ListAPIView):
         user.is_rejected = request.data.get('is_rejected', user.is_rejected)
         user.save()
         return Response({"message": "User verified successfully."}, status=status.HTTP_200_OK)
+
+class NotificationListView(APIView):
+    """
+    Fetch all notifications for the logged-in user.
+    If no notifications exist, return an empty list.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        notifications = Notification.objects.filter(user=user).order_by('-created_at')
+        if notifications.exists():
+            serializer = NotificationSerializer(notifications, many=True)
+            return Response(serializer.data, status=200)
+        else:
+            # Return an empty list if no notifications exist
+            return Response([], status=200)
+
+class MarkAsReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            notification = Notification.objects.get(id=pk, user=request.user)
+            notification.is_read = True
+            notification.save()
+            return Response({"message": "Notification marked as read."}, status=status.HTTP_200_OK)
+        except Notification.DoesNotExist:
+            return Response({"error": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)

@@ -17,7 +17,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
-                     Reports, FriendRequest, Program)
+                     Reports, FriendRequest, Program,
+                     Notification)
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -110,13 +111,13 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 
             totp = self.generate_otp(user.otp_secret)
             body = f"Your OTP is: {totp}"
+            print(body)
             self.send_otp(body, user.email, user.username)
 
             # Update the last OTP generation time for the user
             last_otp_generation[user.id] = time.time()
 
             return {'message': 'OTP required'}
-
         totp = pyotp.TOTP(user.otp_secret, interval=300)
         if not totp.verify(otp):
             raise serializers.ValidationError(_(totp.now()))
@@ -484,3 +485,24 @@ class CreateUserSerializer(serializers.ModelSerializer):
             user.set_password(password)
         user.save()
         return user
+
+class NotificationSerializer(serializers.ModelSerializer):
+    community_imgURL = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'title', 'message', 'is_read', 'created_at', 'community_imgURL']
+
+    def get_community_imgURL(self, obj):
+        """
+        Retrieve the community image URL from the notification's message.
+        Assumes `message` contains `community_id`.
+        """
+        community_id = obj.message.get('community_id')
+        if community_id:
+            try:
+                community = Community.objects.get(id=community_id)
+                return community.imgURL
+            except Community.DoesNotExist:
+                return None
+        return None

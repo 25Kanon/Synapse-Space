@@ -10,7 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import AuthContext from "../context/AuthContext";
 import { useFriends } from "../context/FriendContext";
-
+import { useNotifications } from "../context/NotificationContext";
 const NavBar = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
@@ -19,6 +19,8 @@ const NavBar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [searchQuery, setSearchQuery] = useState(""); // State to hold search input
     const location = useLocation();
+    const { notifications, markAsRead } = useNotifications();
+    const unreadNotifications = notifications.filter((notification) => !notification.is_read); // Filter unread notifications
     const isOnSearchPage = location.pathname === "/search";
     const getInitials = (name) => {
         return name
@@ -67,8 +69,8 @@ const NavBar = () => {
                                 alt="FlowBite Logo"
                             />
                             <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
-                Synapse Space
-              </span>
+                                Synapse Space
+                            </span>
                         </a>
                     </div>
                     {/* Search form */}
@@ -90,19 +92,23 @@ const NavBar = () => {
                         <div className="flex items-center py-1 px-2 z-40">
 
                             <Link to="/messages" className="link">
-                                <FontAwesomeIcon icon={faMessage} className="h-5 mr-5 z-40"/>
+                                <FontAwesomeIcon icon={faMessage} className="h-5 mr-5 z-40" />
                             </Link>
                             <details className="dropdown dropdown-end dropdown-bottom z-40">
                                 <summary className="btn h-5 flex items-center">
-                                    <FontAwesomeIcon icon={faBell} className="h-5"/>
-                                    {filteredFriendRequests.length > 0 && (
+                                    <FontAwesomeIcon icon={faBell} className="h-5" />
+                                    {(filteredFriendRequests.length > 0 || unreadNotifications.length > 0) && (
                                         <span
                                             className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center z-40">
-                      {filteredFriendRequests.length}
-                    </span>
+                                            {filteredFriendRequests.length + unreadNotifications.length}
+                                        </span>
                                     )}
                                 </summary>
                                 <ul className="menu dropdown-content bg-base-100 rounded-box z-[60] min-w-80 w-auto p-2 shadow">
+                                    {/* Friend Requests Section */}
+                                    <li className="menu-title">
+                                        <span>Friend Requests</span>
+                                    </li>
                                     {filteredFriendRequests.length > 0 ? (
                                         filteredFriendRequests.map((request) => (
                                             <li
@@ -121,9 +127,9 @@ const NavBar = () => {
                                                             ) : (
                                                                 <div
                                                                     className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
-                                  <span className="text-sm font-semibold">
-                                    {getInitials(request.sender_name)}
-                                  </span>
+                                                                    <span className="text-sm font-semibold">
+                                                                        {getInitials(request.sender_name)}
+                                                                    </span>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -139,14 +145,14 @@ const NavBar = () => {
                                                         onClick={() => acceptFriendRequest(request.id)}
                                                         className="btn btn-xs btn-primary flex items-center gap-1"
                                                     >
-                                                        <FontAwesomeIcon icon={faCheck}/>
+                                                        <FontAwesomeIcon icon={faCheck} />
                                                         Accept
                                                     </button>
                                                     <button
                                                         onClick={() => rejectFriendRequest(request.id)}
                                                         className="btn btn-xs btn-error flex items-center gap-1"
                                                     >
-                                                        <FontAwesomeIcon icon={faTimes}/>
+                                                        <FontAwesomeIcon icon={faTimes} />
                                                         Reject
                                                     </button>
                                                 </div>
@@ -154,6 +160,78 @@ const NavBar = () => {
                                         ))
                                     ) : (
                                         <li className="text-center p-2">No friend requests</li>
+                                    )}
+
+                                    {/* Divider */}
+                                    <div className="divider"></div>
+
+                                    {/* Notifications Section */}
+                                    <li className="menu-title">
+                                        <span>Notifications</span>
+                                    </li>
+                                    {unreadNotifications.length > 0 ? (
+                                        unreadNotifications.map((notification) => (
+                                            <li
+                                                key={notification.id}
+                                                className="flex items-center justify-between gap-3 p-2 whitespace-nowrap w-full"
+                                                title={
+                                                    notification.message.action === "banned_from_community"
+                                                        ? `You have been banned from "${notification.message.community_name}".`
+                                                        : notification.message.action === "post_reported"
+                                                            ? `Your post in "${notification.message.community_name}" has been reported.`
+                                                            : notification.message.action === "comment_reported"
+                                                                ? `Your comment in "${notification.message.community_name}" has been reported.`
+                                                                : ""
+                                                } // Add detailed message here
+                                            >
+                                                <Link
+                                                    to={
+                                                        notification.message.action === "post_reported"
+                                                            ? `/community/${notification.message.community_id}/post/${notification.message.post_id}`
+                                                            : notification.message.action === "comment_reported"
+                                                                ? `/community/${notification.message.community_id}/post/${notification.message.post_id}#comment-${notification.message.comment_id}`
+                                                                : notification.message.action === "banned_from_community"
+                                                                    ? `/community/${notification.message.community_id}`
+                                                                    : "#"
+                                                    }
+                                                    className="text-sm font-medium hover:underline truncate"
+
+                                                    onClick={() => markAsRead(notification.id)}
+                                                >
+                                                    {/* Community Image */}
+                                                    <div className="flex-shrink-0">
+                                                        <div className="avatar placeholder">
+                                                            <div className="rounded-full h-10 w-10">
+                                                                {notification.community_imgURL ? (
+                                                                    <img
+                                                                        src={notification.community_imgURL}
+                                                                        alt={`Community`}
+                                                                        className="w-full h-full object-cover rounded-full"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
+                                                                        <span className="text-sm font-semibold">N/A</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Notification Title and Details */}
+                                                    <div className="flex-1 min-w-0">
+                                                        {notification.title}
+                                                    </div>
+                                                </Link>
+                                                {/* <button
+                                                    onClick={() => markAsRead(notification.id)}
+                                                    className="btn btn-xs btn-outline"
+                                                >
+                                                    Mark as Read
+                                                </button> */}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li className="text-center p-2">No notifications</li>
                                     )}
                                 </ul>
                             </details>
@@ -171,9 +249,9 @@ const NavBar = () => {
                                             ) : (
                                                 <div
                                                     className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
-                          <span className="text-sm font-semibold">
-                            {getInitials(user.username)}
-                          </span>
+                                                    <span className="text-sm font-semibold">
+                                                        {getInitials(user.username)}
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
@@ -181,8 +259,8 @@ const NavBar = () => {
                                     <p className="text-sm font-semibold flex items-center">
                                         {user.username}
                                         <span>
-                      <FontAwesomeIcon icon={faChevronDown} className="ms-3"/>
-                    </span>
+                                            <FontAwesomeIcon icon={faChevronDown} className="ms-3" />
+                                        </span>
                                     </p>
                                 </summary>
                                 <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
