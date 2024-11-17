@@ -96,6 +96,8 @@ export const AuthProvider = ({ children }) => {
                 console.error('An error occurred:', error.response.data);
             } else {
                 setError('An unexpected error occurred.');
+                setRequireOTP(false);
+                setLoginData(null);
                 console.error('An unexpected error occurred:', error);
             }
         }
@@ -113,7 +115,8 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             setRequireOTP(false);
             setLoginData(null);
-
+        } finally{
+            navigate('/login');
         }
     };
 
@@ -143,6 +146,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const isRejected = async () => {
+        if (!user) return await checkAuthentication();
         return (user.is_rejected)
     }
 
