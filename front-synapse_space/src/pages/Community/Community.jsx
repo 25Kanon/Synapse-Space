@@ -91,7 +91,7 @@ export default function Community() {
                 <Sidebar />
                 <MembersList id={id}/>
                 <MainContentContainer>
-                    <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} />
+                    <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} communityID={communityDetails.id} />
                     <div className="flex flex-col items-start 00 mx-10">
                         <JoinCommuinityBtn communityId={communityDetails.id}/>
                         <article className="prose prose-gray">

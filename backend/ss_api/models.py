@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.contenttypes.models import ContentType
 import pyotp
 
+from django.db.models import JSONField
 
 class Program(models.Model):
     name = models.CharField(max_length=255)
@@ -179,5 +180,12 @@ class Friendship(models.Model):
     def __str__(self):
         return f"{self.user1} is friends with {self.user2}"
 
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    title = models.CharField(max_length=255)
+    message = JSONField()  # Store the message as a JSON object
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-
+    def __str__(self):
+        return f"Notification for {self.user.username} - {self.title}"

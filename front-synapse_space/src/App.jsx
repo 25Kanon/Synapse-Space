@@ -22,8 +22,8 @@ import ModDashboard from './pages/Community/ModDashboard';
 import CommunitySettings from './pages/Community/CommunitySettings';
 import { FriendProvider } from './context/FriendContext';
 import Discovery from "./pages/Discovery";
-import {ConversationsWithMessagesWrapper} from "./components/Conversations";
-
+import { ConversationsWithMessagesWrapper } from "./components/Conversations";
+import { NotificationProvider } from "./context/NotificationContext";
 
 import Dashboard from "./pages/Admin/Dashboard"
 import Users from "./pages/Admin/Users"
@@ -31,7 +31,7 @@ import Programs from "./pages/Admin/Programs"
 import Verifications from "./pages/Admin/Verifications"
 
 
-import {CometChatTheme, CometChatUsersWithMessages} from "@cometchat/chat-uikit-react";
+import { CometChatTheme, CometChatUsersWithMessages } from "@cometchat/chat-uikit-react";
 
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
@@ -89,80 +89,83 @@ function App() {
       <AuthProvider>
         <MembershipsProvider>
           <FriendProvider>
-            <Routes>
-              <Route path="/" element={<PrivateRoute />}>
-                <Route path="/" element={<Home />} />
-              </Route>
-              <Route path="/profile" element={<PrivateRoute />}>
-                <Route path="/profile" element={<ProfilePage />} />
-              </Route>
-              <Route path="/edit-profile" element={<PrivateRoute />}>
-                <Route path="/edit-profile" element={<EditProfile />} />
-              </Route>
-              <Route path="/activities" element={<PrivateRoute />}>
-                <Route path="/activities" element={<ProfilePage />} />
-              </Route>
-              <Route path="/" element={<PublicRoute />}>
-                <Route path="/login" element={<UserLogin />} />
-              </Route>
-              <Route path="/" element={<PublicRoute />}>
-                <Route path="/reset-password" element={<ResetPassword />} />
-              </Route>
-              <Route path="/" element={<PublicRoute />}>
-                <Route path="/register" element={<UserRegister />} />
-              </Route>
-              <Route path="/" element={<PublicRoute  />}>
-                <Route path="/terms-of-use" element={<TermsOfUse />} />
-              </Route>
-              <Route path="/" element={<PublicRoute  />}>
-                <Route path="privacy-policy" element={<PrivacyPolicy />} />
-              </Route>
-              <Route path="/community" element={<PrivateRoute />}>
-                <Route path="/community/:id" element={<Community />} />
-              </Route>
-              <Route path="/community" element={<PrivateRoute />}>
-                <Route path="/community/:community_id/post/:post_id" element={<GetCommunityPost />} />
-              </Route>
-              <Route path="/community/" element={<PrivateRoute />}>
-                <Route path="/community/:community_id/mod" element={<ModDashboard />} />
-              </Route>
-              <Route path="/community/:community_id/settings" element={<PrivateRoute />}>
-                <Route path="/community/:community_id/settings" element={<CommunitySettings />} />
-              </Route>
-              <Route path="/community" element={<PrivateRoute />}>
-                <Route path="/community/create" element={<Create />} />
-              </Route>
-              <Route path="/search" element={<PrivateRoute />}>
-                <Route path="/search" element={<SearchCommunity />} />
-              </Route>
-              <Route path="/discover" element={<PrivateRoute />}>
-                <Route path="/discover" element={<Discovery />} />
-              </Route>
-              <Route path="/messages" element={<PrivateRoute />}>
-                <Route path="/messages" element={getConversationsWithMessages()} />
-              </Route>
+            <NotificationProvider>
+              <Routes>
+                <Route path="/" element={<PrivateRoute />}>
+                  <Route path="/" element={<Home />} />
+                </Route>
+                <Route path="/profile" element={<PrivateRoute />}>
+                  <Route path="/profile" element={<ProfilePage />} />
+                </Route>
+                <Route path="/edit-profile" element={<PrivateRoute />}>
+                  <Route path="/edit-profile" element={<EditProfile />} />
+                </Route>
+                <Route path="/activities" element={<PrivateRoute />}>
+                  <Route path="/activities" element={<ProfilePage />} />
+                </Route>
+                <Route path="/" element={<PublicRoute />}>
+                  <Route path="/login" element={<UserLogin />} />
+                </Route>
+                <Route path="/" element={<PublicRoute />}>
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                </Route>
+                <Route path="/" element={<PublicRoute />}>
+                  <Route path="/register" element={<UserRegister />} />
+                </Route>
+                <Route path="/" element={<PublicRoute />}>
+                  <Route path="/terms-of-use" element={<TermsOfUse />} />
+                </Route>
+                <Route path="/" element={<PublicRoute />}>
+                  <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                </Route>
+                <Route path="/community" element={<PrivateRoute />}>
+                  <Route path="/community/:id" element={<Community />} />
+                </Route>
+                <Route path="/community" element={<PrivateRoute />}>
+                  <Route path="/community/:community_id/post/:post_id" element={<GetCommunityPost />} />
+                </Route>
+                <Route path="/community/" element={<PrivateRoute />}>
+                  <Route path="/community/:community_id/mod" element={<ModDashboard />} />
+                </Route>
+                <Route path="/community/:community_id/settings" element={<PrivateRoute />}>
+                  <Route path="/community/:community_id/settings" element={<CommunitySettings />} />
+                </Route>
+                <Route path="/community" element={<PrivateRoute />}>
+                  <Route path="/community/create" element={<Create />} />
+                </Route>
+                <Route path="/search" element={<PrivateRoute />}>
+                  <Route path="/search" element={<SearchCommunity />} />
+                </Route>
+                <Route path="/discover" element={<PrivateRoute />}>
+                  <Route path="/discover" element={<Discovery />} />
+                </Route>
+                <Route path="/messages" element={<PrivateRoute />}>
+                  <Route path="/messages" element={getConversationsWithMessages()} />
+                </Route>
 
 
-              {/*admin routes*/}
+                {/*admin routes*/}
 
-              <Route path="/admin" element={<AdminRoute />}>
-                <Route path="/admin" element={<Dashboard/>} />
-              </Route>
+                <Route path="/admin" element={<AdminRoute />}>
+                  <Route path="/admin" element={<Dashboard />} />
+                </Route>
 
-              <Route path="/admin/users" element={<AdminRoute />}>
-                <Route path="/admin/users" element={<Users/>} />
-              </Route>
+                <Route path="/admin/users" element={<AdminRoute />}>
+                  <Route path="/admin/users" element={<Users />} />
+                </Route>
 
-              <Route path="/admin/programs" element={<AdminRoute />}>
-                <Route path="/admin/programs" element={<Programs/>} />
-              </Route>
+                <Route path="/admin/programs" element={<AdminRoute />}>
+                  <Route path="/admin/programs" element={<Programs />} />
+                </Route>
 
-              <Route path="/admin/verifications" element={<AdminRoute />}>
-                <Route path="/admin/verifications" element={<Verifications/>} />
-              </Route>
-              
+                <Route path="/admin/verifications" element={<AdminRoute />}>
+                  <Route path="/admin/verifications" element={<Verifications />} />
+                </Route>
 
-            </Routes>
+
+              </Routes>
+
+            </NotificationProvider>
           </FriendProvider>
         </MembershipsProvider>
       </AuthProvider>

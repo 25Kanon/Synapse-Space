@@ -29,6 +29,7 @@ const MembersList = ({ id }) => {
         fetchMembers();
     }, [id]);
     const getInitials = (name) => {
+        if (name == null) { return null }
         return name
             .split(" ")
             .map((word) => word[0])
@@ -57,9 +58,9 @@ const MembersList = ({ id }) => {
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
-                        <span className="text-sm font-semibold">
-                          {getInitials(member.userName)}
-                        </span>
+                                                <span className="text-sm font-semibold">
+                                                    {getInitials(member.userName)}
+                                                </span>
                                             </div>
                                         )}
                                     </div>
@@ -100,9 +101,8 @@ const MembersList = ({ id }) => {
                                             <>
                                                 <li>
                                                     <Link
-                                                        to={`/community/${
-                                                            member.community
-                                                        }/post/${1}/delete`}
+                                                        to={`/community/${member.community
+                                                            }/post/${1}/delete`}
                                                     >
                                                         Message
                                                     </Link>
