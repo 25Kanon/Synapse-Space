@@ -276,7 +276,7 @@ const NavBar = () => {
                                         <Link to="/profile">Profile</Link>
                                     </li>
                                     <li>
-                                        <button onClick={handleLogout} className="btn btn-logout">
+                                        <button onClick={handleLogout} className="btn btn-sm">
                                             Logout
                                         </button>
                                     </li>

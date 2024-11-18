@@ -21,19 +21,40 @@ export interface User {
 }
 
 
-export interface CommunityStats {
-    totalUsers: number;
-    activeUsers: number;
-    totalPosts: number;
-    newUsersToday: number;
-    engagementRate: string;
+interface ActivityLog {
+    posts: Post[];
+    comments: Comment[];
+    liked_posts: LikedPost[];
+    saved_posts: SavedPost[];
 }
 
-export interface Activity {
-    id: number;
-    user: string;
-    action: string;
-    timestamp: string;
-    type: 'post' | 'report' | 'join' | 'other';
+interface Post {
+    created_by: number;
+    created_at: string;
+    'author_pic': string;
 }
+
+interface Comment {
+    id: number;
+    content: string;
+    author: string;
+    created_at: string;
+    updated_at: string;
+    parent: number | null;
+    post: number;
+    replies: Comment[];
+}
+
+interface LikedPost {
+    user: number;
+    post: number;
+    created_at: string;
+}
+
+interface SavedPost {
+    user?: number;
+    post?: number;
+    created_at?: string;
+}
+
 

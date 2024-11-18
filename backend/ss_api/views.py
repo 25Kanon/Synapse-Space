@@ -44,14 +44,15 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
-    Program, Notification
+    Program, Notification, SavedPost
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
                           CommunityPostSerializer, getCommunityPostSerializer, LikedPostSerializer, CommentSerializer,
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
-                          DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer)
+                          DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
+                          PostSerializer, SavedPostSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsStaff
 
@@ -1661,12 +1662,14 @@ class UnverifiedStudentsViewSet(generics.ListAPIView):
 
         return Response({"message": "User verified successfully."}, status=status.HTTP_200_OK)
 
+
 class NotificationListView(APIView):
     """
     Fetch all notifications for the logged-in user.
     If no notifications exist, return an empty list.
     """
     permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
 
     def get(self, request):
         user = request.user
@@ -1678,8 +1681,11 @@ class NotificationListView(APIView):
             # Return an empty list if no notifications exist
             return Response([], status=200)
 
+
+
 class MarkAsReadView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
 
     def post(self, request, pk):
         try:
@@ -1689,3 +1695,55 @@ class MarkAsReadView(APIView):
             return Response({"message": "Notification marked as read."}, status=status.HTTP_200_OK)
         except Notification.DoesNotExist:
             return Response({"error": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class AdminUserRecentActivityLogView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request):
+        # Fetch posts created in the last 7 days
+        posts = Post.objects.filter(created_at__gte=timezone.now() - timedelta(days=7)).order_by('created_at')
+
+        # Fetch comments created in the last 7 days
+        comments = Comment.objects.filter(created_at__gte=timezone.now() - timedelta(days=7)).order_by('created_at')
+
+        # Fetch liked posts created in the last 7 days
+        liked_posts = LikedPost.objects.filter(created_at__gte=timezone.now() - timedelta(days=7)).order_by(
+            'created_at')
+
+        # Fetch saved posts created in the last 7 days
+        saved_posts = SavedPost.objects.filter(created_at__gte=timezone.now() - timedelta(days=7)).order_by(
+            'created_at')
+
+        # Serialize the data
+        activities = {
+            'posts': PostSerializer(posts, many=True).data,
+            'comments': CommentSerializer(comments, many=True).data,
+            'liked_posts': LikedPostSerializer(liked_posts, many=True).data,
+            'saved_posts': SavedPostSerializer(saved_posts, many=True).data
+        }
+
+        return Response(activities, status=status.HTTP_200_OK)
+
+
+class AdminUserActivityLogView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request):
+        # Fetch all user activities
+        posts = Post.objects.all().order_by('created_at')
+        comments = Comment.objects.all().order_by('created_at')
+        liked_posts = LikedPost.objects.all().order_by('created_at')
+        saved_posts = SavedPost.objects.all().order_by('created_at')
+
+        # Serialize the data
+        activities = {
+            'posts': PostSerializer(posts, many=True).data,
+            'comments': CommentSerializer(comments, many=True).data,
+            'liked_posts': LikedPostSerializer(liked_posts, many=True).data,
+            'saved_posts': SavedPostSerializer(saved_posts, many=True).data
+        }
+
+        return Response(activities, status=status.HTTP_200_OK)

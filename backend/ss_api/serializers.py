@@ -340,29 +340,47 @@ class getCommunityPostSerializer(serializers.ModelSerializer):
     def get_created_by_username(self, obj):
         return obj.created_by.username
 
+
 class PostSerializer(serializers.ModelSerializer):
+    author_pic = serializers.SerializerMethodField()
+
     created_by_username = serializers.CharField(source="created_by.username")
     community_name = serializers.CharField(source="posted_in.name")
     class Meta:
         model = Post
-        fields = ['id', 'title','content', 'created_at']
+        fields = [ 'id', 'title','content', 'created_at', 'created_by', 'author_pic', 'posted_in', 'created_by_username', 'community_name']
 
+
+    def get_created_by_username(self, obj):
+        return obj.created_by.username
+
+    def get_community_name(self, obj):
+        return obj.posted_in.name
+    def get_author_pic(self, obj):
+        return obj.created_by.profile_pic
 class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
     author = serializers.CharField(source='author.username', read_only=True)
+    author_pic = serializers.SerializerMethodField()
+
     post_title = serializers.CharField(source="post.title", read_only=True)
-    post_community = serializers.CharField(source="post.posted_in.name", read_only=True) 
+    post_community = serializers.CharField(source="post.posted_in.name", read_only=True)
     post_community_id = serializers.IntegerField(source="post.posted_in.id", read_only=True)
-    
+
     class Meta:
         model = Comment
-        fields = ['id', 'content', 'author', 'created_at', 'updated_at', 'post_id', 'post_title', 'post_community_id', 'post_community', 'parent', 'post', 'replies']
-        read_only_fields = ['id', 'author', 'created_at', 'updated_at']
+        fields = ['id', 'content', 'author', 'created_at', 'updated_at', 'post_id', 'post_title', 'post_community_id', 'post_community', 'parent', 'post', 'replies', 'author_pic']
+        read_only_fields = ['id', 'author', 'created_at', 'updated_at', 'author_pic']
 
     def get_replies(self, obj):
         replies = Comment.objects.filter(parent=obj)
         return CommentSerializer(replies, many=True).data
-    
+
+    def get_author_pic(self, obj):
+        return obj.author.profile_pic
+
+
+
 class CreateCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
@@ -374,9 +392,18 @@ class SavedPostSerializer(serializers.ModelSerializer):
         fields = ['post', 'created_at']
 
 class LikedPostSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    author_pic = serializers.SerializerMethodField()
+
     class Meta:
         model = LikedPost
-        fields = ['user', 'post', 'created_at']
+        fields = ['user', 'post', 'created_at', 'username', 'author_pic']
+
+
+    def get_username(self, obj):
+        return obj.user.username
+    def get_author_pic(self, obj):
+        return obj.user.profile_pic
         
 class ReportsSerializer(serializers.ModelSerializer):
     content_type = serializers.SlugRelatedField(

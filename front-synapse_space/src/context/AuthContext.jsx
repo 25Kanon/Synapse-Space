@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     const [authWithGoogle, setAuthWithGoogle] = useState(false);
     const [inSetup, setInSetup] = useState(true);
     const navigate = useNavigate();
-    const {  setCometUser } = useAuthStore();
+    const { setCometUser, isAuthenticated: isCometAuthenticated} = useAuthStore();
 
     const checkAuthentication = useCallback(async () => {
         try {
@@ -125,10 +125,13 @@ export const AuthProvider = ({ children }) => {
         }else {
             try {
                 if (!user.id) return false;
-                const cometUser = await cometLogin(user?.id);
-                setCometUser(cometUser);
-                console.log('connected to chat')
-                return true
+                if(!isCometAuthenticated){
+                    const cometUser = await cometLogin(user?.id);
+                    setCometUser(cometUser);
+                    console.log('connected to chat')
+                    return true
+                }
+                console.log({authStatus});
             } catch (error) {
                 console.error('Login error:', error);
                 return false;
