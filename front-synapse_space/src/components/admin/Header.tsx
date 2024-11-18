@@ -1,40 +1,68 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { Bell, Search, User } from 'lucide-react';
+import AuthContext from '../../context/AuthContext';
+import {useNavigate} from "react-router-dom";
 
 const Header = () => {
+    const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate("/login");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+
+    const getInitials = (name) => {
+        return name
+            .split(" ")
+            .map((word) => word[0])
+            .join("");
+    };
     return (
         <header className="bg-base-100 border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
-                <div className="flex items-center flex-1">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
-                </div>
 
-                <div className="flex items-center gap-4">
-                    <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full">
-                        <Bell className="w-6 h-6" />
-                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-
-                    <div className="flex items-center gap-3">
-                        <div className="text-right">
-                            <div className="text-sm font-semibold">Admin User</div>
-                            <div className="text-xs text-gray-500">admin@synapse.com</div>
+                <div className="flex justify-end w-full me-10">
+                    <div className="dropdown dropdown-hover ">
+                        <div className="flex items-center gap-3">
+                            <div className="text-right">
+                                <div className="text-sm font-semibold">{user.username}</div>
+                                <div className="text-xs text-gray-500">{user.email}</div>
+                            </div>
+                            <div tabIndex={0} role="button" className="p-1 rounded-full">
+                                <div className="rounded-full h-7">
+                                    {user.pic ? (
+                                        <img
+                                            src={user.pic}
+                                            alt={`Profile picture of ${user.username}`}
+                                            className="w-full h-full object-cover rounded-full"
+                                        />
+                                    ) : (
+                                        <div
+                                            className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
+                                                    <span className="text-sm font-semibold">
+                                                        {getInitials(user.username)}
+                                                    </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                        <button className="p-1 rounded-full bg-gray-100">
-                            <User className="w-6 h-6" />
-                        </button>
+                        <ul tabIndex={0}
+                            className="dropdown-content menu bg-base-100 rounded-box z-[1] w-full p-2 shadow">
+                            <button className="btn btn-sm" onClick={handleLogout}>Logout</button>
+                        </ul>
                     </div>
                 </div>
             </div>
         </header>
-    );
+    )
+
+        ;
 };
 
 export default Header;

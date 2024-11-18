@@ -53,6 +53,7 @@ class Community(models.Model):
     rules = models.TextField()
     keyword = ArrayField(models.CharField(max_length=200), blank=True)
     privacy = models.CharField(max_length=255, default='public')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name

@@ -32,14 +32,13 @@ import Verifications from "./pages/Admin/Verifications"
 
 
 
-import { CometChatTheme, CometChatUsersWithMessages } from "@cometchat/chat-uikit-react";
 import Chat from "./pages/Chat";
 import {initCometChat} from "./lib/cometchat";
 import ChatWindow from "./components/CometChat/ChatWindow";
+import {Activities} from "./pages/Admin/Activities";
 
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
-  const [CometTheme, setCometTheme] = useState(new CometChatTheme({}));
   const [theme, setTheme] = useState(() => {
     const systemPreference = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     return localStorage.getItem('theme') || systemPreference;
@@ -91,13 +90,6 @@ function App() {
     }
   }, []);
 
-  const getConversationsWithMessages = () => {
-    return <ConversationsWithMessagesWrapper isMobileView={isMobileView} />;
-  }
-
-  function getUsersWithMessages() {
-    return <CometChatUsersWithMessages isMobileView={isMobileView} />;
-  }
 
   return (
     <Router>
@@ -154,9 +146,6 @@ function App() {
                 <Route path="/discover" element={<PrivateRoute />}>
                   <Route path="/discover" element={<Discovery />} />
                 </Route>
-                <Route path="/messages" element={<PrivateRoute />}>
-                  <Route path="/messages" element={getConversationsWithMessages()} />
-                </Route>
 
                 <Route path="/chat" element={<PrivateRoute />}>
                   <Route path="/chat" element={<Chat />}>
@@ -181,6 +170,10 @@ function App() {
 
                 <Route path="/admin/programs" element={<AdminRoute />}>
                   <Route path="/admin/programs" element={<Programs />} />
+                </Route>
+
+                <Route path="/admin/activities" element={<AdminRoute />}>
+                  <Route path="/admin/activities" element={<Activities />} />
                 </Route>
 
                 <Route path="/admin/verifications" element={<AdminRoute />}>

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Users, MessageSquare, TrendingUp, UserPlus } from 'lucide-react';
-import { fetchCommunityStats, fetchRecentActivities } from '../../utils/admin/api';//TEMPORARY WILL PATCH WITH REAL DATA LATER
 import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
 import AxiosInstance from "../../utils/AxiosInstance";
 import ErrorAlert from "../../components/ErrorAlert"
 import SuccessAlert from "../../components/SuccessAlert"
+import {ActivitySection} from "../../components/admin/ActivitySection";
+import {useRecentActivityData} from "../../hooks/useRecentActivityData";
 
 const Dashboard = () => {
     const [stats, setStats] = useState<any>(null);
@@ -15,6 +16,8 @@ const Dashboard = () => {
     const [newUserCount, setNewUserCount] = useState(0);
     const [engagementRate, setEngagementRate] = useState(0);
     const [Error, setError] = useState(null);
+
+    const { data, isLoading, error } = useRecentActivityData();
 
     const fetchPostCount = async () => {
         try {
@@ -60,14 +63,9 @@ const Dashboard = () => {
         }
     }
 
+
     useEffect(() => {
         const loadData = async () => {
-            const [statsData, activitiesData] = await Promise.all([
-                fetchCommunityStats(),
-                fetchRecentActivities()
-            ]);
-            setStats(statsData.data);
-            setActivities(activitiesData.data);
             await fetchPostCount();
             await fetchUserCount();
             await fetchNewUserCount();
@@ -96,7 +94,6 @@ const Dashboard = () => {
         </div>
     );
 
-    if (!stats) return null;
 
     return (
 
@@ -130,27 +127,28 @@ const Dashboard = () => {
                             <StatCard
                                 icon={TrendingUp}
                                 label="Engagement Rate"
-                                value={engagementRate}
+                                value={engagementRate.toFixed(2)}
                             />
                         </div>
 
                         <div className="bg-base-100 rounded-xl p-6 shadow-sm">
                             <h2 className="text-lg font-semibold mb-4">Recent Activities</h2>
                             <div className="space-y-4">
-                                {activities.map((activity) => (
-                                    <div
-                                        key={activity.id}
-                                        className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
-                                    >
-                                        <div>
-                                            <p className="font-medium">{activity.user}</p>
-                                            <p className="text-sm text-secondary">{activity.action}</p>
-                                        </div>
-                                        <span className="text-sm text-secondary">
-                                        {new Date(activity.timestamp).toLocaleTimeString()}
-                                      </span>
-                                    </div>
-                                ))}
+                                <ActivitySection
+                                    title="All Posts"
+                                    data={data?.posts}
+                                    type="post"
+                                />
+                                <ActivitySection
+                                    title="All Comments"
+                                    data={data?.comments}
+                                    type="comment"
+                                />
+                                <ActivitySection
+                                    title="All Likes"
+                                    data={data?.liked_posts}
+                                    type="like"
+                                />
                             </div>
                         </div>
                     </div>
