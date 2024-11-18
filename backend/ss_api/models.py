@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.contenttypes.models import ContentType
+from django.utils.timezone import now
 import pyotp
 
 from django.db.models import JSONField
@@ -31,11 +32,17 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     is_google = models.BooleanField(default=False)
     is_rejected = models.BooleanField(null=True)
+    last_active = models.DateTimeField(default=now)
     def save(self, *args, **kwargs):
         if self.is_superuser:
             self.is_verified = True
             self.is_staff = True
         super().save(*args, **kwargs)
+        
+    def is_online(self):
+        """Check if the user is considered online (e.g., active in the last 5 minutes)."""
+        from datetime import timedelta
+        return now() - self.last_active < timedelta(minutes=5)
 
 
 class Community(models.Model):

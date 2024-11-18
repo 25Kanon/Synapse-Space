@@ -1328,9 +1328,10 @@ class ListFriendsView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        friendships = Friendship.objects.filter(user1=user)
+        # Get all friends (user2) for the logged-in user
+        friendships = Friendship.objects.filter(user1=user).select_related("user2")
         return [friendship.user2 for friendship in friendships]
-
+        
 class ListSentFriendRequestsView(generics.ListAPIView):
     serializer_class = FriendRequestSerializer  # Use FriendRequestSerializer to display sent friend requests
     authentication_classes = [CookieJWTAuthentication]

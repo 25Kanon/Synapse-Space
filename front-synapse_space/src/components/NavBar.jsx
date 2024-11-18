@@ -244,7 +244,7 @@ const NavBar = () => {
 
                             <details className="dropdown dropdown-end dropdown-bottom z-1">
                                 <summary className="btn h-5 flex items-center">
-                                    <div className="avatar placeholder">
+                                    <div className="relative avatar placeholder">
                                         <div className="rounded-full h-7">
                                             {user.pic ? (
                                                 <img
@@ -261,8 +261,10 @@ const NavBar = () => {
                                                 </div>
                                             )}
                                         </div>
+                                        {/* Green Active Icon */}
+                                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                                     </div>
-                                    <p className="text-sm font-semibold flex items-center">
+                                    <p className="text-sm font-semibold flex items-center ms-2">
                                         {user.username}
                                         <span>
                                             <FontAwesomeIcon icon={faChevronDown} className="ms-3" />
@@ -280,6 +282,7 @@ const NavBar = () => {
                                     </li>
                                 </ul>
                             </details>
+
                         </div>
                     </div>
                 </div>
