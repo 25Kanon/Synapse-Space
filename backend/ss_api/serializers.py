@@ -341,22 +341,28 @@ class getCommunityPostSerializer(serializers.ModelSerializer):
         return obj.created_by.username
 
 class PostSerializer(serializers.ModelSerializer):
+    created_by_username = serializers.CharField(source="created_by.username")
+    community_name = serializers.CharField(source="posted_in.name")
     class Meta:
         model = Post
-        fields = ['content', 'created_at']
+        fields = ['id', 'title','content', 'created_at']
 
 class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
     author = serializers.CharField(source='author.username', read_only=True)
-
+    post_title = serializers.CharField(source="post.title", read_only=True)
+    post_community = serializers.CharField(source="post.posted_in.name", read_only=True) 
+    post_community_id = serializers.IntegerField(source="post.posted_in.id", read_only=True)
+    
     class Meta:
         model = Comment
-        fields = ['id', 'content', 'author', 'created_at', 'updated_at', 'parent', 'post', 'replies']
+        fields = ['id', 'content', 'author', 'created_at', 'updated_at', 'post_id', 'post_title', 'post_community_id', 'post_community', 'parent', 'post', 'replies']
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
 
     def get_replies(self, obj):
         replies = Comment.objects.filter(parent=obj)
         return CommentSerializer(replies, many=True).data
+    
 class CreateCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment

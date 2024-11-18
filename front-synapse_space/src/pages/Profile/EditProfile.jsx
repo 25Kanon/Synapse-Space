@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import DOMPurify from "dompurify";
 import { useNavigate } from "react-router-dom";
 import AxiosInstance from "../../utils/AxiosInstance";
 import AuthContext from "../../context/AuthContext";
@@ -65,9 +66,12 @@ const EditProfile = () => {
             uploadedProfileBanner = await handleFileUpload(newProfileBanner, 'profile_banner');
         }
 
+        const sanitizedUsername = DOMPurify.sanitize(username);
+        const sanitizedBio = DOMPurify.sanitize(bio);
+
         const formData = {
-            username,
-            bio,
+            username: sanitizedUsername,
+            bio: sanitizedBio,
             profile_pic: uploadedProfilePic,
             profile_banner: uploadedProfileBanner,
         };

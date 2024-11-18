@@ -4,7 +4,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     CommunityDetailView, CommunityMembersListView, PostCreateView, getCommunityPosts, UserProfileView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
-                    CommentDeleteView, PostCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
+                    CommentDeleteView, PostCommentsView, UserCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
                     CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView, getReportsView,
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
@@ -62,6 +62,7 @@ urlpatterns = [
     path('comments/', CommentCreateView.as_view(), name='comment-create'),
     path('posts/<int:post_id>/comments/', PostCommentsView.as_view(), name='post-comments'),
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
+    path('comments/user/<int:user_id>/', UserCommentsView.as_view(), name='user-comments'),
     path('comments/<int:pk>/update/', CommentUpdateView.as_view(), name='comment-update'),
     path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
 

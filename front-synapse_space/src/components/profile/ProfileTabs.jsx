@@ -6,7 +6,6 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
             <button className={`tab ${activeTab === 'overview' ? 'tab-active' : ''}`} onClick={() => setActiveTab('overview')}>Overview</button>
             <button className={`tab ${activeTab === 'posts' ? 'tab-active' : ''}`} onClick={() => setActiveTab('posts')}>Posts</button>
             <button className={`tab ${activeTab === 'comments' ? 'tab-active' : ''}`} onClick={() => setActiveTab('comments')}>Comments</button>
-            <button className={`tab ${activeTab === 'saved' ? 'tab-active' : ''}`} onClick={() => setActiveTab('saved')}>Saved Posts</button>
             <button className={`tab ${activeTab === 'liked' ? 'tab-active' : ''}`} onClick={() => setActiveTab('liked')}>Liked Posts</button>
         </div>
     );

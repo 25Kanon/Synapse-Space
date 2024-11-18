@@ -833,6 +833,18 @@ class CommentDetailView(generics.RetrieveAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+class UserCommentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        if not user_id:
+            return Response({'error': 'user_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Filter comments by the user
+        comments = Comment.objects.filter(author__id=user_id)
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
 
 class PostCommentsView(generics.ListAPIView):
     serializer_class = CommentSerializer
