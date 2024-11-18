@@ -50,7 +50,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
         if (activeTab === "comments") {
             fetchUserComments(user.id).then((data) =>
                 setUserComments(
-                    data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)) // Sort by date
+                    data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // Sort latest to oldest
                 )
             );
         }
@@ -130,16 +130,12 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                                 className="p-4 mb-4 bg-gray-100 rounded-lg hover:shadow-lg"
                             >
                                 <div className="flex items-center justify-between">
-                                <p className="text-lg font-bold text-black">
-                                {comment.post_title}
-                                </p>
+                                    <p className="text-lg font-bold text-black">{comment.post_title}</p>
                                     <span className="text-sm text-black">
                                         {new Date(comment.created_at).toLocaleString()}
                                     </span>
                                 </div>
-                                <p className="text-sm text-black">
-                                    Community: {comment.post_community}
-                                </p>
+                                <p className="text-sm text-black">Community: {comment.post_community}</p>
                                 <Link
                                     to={`/community/${comment.post_community_id}/post/${comment.post_id}#comment-${comment.id}`} // Dynamic link to the specific comment
                                     className="mt-2 text-black no-underline hover:text-blue-500"
