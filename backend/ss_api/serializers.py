@@ -241,6 +241,7 @@ class LogoutSerializer(serializers.Serializer):
         if not refresh:
             raise serializers.ValidationError("Refresh token is required")
         return data
+    
 
 class CreateCommunitySerializer(serializers.ModelSerializer):
     class Meta:

@@ -25,6 +25,7 @@ const CommunityPost = ({
                            showComments,
                            authorId,
                            isPinned,
+                           createdAt,
                        }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
@@ -122,16 +123,18 @@ const CommunityPost = ({
                                 ) : (
                                     <div
                                         className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
-            <span className="text-sm font-semibold">
-                {getInitials(userName)}
-            </span>
+                                        <span className="text-sm font-semibold">
+                                            {getInitials(userName)}
+                                        </span>
                                     </div>
                                 )}
+
                             </div>
                         </div>
                         <p className="flex items-center text-sm font-semibold">
                             {userName}
                         </p>
+                        
                         <div className="mx-2">
                             <div className="dropdown dropdown-end">
                                 <label tabIndex={0} className="btn btn-ghost btn-circle">
@@ -229,6 +232,7 @@ CommunityPost.propTypes = {
     postTitle: PropTypes.string.isRequired,
     postContent: PropTypes.string.isRequired,
     postId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    createdAt: PropTypes.string.isRequired,
     showComments: PropTypes.bool,
     authorId: PropTypes.number,
     isPinned: PropTypes.bool,
