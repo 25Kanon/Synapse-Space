@@ -30,12 +30,12 @@ import Users from "./pages/Admin/Users"
 import Programs from "./pages/Admin/Programs"
 import Verifications from "./pages/Admin/Verifications"
 
-
-
 import Chat from "./pages/Chat";
 import {initCometChat} from "./lib/cometchat";
 import ChatWindow from "./components/CometChat/ChatWindow";
 import {Activities} from "./pages/Admin/Activities";
+
+import Settings from "./pages/Settings";
 
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
@@ -158,6 +158,10 @@ function App() {
                   </Route>
                 </Route>
 
+                <Route path="/settings" element={<PrivateRoute />}>
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
+                
                 {/*admin routes*/}
 
                 <Route path="/admin" element={<AdminRoute />}>
