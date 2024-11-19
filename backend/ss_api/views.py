@@ -60,7 +60,6 @@ from .recommender import get_hybrid_recommendations
 
 from django.conf import settings
 
-
 from rest_framework.pagination import PageNumberPagination
 
 logger = logging.getLogger(__name__)
@@ -1747,3 +1746,62 @@ class AdminUserActivityLogView(APIView):
         }
 
         return Response(activities, status=status.HTTP_200_OK)
+    
+class SettingsView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        settings_data = {
+            'theme': user.settings.theme if hasattr(user, 'settings') else 'light',
+            'notifications_enabled': user.settings.notifications_enabled if hasattr(user, 'settings') else True
+        }
+        return Response(settings_data)
+
+class UpdateSettingsView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        settings, created = Settings.objects.get_or_create(user=user)
+        
+        if 'theme' in request.data:
+            settings.theme = request.data['theme']
+        if 'notifications_enabled' in request.data:
+            settings.notifications_enabled = request.data['notifications_enabled']
+            
+        settings.save()
+        return Response({
+            'theme': settings.theme,
+            'notifications_enabled': settings.notifications_enabled
+        })
+
+class DeactivateAccountView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        user.is_active = False
+        user.save()
+        
+        # Delete auth cookies
+        response = Response({"message": "Account deactivated successfully"})
+        response.delete_cookie('access')
+        response.delete_cookie('refresh')
+        
+        return response
+    
+class FeedbackView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        feedback_content = request.data.get('feedback')
+        # Store feedback in database
+        Feedback.objects.create(
+            user=request.user,
+            content=feedback_content
+        )
+        return Response({"message": "Feedback submitted successfully"})

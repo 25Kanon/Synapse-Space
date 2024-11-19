@@ -7,21 +7,24 @@ import {
     faChevronDown,
     faCheck,
     faTimes,
+    faCog, 
 } from "@fortawesome/free-solid-svg-icons";
 import AuthContext from "../../context/AuthContext";
 import { useFriends } from "../../context/FriendContext";
 import { useNotifications } from "../../context/NotificationContext";
+
 const NavBar = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
     const { acceptFriendRequest, rejectFriendRequest, filteredFriendRequests } =
         useFriends();
     const [scrolled, setScrolled] = useState(false);
-    const [searchQuery, setSearchQuery] = useState(""); // State to hold search input
+    const [searchQuery, setSearchQuery] = useState("");
     const location = useLocation();
     const { notifications, markAsRead } = useNotifications();
-    const unreadNotifications = notifications.filter((notification) => !notification.is_read); // Filter unread notifications
+    const unreadNotifications = notifications.filter((notification) => !notification.is_read);
     const isOnSearchPage = location.pathname === "/search";
+    
     const getInitials = (name) => {
         return name
             .split(" ")
@@ -272,6 +275,12 @@ const NavBar = () => {
                                 <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
                                     <li>
                                         <Link to="/">Home</Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/settings">
+                                            <FontAwesomeIcon icon={faCog} className="mr-2" />
+                                            Settings
+                                        </Link>
                                     </li>
                                     <li>
                                         <button onClick={handleLogout} className="btn btn-logout">

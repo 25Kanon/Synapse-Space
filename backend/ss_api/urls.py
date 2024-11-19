@@ -14,7 +14,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     DeleteAccountView, CreateAccountView, PostCountView, UserCountView, NewUserCountView,
                     EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
                     ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView,
-                    AdminUserActivityLogView, AdminUserRecentActivityLogView)
+                    AdminUserActivityLogView, AdminUserRecentActivityLogView, SettingsView, UpdateSettingsView, DeactivateAccountView, FeedbackView)
 from django.contrib import admin
 
 
@@ -104,4 +104,10 @@ urlpatterns = [
     path('admin/users/unverified', UnverifiedStudentsViewSet.as_view(), name='unverified-users'),
     path('admin/recent-user-activity-log/', AdminUserRecentActivityLogView.as_view(), name='admin-recent-user-activity-log'),
     path('admin/user-activity-log/', AdminUserActivityLogView.as_view(), name='admin-user-activity-log'),
+
+    #Settings
+    path('user/settings/', SettingsView.as_view(), name='user-settings'),
+    path('user/settings/update/', UpdateSettingsView.as_view(), name='update-settings'),
+    path('feedback/', FeedbackView.as_view(), name='feedback'),
+    path('user/deactivate/', DeactivateAccountView.as_view(), name='deactivate-account'),
 ]
