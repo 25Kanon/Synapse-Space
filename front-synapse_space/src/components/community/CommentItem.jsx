@@ -65,8 +65,8 @@ const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) 
     return (
         <>
             <div id={`comment-${comment.id}`} ref={commentRef} className={` rounded-lg bg-base-100 mb-4 p-3 shadow-lg border-primary ${optionalClasses}`}>
-                <div className="flex items-center text-sm text-gray-500 mb-2">
-                    <span className="font-semibold mr-2">{comment.author}</span>
+                <div className="flex items-center mb-2 text-sm text-gray-500">
+                    <span className="mr-2 font-semibold">{comment.author}</span>
                     <span>{new Date(comment.created_at).toLocaleString()}</span>
                 </div>
                 {isEditing ? (
@@ -111,7 +111,7 @@ const CommentItem = ({ comment, onUpdate, onDelete, onReply, optionalClasses }) 
                 )}
             </div>
             {comment.replies && comment.replies.length > 0 && (
-                <div className="ml-8 mt-4 space-y-4">
+                <div className="mt-4 ml-8 space-y-4">
                     {comment.replies.map((reply) => (
                         <CommentItem
                             key={reply.id}

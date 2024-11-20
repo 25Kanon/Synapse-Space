@@ -3,244 +3,256 @@ import DOMPurify from "dompurify";
 import { useNavigate } from "react-router-dom";
 import AxiosInstance from "../../utils/AxiosInstance";
 import AuthContext from "../../context/AuthContext";
-import MainContentContainer from "../../components/MainContentContainer";
 import AvatarCropper from "../../components/avatarCropper";
 import BannerCropper from "../../components/community/BannerCropper";
+import Banner from "../../components/profile/Banner";
 
 const EditProfile = () => {
     const { user } = useContext(AuthContext);
     const [username, setUsername] = useState(user.username || "");
     const [bio, setBio] = useState("");
-    const [profilePic, setProfilePic] = useState("");
-    const [profileBanner, setProfileBanner] = useState("");
-    const [newProfilePic, setNewProfilePic] = useState(null);
-    const [newProfileBanner, setNewProfileBanner] = useState(null);
-    const [newProfilePicBlob, setnewProfilePicBlob] = useState(null);
-    const [newProfileBannerBlob, setnewProfileBannerBlob] = useState(null);
+    const [profilePic, setProfilePic] = useState(null);
+    const [profileBanner, setProfileBanner] = useState(null);
+    const [profilePicBlob, setProfilePicBlob] = useState(null);
+    const [profileBannerBlob, setProfileBannerBlob] = useState(null);
     const [imageSrc, setImageSrc] = useState(null);
-    
-    // State for password change
+
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
-    
+    const [passwordError, setPasswordError] = useState("");
+    const [passwordSuccess, setPasswordSuccess] = useState("");
+
     const navigate = useNavigate();
 
+    // Fetch current profile data on load
     useEffect(() => {
-        AxiosInstance.get(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, { withCredentials: true })
-            .then(response => {
-                const { bio, profile_pic, profile_banner } = response.data;
+        AxiosInstance.get("/api/profile/", { withCredentials: true })
+            .then((response) => {
+                const { username, bio, profile_pic, profile_banner } = response.data;
+                setUsername(username || "");
                 setBio(bio || "");
-                setProfilePic(profile_pic || "");
-                setProfileBanner(profile_banner || "");
+                setProfilePic(profile_pic || null);
+                setProfileBanner(profile_banner || null);
             })
-            .catch(error => console.error("Error fetching profile data:", error));
+            .catch((error) => console.error("Error fetching profile data:", error));
     }, []);
-    
-    const handleFileUpload = (file, type) => {
-        const formData = new FormData();
-        formData.append(type, file);
-        
-        return AxiosInstance.post(`${import.meta.env.VITE_API_BASE_URI}/api/upload/`, formData, {
-            withCredentials: true,
-            headers: { "Content-Type": "multipart/form-data" }
-        })
-        .then(response => response.data.file_url)
-        .catch(error => {
-            console.error(`Error uploading ${type}:`, error);
-            return null;
-        });
-    };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        let uploadedProfilePic = profilePic;
-        let uploadedProfileBanner = profileBanner;
-
-        if (newProfilePic) {
-            uploadedProfilePic = await handleFileUpload(newProfilePic, 'profile_pic');
-        }
-        
-        if (newProfileBanner) {
-            uploadedProfileBanner = await handleFileUpload(newProfileBanner, 'profile_banner');
-        }
-
-        const sanitizedUsername = DOMPurify.sanitize(username);
-        const sanitizedBio = DOMPurify.sanitize(bio);
-
-        const formData = {
-            username: sanitizedUsername,
-            bio: sanitizedBio,
-            profile_pic: uploadedProfilePic,
-            profile_banner: uploadedProfileBanner,
-        };
-        
-        AxiosInstance.put(`${import.meta.env.VITE_API_BASE_URI}/api/profile/`, formData, { withCredentials: true })
-            .then(response => {
-                console.log("Profile updated successfully", response.data);
-            })
-            .catch(error => console.error("Error updating profile:", error));
-    };
-
-    const handlePasswordChange = () => {
-        // Check if all password fields are filled and passwords match
-        if (currentPassword && newPassword && newPassword === confirmNewPassword) {
-            // Send the current password, new password, and confirm password to the backend
-            AxiosInstance.put(`${import.meta.env.VITE_API_BASE_URI}/api/change-password/`, 
-                { 
-                    current_password: currentPassword, 
-                    new_password: newPassword,
-                    confirm_password: confirmNewPassword 
-                }, 
-                { withCredentials: true } // Ensure credentials are sent with the request
-            )
-            .then(response => {
-                console.log("Password changed successfully:", response.data.message);
-            })
-            .catch(error => {
-                console.error("Error changing password:", error.response?.data);
-            });
-        } else if (newPassword !== confirmNewPassword) {
-            console.error("New password and confirmation do not match.");
-        } else {
-            console.error("Please fill in all fields.");
-        }
-    };
-
-    const handleProfilePicChange = (e) => {
+    // Handle profile picture selection
+    const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setNewProfilePic(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfilePic(reader.result);
-            };
+            reader.onload = () => setImageSrc(reader.result);
             reader.readAsDataURL(file);
+            document.getElementById("avatar-cropper").showModal();
         }
     };
 
+    // Handle banner selection
     const handleBannerChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setNewProfileBanner(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileBanner(reader.result);
-            };
+            reader.onload = () => setImageSrc(reader.result);
             reader.readAsDataURL(file);
+            document.getElementById("banner-cropper").showModal();
         }
     };
 
-    const handleBackClick = () => {
-        navigate("/profile");
+    // Process cropped avatar image
+    const handleAvatarCrop = (croppedImg) => {
+        setProfilePic(croppedImg);
+        convertBlob(croppedImg, setProfilePicBlob);
+    };
+
+    // Process cropped banner image
+    const handleBannerCrop = (croppedImg) => {
+        setProfileBanner(croppedImg);
+        convertBlob(croppedImg, setProfileBannerBlob);
+    };
+
+    // Convert image URL to Blob
+    const convertBlob = (blobUrl, setBlob) => {
+        fetch(blobUrl)
+            .then((res) => res.blob())
+            .then((blob) => setBlob(blob))
+            .catch((error) => console.error("Error converting to Blob:", error));
+    };
+
+    // Handle profile form submission
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append("username", DOMPurify.sanitize(username));
+        formData.append("bio", DOMPurify.sanitize(bio));
+
+        if (profilePicBlob) formData.append("profile_pic", profilePicBlob, "avatar.png");
+        if (profileBannerBlob) formData.append("profile_banner", profileBannerBlob, "banner.png");
+
+        try {
+            await AxiosInstance.put("/api/profile/", formData, {
+                withCredentials: true,
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            // Fetch updated profile data
+            const updatedProfile = await AxiosInstance.get("/api/profile/", { withCredentials: true });
+            navigate("/profile", { state: { updatedProfile: updatedProfile.data } });
+        } catch (error) {
+            console.error("Error updating profile:", error);
+        }
+    };
+
+    // Handle password form submission
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setPasswordError("");
+        setPasswordSuccess("");
+
+        if (newPassword !== confirmNewPassword) {
+            setPasswordError("New password and confirmation do not match.");
+            return;
+        }
+
+        try {
+            await AxiosInstance.put(
+                "/api/change-password/",
+                {
+                    current_password: currentPassword,
+                    new_password: newPassword,
+                },
+                { withCredentials: true }
+            );
+            setPasswordSuccess("Password updated successfully!");
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmNewPassword("");
+        } catch (error) {
+            setPasswordError("Error updating password: " + error.response?.data?.error || "Unknown error");
+        }
     };
 
     return (
-        <MainContentContainer>
-            <div className="p-6">
-                <h2 className="text-xl font-semibold">Edit Profile</h2>
-                <form onSubmit={handleSubmit} className="mt-4">
-                    <div className="mb-4">
-                        <label htmlFor="username" className="block mb-1">Username</label>
+        <main className="flex flex-col items-center justify-center p-5 mt-20 sm:mx-64">
+            <div className="w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
+                <dialog id="avatar-cropper" className="modal modal-bottom sm:modal-middle">
+                    {imageSrc && <AvatarCropper imageSrc={imageSrc} onCropComplete={handleAvatarCrop} />}
+                </dialog>
+                <dialog id="banner-cropper" className="modal modal-bottom sm:modal-middle">
+                    {imageSrc && <BannerCropper imageSrc={imageSrc} onCropComplete={handleBannerCrop} />}
+                </dialog>
+                <h1 className="mb-8 text-3xl font-bold">Edit Profile</h1>
+                <form onSubmit={handleProfileSubmit} className="space-y-6 form-control">
+                    <Banner profName={username} profAvatar={profilePic} profBanner={profileBanner} />
+                    <div className="flex flex-row justify-center gap-3">
+                        <div>
+                            <label className="block mb-2 text-sm font-bold" htmlFor="avatar">
+                                Profile Picture
+                            </label>
+                            <input
+                                type="file"
+                                id="avatar"
+                                onChange={handleAvatarChange}
+                                className="w-full max-w-xs file-input file-input-bordered file-input-accent"
+                                accept="image/png, image/jpeg"
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-2 text-sm font-bold" htmlFor="banner">
+                                Profile Banner
+                            </label>
+                            <input
+                                type="file"
+                                id="banner"
+                                onChange={handleBannerChange}
+                                className="w-full max-w-xs file-input file-input-bordered file-input-accent"
+                                accept="image/png, image/jpeg"
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block mb-2 text-sm font-bold" htmlFor="username">
+                            Username
+                        </label>
                         <input
                             type="text"
                             id="username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="input"
-                            required
+                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="bio" className="block mb-1">Bio</label>
+                    <div>
+                        <label className="block mb-2 text-sm font-bold" htmlFor="bio">
+                            Bio
+                        </label>
                         <textarea
                             id="bio"
                             value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                            className="textarea"
                             rows="4"
+                            onChange={(e) => setBio(e.target.value)}
+                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="profilePic" className="block mb-1">
-                            Profile Picture
+                    <div className="text-center">
+                        <button type="submit" className="px-6 py-3 text-white rounded-lg btn btn-primary">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div className="w-full max-w-3xl p-10 mt-10 rounded-lg shadow-lg bg-base-200">
+                <h1 className="mb-8 text-3xl font-bold">Update Password</h1>
+                <form onSubmit={handlePasswordSubmit} className="space-y-6 form-control">
+                    {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+                    {passwordSuccess && <p className="text-sm text-green-600">{passwordSuccess}</p>}
+                    <div>
+                        <label className="block mb-2 text-sm font-bold" htmlFor="currentPassword">
+                            Current Password
                         </label>
-                        <div className="mb-2">
-                            {profilePic && (
-                            <img
-                                src={profilePic}
-                                alt="Profile Preview"
-                                className="object-cover w-32 h-32 rounded-full"
-                            />
-                            )}
-                        </div>
-                        <input
-                            type="file"
-                            id="profilePic"
-                            accept="image/*"
-                            onChange={handleProfilePicChange}
-                            className="input"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="profileBanner" className="block mb-1">Profile Banner</label>
-                        <div className="mb-2">
-                            {profileBanner && (
-                                <img 
-                                    src={profileBanner} 
-                                    alt="Banner Preview" 
-                                    className="object-cover w-1/2 h-[20rem] mx-auto rounded-lg" 
-                                />
-                            )}
-                        </div>
-                        <input
-                            type="file"
-                            id="profileBanner"
-                            accept="image/*"
-                            onChange={handleBannerChange}
-                            className="input"
-                        />
-                    </div>
-                    
-                    {/* Change Password Section */}
-                    <h3 className="mt-4 text-lg font-semibold">Change Password</h3>
-                    <div className="mb-4">
-                        <label htmlFor="currentPassword" className="block mb-1">Current Password</label>
                         <input
                             type="password"
                             id="currentPassword"
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
-                            className="input"
+                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="newPassword" className="block mb-1">New Password</label>
+                    <div>
+                        <label className="block mb-2 text-sm font-bold" htmlFor="newPassword">
+                            New Password
+                        </label>
                         <input
                             type="password"
                             id="newPassword"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="input"
+                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="confirmNewPassword" className="block mb-1">Confirm New Password</label>
+                    <div>
+                        <label className="block mb-2 text-sm font-bold" htmlFor="confirmNewPassword">
+                            Confirm New Password
+                        </label>
                         <input
                             type="password"
                             id="confirmNewPassword"
                             value={confirmNewPassword}
                             onChange={(e) => setConfirmNewPassword(e.target.value)}
-                            className="input"
+                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
-                    <button type="submit" className="btn btn-primary">Save Changes</button>
-                    <button type="button" onClick={handleBackClick} className="mb-4 btn btn-secondary">Back</button>
+                    <div className="text-center">
+                        <button type="submit" className="px-6 py-3 text-white rounded-lg btn btn-primary">
+                            Update Password
+                        </button>
+                    </div>
                 </form>
             </div>
-        </MainContentContainer>
+        </main>
     );
 };
 

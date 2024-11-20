@@ -12,6 +12,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ResetPassword from './pages/ResetPasswordForm';
 import UserRegister from './pages/UserRegister';
 import ProfilePage from './pages/Profile/ProfilePage';
+import UserProfilePage from './components/profile/UserProfilePage';
 import EditProfile from './pages/Profile/EditProfile';
 import Create from './pages/Community/Create';
 import SearchCommunity from './pages/Community/SearchCommunity';
@@ -104,6 +105,9 @@ function App() {
                 <Route path="/profile" element={<PrivateRoute />}>
                   <Route path="/profile" element={<ProfilePage />} />
                 </Route>
+                <Route path="/profile" element={<PrivateRoute />}>
+                  <Route path="user/:userId" element={<UserProfilePage />} />
+                </Route>
                 <Route path="/edit-profile" element={<PrivateRoute />}>
                   <Route path="/edit-profile" element={<EditProfile />} />
                 </Route>
@@ -150,7 +154,7 @@ function App() {
                 <Route path="/chat" element={<PrivateRoute />}>
                   <Route path="/chat" element={<Chat />}>
                     <Route index element={
-                      <div className="flex-1 flex items-center justify-center text-gray-500">
+                      <div className="flex items-center justify-center flex-1 text-gray-500">
                         Select a conversation to start messaging
                       </div>
                     } />

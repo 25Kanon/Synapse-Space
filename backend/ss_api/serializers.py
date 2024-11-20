@@ -241,6 +241,7 @@ class LogoutSerializer(serializers.Serializer):
         if not refresh:
             raise serializers.ValidationError("Refresh token is required")
         return data
+    
 
 class CreateCommunitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -358,6 +359,7 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.posted_in.name
     def get_author_pic(self, obj):
         return obj.created_by.profile_pic
+    
 class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
     author = serializers.CharField(source='author.username', read_only=True)
