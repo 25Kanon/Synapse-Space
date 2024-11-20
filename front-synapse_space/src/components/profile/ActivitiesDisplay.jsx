@@ -75,6 +75,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
         }
     }, [activeTab, user.id]);
 
+     // Fetch liked posts when the "liked" tab is active
     useEffect(() => {
         if (activeTab === "liked") {
             fetchLikedPosts();
