@@ -9,6 +9,9 @@ import { useInfiniteScroll } from "../../hooks/useInfiniteScroll"; // Assuming y
 const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
     const { isAuthenticated, user, error } = useContext(AuthContext);
 
+    const [likedPosts, setLikedPosts] = useState([]);
+    const [loadingLikedPosts, setLoadingLikedPosts] = useState(false);
+
     // State for user comments
     const [userComments, setUserComments] = useState([]);
 
@@ -27,6 +30,22 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
         } catch (error) {
             console.error("Error fetching user comments:", error);
             return [];
+        }
+    };
+    
+    const fetchLikedPosts = async () => {
+        setLoadingLikedPosts(true);
+        try {
+            const response = await AxiosInstance.get(`/activities/`, {
+                withCredentials: true,
+            });
+            if (response.data.liked_posts) {
+                setLikedPosts(response.data.liked_posts);
+            }
+        } catch (error) {
+            console.error("Error fetching liked posts:", error);
+        } finally {
+            setLoadingLikedPosts(false);
         }
     };
 
@@ -56,6 +75,12 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
         }
     }, [activeTab, user.id]);
 
+    useEffect(() => {
+        if (activeTab === "liked") {
+            fetchLikedPosts();
+        }
+    }, [activeTab]);
+
     // Handle clicking on a comment to navigate to the full post
     const handleCommentClick = (postId) => {
         if (navigateToPost) {
@@ -76,52 +101,6 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
 
     return (
         <div className="mt-4">
-            {activeTab === "overview" && (
-                <div>
-                    <h2 className="font-semibold">All Activities</h2>
-                    {userPosts.length > 0 ? (
-                        userPosts.map((post) => (
-                            <CommunityPost
-                                key={post.id}
-                                userName={post.created_by_username}
-                                community={post.posted_in}
-                                postTitle={post.title}
-                                postContent={post.content}
-                                postId={post.id}
-                                userID={post.created_by}
-                                userAvatar={post.userAvatar}
-                            />
-                        ))
-                    ) : (
-                        <p>No activities to display.</p>
-                    )}
-
-                    {userComments.length > 0 ? (
-                        userComments.map((comment) => (
-                            <div
-                                key={comment.id}
-                                className="p-4 mb-4 bg-gray-100 rounded-lg hover:shadow-lg"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <p className="text-lg font-bold text-black">{comment.post_title}</p>
-                                    <span className="text-sm text-black">
-                                        {new Date(comment.created_at).toLocaleString()}
-                                    </span>
-                                </div>
-                                <p className="text-sm text-black">Community: {comment.post_community}</p>
-                                <Link
-                                    to={`/community/${comment.post_community_id}/post/${comment.post_id}#comment-${comment.id}`} // Dynamic link to the specific comment
-                                    className="mt-2 text-black no-underline hover:text-blue-500"
-                                >
-                                    {comment.content}
-                                </Link>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-black">No comments to display.</p>
-                    )}
-                </div>
-            )}
 
             {activeTab === "posts" && (
                 <div>
@@ -172,6 +151,31 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                         ))
                     ) : (
                         <p className="text-black">No comments to display.</p>
+                    )}
+                </div>
+            )}
+
+            {activeTab === "liked" && (
+                <div>
+                    <h2 className="font-semibold">Liked Posts</h2>
+                    {loadingLikedPosts ? (
+                        <p>Loading liked posts...</p>
+                    ) : likedPosts.length > 0 ? (
+                        likedPosts.map((post) => (
+                            <CommunityPost
+                                key={post.id}
+                                userName={post.created_by_username}
+                                community={post.posted_in}
+                                postTitle={post.title}
+                                postContent={post.content}
+                                postId={post.id}
+                                userID={post.created_by}
+                                userAvatar={post.userAvatar}
+                                createdAt={post.created_at}
+                            />
+                        ))
+                    ) : (
+                        <p>No liked posts to display.</p>
                     )}
                 </div>
             )}

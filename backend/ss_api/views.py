@@ -445,6 +445,7 @@ class CustomGoogleLogin(SocialLoginView):
             return response
         else:
             return Response({"error": "The email Address is already associated with another user"}, status=status.HTTP_400_BAD_REQUEST)
+
 class LogoutView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -820,7 +821,7 @@ class getPostLikesView(APIView):
         likes = Likes.objects.filter(post=post)
         serializer = LikedPostSerializer(likes, many=True)
         return Response(serializer.data)
-
+    
 class CommentCreateView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CreateCommentSerializer
@@ -873,9 +874,26 @@ class UserProfileView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        user = request.user
-        user_data = UserSerializer(user).data
+    def get(self, request, user_id=None):
+        # Fetch the profile of the logged-in user if no user_id is provided
+        if not user_id:
+            user = request.user
+            user_data = UserSerializer(user).data
+            return Response(user_data)
+
+        # Fetch the profile of another user by user_id
+        try:
+            profile_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the logged-in user is friends with the profile user
+        is_friend = Friendship.objects.filter(
+            Q(user1=request.user, user2=profile_user) | Q(user1=profile_user, user2=request.user)
+        ).exists()
+
+        user_data = UserSerializer(profile_user).data
+        user_data['is_friend'] = is_friend  # Add friendship status to the response
         return Response(user_data)
 
     def put(self, request):
@@ -987,14 +1005,16 @@ class UserActivitiesView(APIView):
 
         posts = Post.objects.filter(user=user).order_by('created_at')
         comments = Comment.objects.filter(user=user).order_by('created_at')
-        saved_posts = SavedPost.objects.filter(user=user).order_by('created_at')
-        liked_posts = LikedPost.objects.filter(user=user).order_by('created_at')
+        
+        # Fetch user's liked posts
+        liked_posts = Likes.objects.filter(user=user).select_related('post').order_by('-post__created_at')
+        liked_posts_data = [like.post for like in liked_posts]  # Extract Post objects
 
         activities = {
             'posts': PostSerializer(posts, many=True).data,
             'comments': CommentSerializer(comments, many=True).data,
-            'saved_posts': SavedPostSerializer(saved_posts, many=True).data,
-            'liked_posts': LikedPostSerializer(liked_posts, many=True).data
+
+            'liked_posts': CommunityPostSerializer(liked_posts, many=True).data
         }
 
         return Response(activities)
