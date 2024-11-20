@@ -746,6 +746,39 @@ class MoveImageView(APIView):
             logger.error(f"Error moving image: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
+class CommunityPostUpdateView(generics.UpdateAPIView):
+    serializer_class = CreatePostSerializer
+    permission_classes = [IsAuthenticated, IsCommunityMember]
+    authentication_classes = [CookieJWTAuthentication]
+
+    def get_object(self):
+        community_id = self.kwargs.get('community_id')
+        post_id = self.kwargs.get('post_id')
+        return Post.objects.get(id=post_id, posted_in__id=community_id)
+
+    def update(self, request, *args, **kwargs):
+        post = self.get_object()
+        serializer = self.get_serializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommunityPostDeleteView(generics.DestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = CreatePostSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCommunityMember]
+    authentication_classes = [CookieJWTAuthentication]
+
+    def get_object(self):
+        community_id = self.kwargs.get('community_id')
+        post_id = self.kwargs.get('post_id')
+        return Post.objects.get(id=post_id, posted_in__id=community_id)
+
+
 class PostPagination(PageNumberPagination):
     page_size = 5
     page_size_query_param = 'page_size'
@@ -861,7 +894,7 @@ class PostCommentsView(generics.ListAPIView):
 
 class CommentUpdateView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
 
     def put(self, request, pk):
         try:
@@ -879,7 +912,7 @@ class CommentUpdateView(APIView):
 
 class CommentDeleteView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
 
     def delete(self, request, pk):
         try:

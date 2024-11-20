@@ -15,7 +15,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     DeleteAccountView, CreateAccountView, PostCountView, UserCountView, NewUserCountView,
                     EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
                     ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView,
-                    AdminUserActivityLogView, AdminUserRecentActivityLogView, InteractionTrendView)
+                    AdminUserActivityLogView, AdminUserRecentActivityLogView, InteractionTrendView,
+                    CommunityPostUpdateView, CommunityPostDeleteView)
 from django.contrib import admin
 
 
@@ -78,6 +79,8 @@ urlpatterns = [
     path('community/<int:community_id>/post/<int:post_id>/pin/', PinPostView.as_view(), name='pin-post'),
     path('community/<int:community_id>/post/<int:post_id>/unpin/', UnpinPostView.as_view(), name='unpin-post'),
     path('community/update/<int:community_id>/', CommunityUpdateView.as_view(), name='community-update'),
+    path('community/<int:community_id>/post/update/<int:post_id>/', CommunityPostUpdateView.as_view(), name='community-post-update'),
+    path('community/<int:community_id>/post/delete/<int:post_id>/', CommunityPostDeleteView.as_view(), name='community-post-delete'),
     # User URLs
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),
     path('users/', UserListView.as_view(), name='user-list'),

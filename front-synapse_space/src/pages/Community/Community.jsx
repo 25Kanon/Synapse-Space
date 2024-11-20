@@ -137,6 +137,7 @@ export default function Community() {
                         authorId={post.created_by}
                         userAvatar={post.userAvatar}
                         isPinned={post.isPinned}
+                        createdAt={post.created_at}
                     />
                 ))}
                 {loading && <div className="loading loading-spinner loading-lg"></div>}

@@ -104,7 +104,7 @@ const CreatePost = ({ userName, community, onPostCreated }) => {
                     </div>
                     <span className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Body</span>
                     <div className="mb-5">
-                        <RichTextEditor setEditorContent={setEditorContent} />
+                        <RichTextEditor setEditorContent={setEditorContent} isEditing={false} />
                     </div>
                     <button type="button" className="btn btn-primary" onClick={handlePostClick}>Post</button>
                 </form>

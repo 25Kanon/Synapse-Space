@@ -13,19 +13,20 @@ import Warning from "@editorjs/warning";
 import Delimiter from "@editorjs/delimiter";
 import InlineCode from "@editorjs/inline-code";
 import Marker from "@editorjs/marker";
-import axios from "axios";
-import AxiosInstance  from "../utils/AxiosInstance";
+import AxiosInstance from "../utils/AxiosInstance";
 
-const RichTextEditor = ({ onChange, setEditorContent }) => {
+const RichTextEditor = ({ onChange, setEditorContent, isEditing, initialContent }) => {
     const editorRef = useRef(null);
-    const API_URL = import.meta.env.VITE_API_BASE_URI;
+
+    // Ensure the initial content is always an object with a 'blocks' array
+    const initialData = isEditing ? JSON.parse(initialContent) : { blocks: [] };
 
     async function uploadFile(file) {
         return new Promise(async (resolve, reject) => {
             try {
                 const formData = new FormData();
                 formData.append('file', file);
-                
+
                 const response = await AxiosInstance.post(`/api/generate-signed-url/`, formData, { withCredentials: true,
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -58,6 +59,7 @@ const RichTextEditor = ({ onChange, setEditorContent }) => {
             editorRef.current = new EditorJS({
                 holder: "editorjs",
                 placeholder: "Start typing your content here...",
+                data: initialData, // Ensure the initial content is correctly set
                 tools: {
                     header: {
                         class: Header,
@@ -122,7 +124,7 @@ const RichTextEditor = ({ onChange, setEditorContent }) => {
                 editorRef.current.destroy();
             }
         };
-    }, [onChange, setEditorContent]);
+    }, [onChange, setEditorContent, isEditing]);
 
     return (
         <div className="min-h-md">
@@ -136,7 +138,8 @@ const RichTextEditor = ({ onChange, setEditorContent }) => {
 
 RichTextEditor.propTypes = {
     onChange: PropTypes.func,
-    setEditorContent: PropTypes.func.isRequired
+    setEditorContent: PropTypes.func.isRequired,
+    isEditing: PropTypes.bool.isRequired
 };
 
 export default RichTextEditor;

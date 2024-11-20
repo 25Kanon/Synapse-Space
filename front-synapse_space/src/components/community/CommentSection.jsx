@@ -90,7 +90,7 @@ const CommentSection = ({ postID }) => {
 
     return (
         <div className="w-full mx-auto mt-8">
-            <h2 className="text-2xl font-bold mb-4">Comments</h2>
+            <h2 className="text-2xl font-bold mb-4" id="comments">Comments</h2>
             <CommentForm onSubmit={(content) => addComment(content)} />
             <CommentList
                 postId={postID}

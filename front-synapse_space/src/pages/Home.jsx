@@ -71,6 +71,7 @@ export default function Home() {
                         userID={user.id}
                         authorId={post.created_by}
                         userAvatar={post.userAvatar}
+                        createdAt={post.created_at}
                     />
                 ))}
                 {loading && <div className="loading loading-spinner loading-lg"></div>}

@@ -26,19 +26,19 @@ const StyledOutput = ({ data }) => {
     const renderBlock = block => {
         switch (block.type) {
             case "header":
-                const HeaderTag = `h${block.data.level}`
+                const HeaderTag = `h${block.data.level}`;
                 return (
                     <HeaderTag className="font-bold my-2">{block.data.text}</HeaderTag>
-                )
+                );
             case "paragraph":
                 return (
                     <p
                         className="my-2"
                         dangerouslySetInnerHTML={{ __html: block.data.text }}
                     />
-                )
+                );
             case "list":
-                const ListTag = block.data.style === "ordered" ? "ol" : "ul"
+                const ListTag = block.data.style === "ordered" ? "ol" : "ul";
                 return (
                     <ListTag
                         className={
@@ -49,7 +49,23 @@ const StyledOutput = ({ data }) => {
                             <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
                         ))}
                     </ListTag>
-                )
+                );
+            case "checklist": // Add handling for checklists
+                return (
+                    <ul className="list-none my-4">
+                        {block.data.items.map((item, index) => (
+                            <li key={index} className="flex items-center my-1">
+                                <input
+                                    type="checkbox"
+                                    className="checkbox checkbox-primary mr-2"
+                                    checked={item.checked}
+                                    readOnly
+                                />
+                                <span dangerouslySetInnerHTML={{ __html: item.text }} />
+                            </li>
+                        ))}
+                    </ul>
+                );
             case "image":
                 return (
                     <div className="flex flex-col">
@@ -68,7 +84,7 @@ const StyledOutput = ({ data }) => {
                             )}
                         </div>
                     </div>
-                )
+                );
             case "quote":
                 return (
                     <blockquote className="border-l-4 border-primary pl-4 italic my-4">
@@ -79,22 +95,22 @@ const StyledOutput = ({ data }) => {
                             </cite>
                         )}
                     </blockquote>
-                )
+                );
             case "code":
                 return (
                     <pre className="bg-base-300 p-4 rounded-lg overflow-x-auto my-4">
-            <code>{block.data.code}</code>
-          </pre>
-                )
+                    <code>{block.data.code}</code>
+                </pre>
+                );
             case "delimiter":
-                return <hr className="my-4 border-t border-base-300" />
+                return <hr className="my-4 border-t border-base-300" />;
             case "warning":
                 return (
                     <div className="bg-warning text-warning-content p-4 rounded-lg my-4">
                         <strong>{block.data.title}</strong>
                         <p>{block.data.message}</p>
                     </div>
-                )
+                );
             case "table":
                 return (
                     <div className="overflow-x-auto my-4">
@@ -113,11 +129,12 @@ const StyledOutput = ({ data }) => {
                             </tbody>
                         </table>
                     </div>
-                )
+                );
             default:
-                return <p className="my-2">{JSON.stringify(block.data)}</p>
+                return <p className="my-2">{JSON.stringify(block.data)}</p>;
         }
-    }
+    };
+
 
     return (
         <div className="styled-output">
