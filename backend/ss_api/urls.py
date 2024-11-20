@@ -4,7 +4,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     CommunityDetailView, CommunityMembersListView, PostCreateView, getCommunityPosts, UserProfileView,
                     UserActivitiesView, CommunityListView, JoinCommunityView, getCommunityPost, likePostView,
                     unlikePostView, getPostLikesView, CommentCreateView, CommentDetailView, CommentUpdateView,
-                    CommentDeleteView, PostCommentsView, UserCommentsView, GenerateSignedUrlView, MoveImageView, CheckAuthView,
+                    CommentDeleteView, PostCommentsView, UserCommentsView, GenerateSignedUrlView, MoveImageView,
+                    CheckAuthView,
                     CookieTokenRefreshView, CustomGoogleLogin, VerifyAccountView, ImageUploadView, UserListView,
                     CustomGoogleLogin, getMembershipRole, getCommunityStats, ReportsListCreateView, getReportsView,
                     SendFriendRequestView, ListFriendsView, RespondToFriendRequestView, ListSentFriendRequestsView,
@@ -14,7 +15,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     DeleteAccountView, CreateAccountView, PostCountView, UserCountView, NewUserCountView,
                     EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
                     ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView,
-                    AdminUserActivityLogView, AdminUserRecentActivityLogView)
+                    AdminUserActivityLogView, AdminUserRecentActivityLogView, InteractionTrendView)
 from django.contrib import admin
 
 
@@ -105,4 +106,5 @@ urlpatterns = [
     path('admin/users/unverified', UnverifiedStudentsViewSet.as_view(), name='unverified-users'),
     path('admin/recent-user-activity-log/', AdminUserRecentActivityLogView.as_view(), name='admin-recent-user-activity-log'),
     path('admin/user-activity-log/', AdminUserActivityLogView.as_view(), name='admin-user-activity-log'),
+    path('admin/interactions/', InteractionTrendView.as_view(), name='admin-interactions'),
 ]

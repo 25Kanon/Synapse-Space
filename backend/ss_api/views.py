@@ -1,4 +1,5 @@
 import hashlib
+from collections import defaultdict
 
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.contrib.contenttypes.models import ContentType
@@ -1756,14 +1757,77 @@ class AdminUserActivityLogView(APIView):
         posts = Post.objects.all().order_by('created_at')
         comments = Comment.objects.all().order_by('created_at')
         liked_posts = LikedPost.objects.all().order_by('created_at')
-        saved_posts = SavedPost.objects.all().order_by('created_at')
 
         # Serialize the data
         activities = {
             'posts': PostSerializer(posts, many=True).data,
             'comments': CommentSerializer(comments, many=True).data,
             'liked_posts': LikedPostSerializer(liked_posts, many=True).data,
-            'saved_posts': SavedPostSerializer(saved_posts, many=True).data
         }
 
         return Response(activities, status=status.HTTP_200_OK)
+
+class InteractionTrendView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request):
+        # Get the time range from query parameters
+        time_range = request.query_params.get('range', 'week')  # Default to 'week' if not provided
+
+        # Determine the start date based on the time range
+        if time_range == 'day':
+            start_date = timezone.now() - timedelta(days=1)
+        elif time_range == 'week':
+            start_date = timezone.now() - timedelta(weeks=1)
+        elif time_range == 'month':
+            start_date = timezone.now() - timedelta(days=30)
+        elif time_range == 'year':
+            start_date = timezone.now() - timedelta(days=365)
+        else:
+            return Response({"error": "Invalid range parameter"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch activities within the specified time range
+        posts = Post.objects.filter(created_at__gte=start_date).order_by('created_at')
+        comments = Comment.objects.filter(created_at__gte=start_date).order_by('created_at')
+        liked_posts = LikedPost.objects.filter(created_at__gte=start_date).order_by('created_at')
+
+        # Initialize a dictionary to store counts by date
+        activity_counts = defaultdict(lambda: {'posts': 0, 'comments': 0, 'liked_posts': 0})
+
+        # Count posts by date
+        for post in posts:
+            if time_range == 'day':
+                date_str = post.created_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+            else:
+                date_str = post.created_at.strftime('%Y-%m-%dT00:00:00Z')
+            activity_counts[date_str]['posts'] += 1
+
+        # Count comments by date
+        for comment in comments:
+            if time_range == 'day':
+                date_str = comment.created_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+            else:
+                date_str = comment.created_at.strftime('%Y-%m-%dT00:00:00Z')
+            activity_counts[date_str]['comments'] += 1
+
+        # Count liked posts by date
+        for liked_post in liked_posts:
+            if time_range == 'day':
+                date_str = liked_post.created_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+            else:
+                date_str = liked_post.created_at.strftime('%Y-%m-%dT00:00:00Z')
+            activity_counts[date_str]['liked_posts'] += 1
+
+        # Format the data into the required structure
+        interaction_trend = [
+            {
+                'timestamp': date_str,
+                'posts': counts['posts'],
+                'comments': counts['comments'],
+                'liked_posts': counts['liked_posts']
+            }
+            for date_str, counts in sorted(activity_counts.items())
+        ]
+
+        return Response(interaction_trend, status=status.HTTP_200_OK)
