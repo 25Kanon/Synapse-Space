@@ -1,5 +1,6 @@
 import { MessageCircle } from 'lucide-react';
 import type { Reply } from './types/activity';
+import React from 'react';
 
 interface CommentThreadProps {
     author: string;

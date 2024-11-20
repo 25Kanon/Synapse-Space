@@ -20,7 +20,7 @@ const Students = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await AxiosInstance.get('/api/admin/users', {}, {withCredentials: true});
+            const response = await AxiosInstance.get('/api/admin/users', {withCredentials: true});
             setUsers(response.data);
             console.log(response.data)
         } catch (err: any) {
@@ -38,7 +38,7 @@ const Students = () => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
 
         try {
-            const response = await AxiosInstance.delete(`/api/admin/account/delete/${userId}`, {}, {withCredentials: true});
+            const response = await AxiosInstance.delete(`/api/admin/account/delete/${userId}`,{withCredentials: true});
             setUsers(users.filter(user => user.id !== userId));
             setSuccess('User deleted successfully');
         } catch (err: any) {

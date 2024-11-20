@@ -126,7 +126,7 @@ def create_cometchat_user(user):
                 "email": user.email,  # Use user's email
             }
         },
-        "uid": "ss"+user.id,
+        "uid": user.id,
         "name": user.username,  # Use username or full name if needed
     }
 

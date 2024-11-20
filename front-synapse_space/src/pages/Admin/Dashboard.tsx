@@ -54,7 +54,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 
 async function fetchEngagementData(timeRange: TimeRange): Promise<EngagementData[]> {
     try {
-        const response = await AxiosInstance.get(`api/admin/interactions?range=${timeRange}`, {}, { withCredentials: true });
+        const response = await AxiosInstance.get(`api/admin/interactions?range=${timeRange}`, { withCredentials: true });
         const data = await response.data;
         return data;
     } catch (error) {
@@ -105,7 +105,7 @@ function Dashboard() {
                 <main>
                     <div className="flex flex-col space-y-6 m-6">
                         <div>
-                            <h1 className="text-2xl font-bold ">Engagement Dashboard</h1>
+                            <h1 className="text-2xl font-bold ">Dashboard</h1>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -129,13 +129,13 @@ function Dashboard() {
                             />
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm p-6">
+                        <div className="bg-base-100 rounded-xl shadow-sm p-6">
                             <div className="flex flex-col space-y-4">
                                 <div
                                     className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                     <div>
-                                        <h2 className="text-lg font-semibold text-gray-900">Engagement Trends</h2>
-                                        <p className="text-sm text-gray-500">Visual representation of engagement metrics
+                                        <h2 className="text-lg font-semibold ">Engagement Trends</h2>
+                                        <p className="text-sm ">Visual representation of engagement metrics
                                             over time</p>
                                     </div>
                                     <TimeRangeSelector selected={timeRange} onChange={setTimeRange}/>

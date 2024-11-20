@@ -18,6 +18,7 @@ export interface User {
     is_verified: boolean;
     registration_form: string;
     is_rejected: boolean;
+    is_staff: boolean;
 }
 
 

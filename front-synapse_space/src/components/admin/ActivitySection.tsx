@@ -1,3 +1,4 @@
+import React from 'react';
 import { ActivityCard } from './ActivityCard';
 import { CommentThread } from './CommentThread';
 import {ActivityLog} from "./types/activity";

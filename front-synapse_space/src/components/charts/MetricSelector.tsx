@@ -29,10 +29,10 @@ export function MetricSelector({ selected, onChange }: MetricSelectorProps) {
                 <button
                     key={value}
                     onClick={() => onChange(value)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors
+                    className={`btn flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors
             ${selected === value
                         ? `${color} text-white border-transparent`
-                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                        : 'border-gray-200'
                     }`}
                 >
                     <Icon className="w-4 h-4" />

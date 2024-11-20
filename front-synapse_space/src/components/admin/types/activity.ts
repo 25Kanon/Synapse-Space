@@ -1,8 +1,11 @@
 import type { LucideIcon } from 'lucide-react';
 
 export interface Reply {
+    author: string;
     author_pic: string;
     created_at: string;
+    name: string;
+    last_login: string;
     replies: Reply[];
 }
 

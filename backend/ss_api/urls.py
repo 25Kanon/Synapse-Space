@@ -106,5 +106,5 @@ urlpatterns = [
     path('admin/users/unverified', UnverifiedStudentsViewSet.as_view(), name='unverified-users'),
     path('admin/recent-user-activity-log/', AdminUserRecentActivityLogView.as_view(), name='admin-recent-user-activity-log'),
     path('admin/user-activity-log/', AdminUserActivityLogView.as_view(), name='admin-user-activity-log'),
-    path('admin/interactions/', InteractionTrendView.as_view(), name='admin-interactions'),
+        path('admin/interactions/', InteractionTrendView.as_view(), name='admin-interactions'),
 ]
