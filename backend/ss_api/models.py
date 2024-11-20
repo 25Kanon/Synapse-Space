@@ -21,7 +21,7 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=200, null=False, blank=False)
     last_name = models.CharField(max_length=200, null=False, blank=False)
     email = models.CharField(max_length=200, null=False, blank=False, unique=True)
-    program = models.ForeignKey(Program, max_length=200, null=True, blank=True, on_delete=models.CASCADE)
+    program = models.ForeignKey(Program, max_length=200, null=True, blank=True, on_delete=models.SET_NULL)
     registration_form = models.URLField(max_length=None, null=True, blank=True)
     profile_pic = models.URLField(max_length=None, null=True, blank=True)
     profile_banner = models.URLField(max_length=None, null=True, blank=True)
@@ -79,8 +79,8 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
-    posted_in = models.ForeignKey(Community, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, to_field='id', on_delete=models.SET_NULL, null=True)
+    posted_in = models.ForeignKey(Community, on_delete=models.CASCADE )
     isPinned = models.BooleanField(default=False)
 
 
@@ -103,7 +103,8 @@ class Likes(models.Model):
 
 class Comment(models.Model):
     content = models.TextField()
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    is_anonymous = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
@@ -154,7 +155,7 @@ class Reports(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=255, default='pending')
     community = models.ForeignKey(Community, on_delete=models.CASCADE)
-    resolved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resolved_reports', null=True)
+    resolved_by = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='resolved_reports', null=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
