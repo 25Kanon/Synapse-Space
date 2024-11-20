@@ -36,7 +36,7 @@ import {initCometChat} from "./lib/cometchat";
 import ChatWindow from "./components/CometChat/ChatWindow";
 import {Activities} from "./pages/Admin/Activities";
 
-import Settings from "./pages/Settings";
+import Settings from "./pages/Settings/Settings";
 
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);

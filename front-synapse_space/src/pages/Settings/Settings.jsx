@@ -1,39 +1,43 @@
-import React, { useContext, useEffect, useCallback } from "react";
-import { AuthContext } from "../context/AuthContext";
-import ErrorAlert from "../components/ErrorAlert";
-import Sidebar from "../components/Sidebar";
-import NavBar from "../components/NavBar";
-import FriendsList from "../components/FriendsList";
-import MainContentContainer from "../components/MainContentContainer";
-import AxiosInstance from "../utils/AxiosInstance";
+import React, { useContext, useState, useEffect } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import ErrorAlert from "../../components/ErrorAlert";
+import Sidebar from "../../components/Sidebar";
+import NavBar from "../../components/NavBar";
+import MainContentContainer from "../../components/MainContentContainer";
+import AxiosInstance from "../../utils/AxiosInstance";
 
 export default function Settings() {
     const { user, authError } = useContext(AuthContext);
-    const [theme, setTheme] = React.useState('dark');
-    const [notifications, setNotifications] = React.useState(true);
-    const [feedback, setFeedback] = React.useState('');
-    const [showDeactivateModal, setShowDeactivateModal] = React.useState(false);
+    const [theme, setTheme] = useState('dark');
+    const [notifications, setNotifications] = useState(true);
+    const [feedback, setFeedback] = useState('');
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
 
-    const handleThemeChange = (e) => {
+    const handleThemeChange = async (e) => {
         const newTheme = e.target.checked ? 'dark' : 'light';
-    try {
-        await AxiosInstance.put('/api/user/settings/update/', {
-            theme: newTheme
-        });
-        setTheme(newTheme);
-        document.documentElement.setAttribute('data-theme', newTheme);
-    } catch (error) {
-        console.error('Error updating theme:', error);
-    }
-};
+        try {
+            await AxiosInstance.put('/api/user/settings/update/', {
+                theme: newTheme
+            });
+            setTheme(newTheme);
+            document.documentElement.setAttribute('data-theme', newTheme);
+            setSuccess('Theme updated successfully');
+        } catch (error) {
+            setError('Error updating theme');
+            console.error('Error updating theme:', error);
+        }
+    };
 
-    const handleNotificationChange = (e) => {
+    const handleNotificationChange = async (e) => {
         try {
             await AxiosInstance.put('/api/user/settings/update/', {
                 notifications_enabled: e.target.checked
             });
             setNotifications(e.target.checked);
+            setSuccess('Notifications updated successfully');
         } catch (error) {
+            setError('Error updating notifications');
             console.error('Error updating notifications:', error);
         }
     };
@@ -41,10 +45,11 @@ export default function Settings() {
     const handleFeedbackSubmit = async (e) => {
         e.preventDefault();
         try {
-            await AxiosInstance.post('/feedback', { feedback });
+            await AxiosInstance.post('/api/feedback/', { feedback });
             setFeedback('');
-            alert('Feedback submitted successfully!');
+            setSuccess('Feedback submitted successfully');
         } catch (error) {
+            setError('Error submitting feedback');
             console.error('Error submitting feedback:', error);
         }
     };
@@ -53,8 +58,9 @@ export default function Settings() {
         if (window.confirm('Are you sure you want to deactivate your account?')) {
             try {
                 await AxiosInstance.post('/api/user/deactivate/');
-                // Handle logout and redirect
+                window.location.href = '/login';
             } catch (error) {
+                setError('Error deactivating account');
                 console.error('Error deactivating account:', error);
             }
         }
@@ -63,9 +69,10 @@ export default function Settings() {
     const handleDeleteAccount = async () => {
         if (window.confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) {
             try {
-                await AxiosInstance.delete('/user/delete');
-                // Handle logout and redirect
+                await AxiosInstance.delete('/api/user/delete');
+                window.location.href = '/login';
             } catch (error) {
+                setError('Error deleting account');
                 console.error('Error deleting account:', error);
             }
         }
@@ -83,8 +90,13 @@ export default function Settings() {
 
     return (
         <>
-            {authError && 
-                <ErrorAlert text={authError} classExtensions="fixed z-50" />
+            {(authError || error) && 
+                <ErrorAlert text={authError || error} classExtensions="fixed z-50" />
+            }
+            {success && 
+                <div className="alert alert-success fixed top-4 right-4 z-50">
+                    <span>{success}</span>
+                </div>
             }
             <NavBar />
             <Sidebar />
@@ -132,20 +144,12 @@ export default function Settings() {
                                 placeholder="Share your thoughts with us..."
                                 rows="4"
                             />
-                            <div className="flex gap-4">
-                                <button 
-                                    onClick={handleFeedbackSubmit} 
-                                    className="btn btn-primary"
-                                >
-                                    Submit Feedback
-                                </button>
-                                <a 
-                                    href={`mailto:synapsespacecapstone@gmail.com?subject=Feedback from ${user.username}&body=${feedback}`}
-                                    className="btn btn-secondary"
-                                >
-                                    Send via Email
-                                </a>
-                            </div>
+                            <button 
+                                onClick={handleFeedbackSubmit} 
+                                className="btn btn-primary"
+                            >
+                                Submit Feedback
+                            </button>
                         </div>
                     </section>
 
