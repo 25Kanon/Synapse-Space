@@ -66,8 +66,8 @@ urlpatterns = [
     path('posts/<int:post_id>/comments/', PostCommentsView.as_view(), name='post-comments'),
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
     path('comments/user/<int:user_id>/', UserCommentsView.as_view(), name='user-comments'),
-    path('comments/<int:pk>/update/', CommentUpdateView.as_view(), name='comment-update'),
-    path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
+    path('comments/update/<int:pk>/', CommentUpdateView.as_view(), name='comment-update'),
+    path('comments/delete/<int:pk>/', CommentDeleteView.as_view(), name='comment-delete'),
 
     path('<int:community_id>/create-report/', ReportsListCreateView.as_view(), name='report-create'),
     path('community/<int:community_id>/reports/resolve/<int:pk>/', modResolveView.as_view(), name='mod-approve'),
@@ -106,5 +106,5 @@ urlpatterns = [
     path('admin/users/unverified', UnverifiedStudentsViewSet.as_view(), name='unverified-users'),
     path('admin/recent-user-activity-log/', AdminUserRecentActivityLogView.as_view(), name='admin-recent-user-activity-log'),
     path('admin/user-activity-log/', AdminUserActivityLogView.as_view(), name='admin-user-activity-log'),
-        path('admin/interactions/', InteractionTrendView.as_view(), name='admin-interactions'),
+    path('admin/interactions/', InteractionTrendView.as_view(), name='admin-interactions'),
 ]

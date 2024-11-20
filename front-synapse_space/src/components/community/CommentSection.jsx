@@ -60,11 +60,7 @@ const CommentSection = ({ postID }) => {
         };
 
         try {
-            await axios.put(`${API_URL}/api/comments/${id}`, { content }, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                },
-            });
+            await AxiosInstance.put(`${API_URL}/api/comments/update/${id}/`, { content }, {withCredentials: true});
             setComments(updateCommentRecursive(comments));
         } catch (error) {
             console.error("Error updating comment:", error);
@@ -85,11 +81,7 @@ const CommentSection = ({ postID }) => {
         };
 
         try {
-            await axios.delete(`${API_URL}/api/comments/${id}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                },
-            });
+            await AxiosInstance.delete(`${API_URL}/api/comments/delete/${id}/`, {withCredentials: true});
             setComments(deleteCommentRecursive(comments));
         } catch (error) {
             console.error("Error deleting comment:", error);
