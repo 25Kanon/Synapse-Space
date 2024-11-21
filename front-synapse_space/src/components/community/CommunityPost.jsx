@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import PropTypes from 'prop-types';
 import '@mdxeditor/editor/style.css';
-import {Link, useLocation, useNavigate} from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faThumbsUp } from "@fortawesome/free-regular-svg-icons/faThumbsUp";
 import { faThumbsUp as ThumbsUpIcon } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
@@ -17,18 +17,18 @@ import { format } from 'date-fns';
 import RichTextEditor from "../RichTextEditor";
 
 const CommunityPost = ({
-                           userName,
-                           userAvatar,
-                           community,
-                           postTitle,
-                           postContent,
-                           postId,
-                           userID,
-                           showComments,
-                           authorId,
-                           isPinned,
-                           createdAt,
-                       }) => {
+    userName,
+    userAvatar,
+    community,
+    postTitle,
+    postContent,
+    postId,
+    userID,
+    showComments,
+    authorId,
+    isPinned,
+    createdAt,
+}) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
     const { user } = useContext(AuthContext);
@@ -116,25 +116,29 @@ const CommunityPost = ({
                 `/api/community/${community}/post/delete/${postId}/`,
                 { withCredentials: true }
             );
-                console.log("Post deleted successfully");
-                if (location.pathname === "/") {
-                    window.location.href = `/`;
-                } else {
-                    window.location.href = `/community/${communityID}`;
-                }
+            console.log("Post deleted successfully");
+            if (location.pathname === "/") {
+                window.location.href = `/`;
+            } else {
+                window.location.href = `/community/${communityID}`;
+            }
 
         } catch (error) {
             console.error("Error occurred while deleting post:", error);
         }
     };
 
+    // Navigate to the user's profile
+    const handleNavigateToProfile = () => {
+        navigate(`/profile/user/${authorId}`);
+    };
     return (
         <>
             <div key={postId} className={`w-full my-5 border border-solid shadow-xl card card-compact ${isPinned ? 'border-amber-400' : ''}`}>
                 <div className="card-body">
                     <div className="flex items-center h-5">
                         <div className="mx-2 avatar">
-                            <div className="rounded-full h-7">
+                            <div className="rounded-full h-7 cursor-pointer" onClick={handleNavigateToProfile}>
                                 {userAvatar ? (
                                     <img
                                         src={userAvatar}
@@ -191,7 +195,7 @@ const CommunityPost = ({
                                         </div>
                                     ) : (
                                         <li>
-                                        <button onClick={() => document.getElementById(`PostModal${postId}`).showModal()}>Report</button>
+                                            <button onClick={() => document.getElementById(`PostModal${postId}`).showModal()}>Report</button>
                                         </li>
                                     )}
                                     <dialog id={`PostModal${postId}`} className="modal">
@@ -202,7 +206,7 @@ const CommunityPost = ({
                         </div>
                     </div>
                     <p className="flex items-center text-sm">
-                        {format(new Date(createdAt), 'eeee, MMMM dd yyyy hh:mm:ss a')}
+                        {createdAt ? format(new Date(createdAt), 'eeee, MMMM dd yyyy hh:mm:ss a') : ''}
                     </p>
                     <Link to={`/community/${community}/post/${postId}`}>
                         <h2 className="card-title">{postTitle}</h2>
@@ -220,7 +224,7 @@ const CommunityPost = ({
                         labelPlacement="end"
                     />
                     <button className="btn btn-circle" onClick={handleNavigate}>
-                        <FontAwesomeIcon icon={faComment} className="text-current"/>
+                        <FontAwesomeIcon icon={faComment} className="text-current" />
                     </button>
                 </div>
                 {showComments && (

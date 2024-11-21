@@ -3,15 +3,20 @@ import { useFriends } from "../context/FriendContext"; // Adjust path as needed
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faClock } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment"; // Install moment.js for date formatting
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const FriendsList = () => {
   const { friends } = useFriends();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const isRecentlyActive = (lastActive) => {
     const fiveMinutesAgo = moment().subtract(5, "minutes");
     return moment(lastActive).isAfter(fiveMinutesAgo);
   };
 
+  const handleFriendClick = (id) => {
+    navigate(`/profile/user/${id}`); // Navigate to the profile URL
+  };
   return (
     <aside
       id="sidebar"
@@ -26,7 +31,8 @@ const FriendsList = () => {
             friends.map((friend) => (
               <li
                 key={friend.id}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-base-100"
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-base-100 cursor-pointer"
+                onClick={() => handleFriendClick(friend.id)} // Add click handler
               >
                 <img
                   src={

@@ -16,7 +16,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
                     ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView,
                     AdminUserActivityLogView, AdminUserRecentActivityLogView, InteractionTrendView,
-                    CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView)
+                    CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView)
 from django.contrib import admin
 
 
@@ -91,7 +91,8 @@ urlpatterns = [
     path('friend-requests/', ListSentFriendRequestsView.as_view(), name='list_friend_requests'),
     path('respond-request/<int:pk>/', RespondToFriendRequestView.as_view(), name='respond_to_friend_request'),
     path('friends/', ListFriendsView.as_view(), name='list_friends'),
-
+    path('friendship/unfriend/<int:friend_id>/', UnfriendView.as_view(), name='unfriend'),
+    
     path('recommendations/', UserRecommendationsView.as_view(), name='user-recommendations'),
 
     path('admin/users', AllStudentsView.as_view(), name='all-users'),

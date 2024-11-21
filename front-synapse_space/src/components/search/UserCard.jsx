@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import defaultProfilePic from '../../assets/sampleprofile1.png';
 import { useFriends } from '../../context/FriendContext';
 import { useContext } from 'react';
@@ -20,14 +21,16 @@ const UserCard = ({ userId, name, handle, img, isFriend }) => {
   );
   return (
     <div className="flex flex-col items-center p-4 space-y-2">
-      <div className="w-24 h-24">
+      <Link to={`/profile/user/${userId}`} className="w-24 h-24">
         <img
           className="w-full h-full object-cover rounded-full"
           src={img || defaultProfilePic}
           alt={`${name}'s avatar`}
         />
-      </div>
-      <h3 className="text-sm font-medium">{handle}</h3>
+      </Link>
+      <Link to={`/profile/user/${userId}`} className="text-sm font-medium hover:underline">
+        {handle}
+      </Link>
       <p className="text-xs text-gray-500">{name}</p>
 
       {/* Conditionally render based on friendship status */}

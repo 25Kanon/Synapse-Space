@@ -62,7 +62,7 @@ const NavBar = () => {
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start rtl:justify-end">
-                        <a href="https://flowbite.com" className="flex ms-2 md:me-24">
+                        <a href="" className="flex ms-2 md:me-24">
                             <img
                                 src="https://flowbite.com/docs/images/logo.svg"
                                 className="h-8 me-3"
@@ -116,7 +116,8 @@ const NavBar = () => {
                                                 className="flex items-center justify-between gap-3 p-2 whitespace-nowrap w-full"
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <div className="avatar placeholder">
+                                                    {/* Profile Picture with Link */}
+                                                    <Link to={`/profile/user/${request.sender}`} className="avatar placeholder">
                                                         <div className="rounded-full h-7">
                                                             {request.sender_profile_pic ? (
                                                                 <img
@@ -133,14 +134,17 @@ const NavBar = () => {
                                                                 </div>
                                                             )}
                                                         </div>
-                                                    </div>
+                                                    </Link>
 
+                                                    {/* Friend's Name with Link */}
                                                     <Link
-                                                        to={`/profile/${request.sender}`}
-                                                        className="flex-1"
+                                                        to={`/profile/user/${request.sender}`}
+                                                        className="flex-1 hover:underline"
                                                     >
                                                         {request.sender_name}
                                                     </Link>
+
+                                                    {/* Accept Button */}
                                                     <button
                                                         onClick={() => acceptFriendRequest(request.id)}
                                                         className="btn btn-xs btn-primary flex items-center gap-1"
@@ -148,6 +152,8 @@ const NavBar = () => {
                                                         <FontAwesomeIcon icon={faCheck} />
                                                         Accept
                                                     </button>
+
+                                                    {/* Reject Button */}
                                                     <button
                                                         onClick={() => rejectFriendRequest(request.id)}
                                                         className="btn btn-xs btn-error flex items-center gap-1"
@@ -272,9 +278,15 @@ const NavBar = () => {
                                     </p>
                                 </summary>
                                 <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
-                                    <li>
-                                        <Link to="/profile">Profile</Link>
-                                    </li>
+                                    <Link
+                                        to="/profile"
+                                        className="font-semibold transition duration-200 ease-in-out "
+                                    >
+                                        <li className="flex justify-center items-center btn btn-sm">
+
+                                            Profile
+                                        </li>
+                                    </Link>
                                     <li>
                                         <button onClick={handleLogout} className="btn btn-sm">
                                             Logout

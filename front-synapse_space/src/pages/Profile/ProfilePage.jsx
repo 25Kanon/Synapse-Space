@@ -37,6 +37,7 @@ const ProfilePage = () => {
                         profBanner={userProfile.bannerURL} 
                         profAvatar={userProfile.profile_pic}
                         bio={userProfile.bio}
+                        isSelf={true}
                     />
                     <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
                     <ActivitiesDisplay activities={activities} activeTab={activeTab} />

@@ -62,7 +62,7 @@ const NavBar = () => {
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start rtl:justify-end">
-                        <a href="https://flowbite.com" className="flex ms-2 md:me-24">
+                        <a href="/" className="flex ms-2 md:me-24">
                             <img
                                 src="https://flowbite.com/docs/images/logo.svg"
                                 className="h-8 me-3"

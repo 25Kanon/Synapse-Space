@@ -1909,3 +1909,25 @@ class ResendOTPView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class UnfriendView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        # Get the user to unfriend
+        friend_id = kwargs.get('friend_id')
+
+        # Query the Friendship objects
+        friendship1 = Friendship.objects.filter(user1=request.user, user2_id=friend_id).first()
+        friendship2 = Friendship.objects.filter(user1_id=friend_id, user2=request.user).first()
+
+        if not friendship1 and not friendship2:
+            return Response({"detail": "Friendship not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete both Friendship objects
+        if friendship1:
+            friendship1.delete()
+        if friendship2:
+            friendship2.delete()
+
+        return Response({"detail": "Friend removed successfully."}, status=status.HTTP_200_OK)

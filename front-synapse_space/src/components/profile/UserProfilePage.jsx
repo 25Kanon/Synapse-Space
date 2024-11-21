@@ -6,7 +6,7 @@ import ProfileTabs from "../../components/profile/ProfileTabs";
 import ActivitiesDisplay from "../../components/profile/ActivitiesDisplay";
 import AxiosInstance from "../../utils/AxiosInstance";
 import AuthContext from "../../context/AuthContext";
-
+import MainContentContainer from "../../components/MainContentContainer";
 const UserProfilePage = () => {
     const { user } = useContext(AuthContext); // Logged-in user
     const { userId } = useParams(); // Get the profile user's ID from the URL
@@ -39,34 +39,40 @@ const UserProfilePage = () => {
                 console.error("Error sending friend request:", error);
             });
     };
-
+    const isSelf = () => userId == user.id;
+    console.log(userId, user.id, isSelf());
     return (
         <>
             <NavBar />
-            <div className="p-6">
-                <BannerProfile
-                    first_name={userProfile.first_name}
-                    last_name={userProfile.last_name}
-                    username={userProfile.username}
-                    profAvatar={userProfile.profile_pic}
-                    profBanner={userProfile.bannerURL}
-                    bio={userProfile.bio}
-                />
-                <div className="flex justify-end mt-2">
-                    {!isFriend && (
-                        <button onClick={handleAddFriend} className="btn btn-primary btn-sm">
-                            Add Friend
-                        </button>
+            <MainContentContainer>
+                <div className="p-6">
+                    <BannerProfile
+                        first_name={userProfile.first_name}
+                        last_name={userProfile.last_name}
+                        username={userProfile.username}
+                        profAvatar={userProfile.profile_pic}
+                        profBanner={userProfile.bannerURL}
+                        bio={userProfile.bio}
+                        profileId={userProfile.id}
+                        isSelf={isSelf()}
+                    />
+                    <div className="flex justify-end mt-2">
+                        {!isFriend && !isSelf && (
+                            <button onClick={handleAddFriend} className="btn btn-primary btn-sm">
+                                Add Friend
+                            </button>
+                        )}
+                    </div>
+                    {(isFriend || isSelf()) && (
+                        <>
+                            <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                            <ActivitiesDisplay activities={activities} activeTab={activeTab} />
+                        </>
                     )}
+                    {!isFriend && <p className="mt-6 text-center">You must be friends to see their activities.</p>}
                 </div>
-                {isFriend && (
-                    <>
-                        <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-                        <ActivitiesDisplay activities={activities} activeTab={activeTab} />
-                    </>
-                )}
-                {!isFriend && <p className="mt-6 text-center">You must be friends to see their activities.</p>}
-            </div>
+
+            </MainContentContainer>
         </>
     );
 };
