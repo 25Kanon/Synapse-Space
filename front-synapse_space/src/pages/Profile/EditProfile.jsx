@@ -15,8 +15,8 @@ const EditProfile = () => {
     const [profileBanner, setProfileBanner] = useState(null);
     const [profilePicBlob, setProfilePicBlob] = useState(null);
     const [profileBannerBlob, setProfileBannerBlob] = useState(null);
-    const [imageSrc, setImageSrc] = useState(null);
-
+    const [avatarImageSrc, setAvatarImageSrc] = useState(null); // Separate state for avatar cropping
+    const [bannerImageSrc, setBannerImageSrc] = useState(null); // Separate state for banner cropping
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -25,7 +25,6 @@ const EditProfile = () => {
 
     const navigate = useNavigate();
 
-    // Fetch current profile data on load
     useEffect(() => {
         AxiosInstance.get("/api/profile/", { withCredentials: true })
             .then((response) => {
@@ -38,74 +37,85 @@ const EditProfile = () => {
             .catch((error) => console.error("Error fetching profile data:", error));
     }, []);
 
-    // Handle profile picture selection
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = () => setImageSrc(reader.result);
+            reader.onload = () => setAvatarImageSrc(reader.result);
             reader.readAsDataURL(file);
             document.getElementById("avatar-cropper").showModal();
         }
     };
 
-    // Handle banner selection
     const handleBannerChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = () => setImageSrc(reader.result);
+            reader.onload = () => setBannerImageSrc(reader.result);
             reader.readAsDataURL(file);
             document.getElementById("banner-cropper").showModal();
         }
     };
 
-    // Process cropped avatar image
     const handleAvatarCrop = (croppedImg) => {
         setProfilePic(croppedImg);
         convertBlob(croppedImg, setProfilePicBlob);
     };
 
-    // Process cropped banner image
     const handleBannerCrop = (croppedImg) => {
         setProfileBanner(croppedImg);
         convertBlob(croppedImg, setProfileBannerBlob);
     };
 
-    // Convert image URL to Blob
     const convertBlob = (blobUrl, setBlob) => {
         fetch(blobUrl)
             .then((res) => res.blob())
-            .then((blob) => setBlob(blob))
+            .then((blob) => {
+                const fileName = `image_${Date.now()}.png`; // Example file name
+                const file = new File([blob], fileName, { type: blob.type });
+                setBlob(file);
+            })
             .catch((error) => console.error("Error converting to Blob:", error));
     };
 
-    // Handle profile form submission
+    const uploadFile = async (file) => {
+        const formData = new FormData();
+        formData.append("img", file);
+        try {
+            const response = await AxiosInstance.post("/api/upload/", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+                withCredentials: true,
+            });
+            return response.data.url;
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            throw new Error("File upload failed");
+        }
+    };
+
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-        formData.append("username", DOMPurify.sanitize(username));
-        formData.append("bio", DOMPurify.sanitize(bio));
-
-        if (profilePicBlob) formData.append("profile_pic", profilePicBlob, "avatar.png");
-        if (profileBannerBlob) formData.append("profile_banner", profileBannerBlob, "banner.png");
-
         try {
-            await AxiosInstance.put("/api/profile/", formData, {
+            let uploadedProfilePic = profilePicBlob ? await uploadFile(profilePicBlob, ) : profilePic;
+            let uploadedProfileBanner = profileBannerBlob ? await uploadFile(profileBannerBlob) : profileBanner;
+            const payload = {
+                username: DOMPurify.sanitize(username),
+                bio: DOMPurify.sanitize(bio),
+                profile_pic: uploadedProfilePic,
+                profile_banner: uploadedProfileBanner,
+            };
+
+            await AxiosInstance.put("/api/profile/", payload, {
                 withCredentials: true,
-                headers: { "Content-Type": "multipart/form-data" },
             });
 
-            // Fetch updated profile data
-            const updatedProfile = await AxiosInstance.get("/api/profile/", { withCredentials: true });
-            navigate("/profile", { state: { updatedProfile: updatedProfile.data } });
+            navigate("/profile");
         } catch (error) {
             console.error("Error updating profile:", error);
         }
     };
 
-    // Handle password form submission
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         setPasswordError("");
@@ -119,10 +129,7 @@ const EditProfile = () => {
         try {
             await AxiosInstance.put(
                 "/api/change-password/",
-                {
-                    current_password: currentPassword,
-                    new_password: newPassword,
-                },
+                { current_password: currentPassword, new_password: newPassword },
                 { withCredentials: true }
             );
             setPasswordSuccess("Password updated successfully!");
@@ -130,7 +137,7 @@ const EditProfile = () => {
             setNewPassword("");
             setConfirmNewPassword("");
         } catch (error) {
-            setPasswordError("Error updating password: " + error.response?.data?.error || "Unknown error");
+            setPasswordError("Error updating password: " + (error.response?.data?.error || "Unknown error"));
         }
     };
 
@@ -138,10 +145,10 @@ const EditProfile = () => {
         <main className="flex flex-col items-center justify-center p-5 mt-20 sm:mx-64">
             <div className="w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
                 <dialog id="avatar-cropper" className="modal modal-bottom sm:modal-middle">
-                    {imageSrc && <AvatarCropper imageSrc={imageSrc} onCropComplete={handleAvatarCrop} />}
+                    {avatarImageSrc && <AvatarCropper imageSrc={avatarImageSrc} onCropComplete={handleAvatarCrop} />}
                 </dialog>
                 <dialog id="banner-cropper" className="modal modal-bottom sm:modal-middle">
-                    {imageSrc && <BannerCropper imageSrc={imageSrc} onCropComplete={handleBannerCrop} />}
+                    {bannerImageSrc && <BannerCropper imageSrc={bannerImageSrc} onCropComplete={handleBannerCrop} />}
                 </dialog>
                 <h1 className="mb-8 text-3xl font-bold">Edit Profile</h1>
                 <form onSubmit={handleProfileSubmit} className="space-y-6 form-control">

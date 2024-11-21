@@ -959,6 +959,8 @@ class UserProfileView(APIView):
         if 'profile_pic' in request.FILES:
             user.profile_pic = request.FILES['profile_pic']
 
+        if 'profile_banner' in request.FILES:
+            user.profile_banner = request.FILES['profile_banner']
         # Update other fields
         user.first_name = data.get('first_name', user.first_name)
         user.last_name = data.get('last_name', user.last_name)
@@ -967,6 +969,7 @@ class UserProfileView(APIView):
         user.bio = data.get('bio', user.bio)
         user.profile_pic = data.get('profile_pic', user.profile_pic)
         user.interests = data.get('interests', user.interests)
+        user.profile_banner = data.get('profile_banner', user.profile_banner)
 
         user.save()
 

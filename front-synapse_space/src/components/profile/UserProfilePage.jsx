@@ -51,7 +51,7 @@ const UserProfilePage = () => {
                         last_name={userProfile.last_name}
                         username={userProfile.username}
                         profAvatar={userProfile.profile_pic}
-                        profBanner={userProfile.bannerURL}
+                        profBanner={userProfile.profile_banner}
                         bio={userProfile.bio}
                         profileId={userProfile.id}
                         isSelf={isSelf()}

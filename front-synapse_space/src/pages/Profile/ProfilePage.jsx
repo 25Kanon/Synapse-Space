@@ -34,7 +34,7 @@ const ProfilePage = () => {
                         first_name={userProfile.first_name} // Use first_name from userProfile
                         last_name={userProfile.last_name} // Add last_name from userProfile
                         username={userProfile.username} // Pass username
-                        profBanner={userProfile.bannerURL} 
+                        profBanner={userProfile.profile_banner} 
                         profAvatar={userProfile.profile_pic}
                         bio={userProfile.bio}
                         isSelf={true}
