@@ -111,7 +111,6 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 
             totp = self.generate_otp(user.otp_secret)
             body = f"Your OTP is: {totp}"
-            print(body)
             self.send_otp(body, user.email, user.username)
 
             # Update the last OTP generation time for the user
@@ -158,7 +157,9 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         totp = pyotp.TOTP(user, interval=300)
         return totp.now()
 
-    def send_otp(self, body, to_email, username):
+    @staticmethod
+    def send_otp(body, to_email, username):
+        print(body)
         connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
         email_client = EmailClient.from_connection_string(connection_string)
         sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
@@ -185,7 +186,6 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             print('Exception:')
             print(ex)
             raise Exception(ex)
-
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)

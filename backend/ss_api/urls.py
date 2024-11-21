@@ -16,7 +16,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
                     ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView,
                     AdminUserActivityLogView, AdminUserRecentActivityLogView, InteractionTrendView,
-                    CommunityPostUpdateView, CommunityPostDeleteView)
+                    CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView)
 from django.contrib import admin
 
 
@@ -33,6 +33,7 @@ urlpatterns = [
     path('auth/token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/memberships/', MembershipListView.as_view(), name='membership-list'),
     path('auth/check-auth/', CheckAuthView.as_view(), name='check-auth'),
+    path('auth/resend-otp/', ResendOTPView.as_view(), name='resend-otp'),
     path('verify/account/', VerifyAccountView.as_view(), name='verify-account'),
     path('upload/', ImageUploadView.as_view(), name='upload'),
 

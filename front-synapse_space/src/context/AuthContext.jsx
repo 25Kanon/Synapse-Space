@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
     const [inSetup, setInSetup] = useState(true);
     const navigate = useNavigate();
     const { setCometUser, isAuthenticated: isCometAuthenticated} = useAuthStore();
-
+    const [usernameOrEmail, setUsernameOrEmail] = useState(null);
     const checkAuthentication = useCallback(async () => {
         try {
             const response = await AxiosInstance.get('/api/auth/check-auth/', { withCredentials: true });
@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }) => {
             } else {
                 data.username_or_email = e.target.username_or_email.value;
                 data.password = e.target.password.value;
+                setUsernameOrEmail(e.target.username_or_email.value);
                 setLoginData(data);// Store login data for OTP
             }
 
@@ -175,7 +176,8 @@ export const AuthProvider = ({ children }) => {
             loginUser,
             logout,
             requireOTP,
-            error
+            error,
+            usernameOrEmail
         }}>
             {children}
         </AuthContext.Provider>

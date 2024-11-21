@@ -1,6 +1,6 @@
 import hashlib
 from collections import defaultdict
-
+import pyotp
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.contrib.contenttypes.models import ContentType
 import requests
@@ -33,6 +33,7 @@ from rest_framework.serializers import ValidationError
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 
+from django.contrib.auth import authenticate, get_user_model
 
 # Azure Blob Storage imports
 from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
@@ -1884,3 +1885,27 @@ class InteractionTrendView(APIView):
         ]
 
         return Response(interaction_trend, status=status.HTTP_200_OK)
+    
+class ResendOTPView(APIView):
+    def post(self, request):
+        username_or_email = request.data.get('username_or_email')
+        if not username_or_email:
+            return Response({"error": "Username or email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            UserModel = get_user_model()
+            user = UserModel.objects.get(email=username_or_email) or UserModel.objects.get(username=username_or_email)
+
+            # Generate and send OTP
+            totp = pyotp.TOTP(user.otp_secret, interval=300)
+            otp = totp.now()
+            body = f"Your OTP is: {otp}"
+            CustomTokenObtainPairSerializer.send_otp(body, user.email, user.username)
+
+            return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
+
+        except UserModel.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
