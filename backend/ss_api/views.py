@@ -46,7 +46,7 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
-    Program, Notification, SavedPost
+    Program, Notification, SavedPost, DislikedPost
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -54,7 +54,8 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
                           DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
-                          PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer)
+                          PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer,
+                          DislikedPostSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsStaff
 
@@ -823,14 +824,21 @@ class getCommunityPost(generics.RetrieveAPIView):
 class likePostView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, IsCommunityMember]
+
     def post(self, request, community_id, post_id):
-        post = Post.objects.get(id=post_id)
+        post = get_object_or_404(Post, id=post_id, posted_in_id=community_id)
         user = request.user
+
+        # Check if the user already liked the post
         like, created = LikedPost.objects.get_or_create(user=user, post=post)
         if created:
+            # Automatically remove a dislike if it exists
+            DislikedPost.objects.filter(user=user, post=post).delete()
             return Response({"message": "Post liked successfully"}, status=status.HTTP_201_CREATED)
         else:
             return Response({"message": "Post already liked"}, status=status.HTTP_200_OK)
+
+
 
 class unlikePostView(APIView):
     authentication_classes = [CookieJWTAuthentication]
@@ -1950,3 +1958,52 @@ class PasswordResetView(APIView):
             serializer.save()
             return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class dislikePostView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
+
+    def post(self, request, community_id, post_id):
+        post = get_object_or_404(Post, id=post_id, posted_in_id=community_id)
+        user = request.user
+
+        # Check if the user already disliked the post
+        dislike, created = DislikedPost.objects.get_or_create(user=user, post=post)
+        if created:
+            # Remove like if it exists
+            liked_post = LikedPost.objects.filter(user=user, post=post).first()
+            if liked_post:
+                liked_post.delete()
+                Likes.objects.filter(user=user, post=post).delete()
+
+            return Response({"message": "Post disliked successfully"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message": "Post already disliked"}, status=status.HTTP_200_OK)
+
+
+class undislikePostView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
+
+    def post(self, request, community_id, post_id):
+        post = get_object_or_404(Post, id=post_id, posted_in_id=community_id)
+        user = request.user
+
+        # Check if the dislike exists
+        dislike = DislikedPost.objects.filter(user=user, post=post).first()
+        if dislike:
+            dislike.delete()
+            return Response({"message": "Dislike removed successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Post not disliked"}, status=status.HTTP_200_OK)
+
+
+class getPostDislikesView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, community_id, post_id):
+        post = get_object_or_404(Post, id=post_id, posted_in_id=community_id)
+        dislikes = DislikedPost.objects.filter(post=post)
+        serializer = DislikedPostSerializer(dislikes, many=True)
+        return Response(serializer.data)

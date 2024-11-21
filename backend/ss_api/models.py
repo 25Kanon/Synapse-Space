@@ -104,7 +104,7 @@ class Likes(models.Model):
 class Comment(models.Model):
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    is_anonymous = models.BooleanField(default=False)
+    # is_anonymous = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
@@ -198,3 +198,13 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username} - {self.title}"
+    
+class DislikedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='disliked_posts')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='disliked_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'post'], name='unique_user_post_dislike')
+        ]

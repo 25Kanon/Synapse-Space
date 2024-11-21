@@ -18,7 +18,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
                      Reports, FriendRequest, Program,
-                     Notification)
+                     Notification, DislikedPost)
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -608,3 +608,14 @@ class PasswordResetSerializer(serializers.Serializer):
     def save(self):
         self.user.set_password(self.validated_data['password'])
         self.user.save()
+        
+class DislikedPostSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    author_pic = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DislikedPost
+        fields = ['user', 'post', 'created_at', 'username', 'author_pic']
+
+    def get_author_pic(self, obj):
+        return obj.user.profile_pic

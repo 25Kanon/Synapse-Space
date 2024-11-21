@@ -17,7 +17,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView,
                     AdminUserActivityLogView, AdminUserRecentActivityLogView, InteractionTrendView,
                     CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView,
-                    PasswordResetRequestView, PasswordResetView)
+                    PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView, undislikePostView)
 from django.contrib import admin
 
 
@@ -64,7 +64,9 @@ urlpatterns = [
     path('community/<int:community_id>/post/<int:post_id>/likes', getPostLikesView.as_view(), name='post-likes'),
     path('community/<int:community_id>/post/<int:post_id>/like', likePostView.as_view(), name='like-post'),
     path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
-    path('community/<int:community_id>/post/<int:post_id>/unlike', unlikePostView.as_view(), name='unlike-post'),
+    path('community/<int:community_id>/post/<int:post_id>/dislikes', getPostDislikesView.as_view(), name='post-dislikes'),
+    path('community/<int:community_id>/post/<int:post_id>/dislike', dislikePostView.as_view(), name='dislike-post'),
+    path('community/<int:community_id>/post/<int:post_id>/undislike', undislikePostView.as_view(), name='undislike-post'),
     path('community/<int:community_id>/stats', getCommunityStats.as_view(), name='community-stats'),
     path('community/<int:community_id>/reports', getReportsView.as_view(), name='community-report'),
     path('comments/', CommentCreateView.as_view(), name='comment-create'),

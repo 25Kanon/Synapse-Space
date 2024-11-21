@@ -30,7 +30,7 @@ import Dashboard from "./pages/Admin/Dashboard"
 import Users from "./pages/Admin/Users"
 import Programs from "./pages/Admin/Programs"
 import Verifications from "./pages/Admin/Verifications"
-
+import HelpCenter from "./pages/HelpCenter";
 import { ToastContainer } from 'react-toastify';
 
 
@@ -38,7 +38,8 @@ import Chat from "./pages/Chat";
 import { initCometChat } from "./lib/cometchat";
 import ChatWindow from "./components/CometChat/ChatWindow";
 import { Activities } from "./pages/Admin/Activities";
-import  ResetPasswordConfirm from './pages/ResetPasswordConfirm';
+import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
+import Footer from './components/Footer';
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -135,6 +136,7 @@ function App() {
                   <Route path="/" element={<PublicRoute />}>
                     <Route path="privacy-policy" element={<PrivacyPolicy />} />
                   </Route>
+                  <Route path="/help-center" element={<HelpCenter />} />
                   <Route path="/community" element={<PrivateRoute />}>
                     <Route path="/community/:id" element={<Community />} />
                   </Route>
@@ -191,8 +193,8 @@ function App() {
                   </Route>
 
 
-                </Routes>
-
+              </Routes>
+              <Footer/>
               </NotificationProvider>
             </FriendProvider>
           </MembershipsProvider>
