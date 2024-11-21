@@ -16,7 +16,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     EngagementRateView, AllStaffsView, ProgramListView, ProgramEditView, ProgramDeleteView,
                     ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView,
                     AdminUserActivityLogView, AdminUserRecentActivityLogView, InteractionTrendView,
-                    CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView)
+                    CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView,
+                    PasswordResetRequestView, PasswordResetView)
 from django.contrib import admin
 
 
@@ -36,6 +37,8 @@ urlpatterns = [
     path('auth/resend-otp/', ResendOTPView.as_view(), name='resend-otp'),
     path('verify/account/', VerifyAccountView.as_view(), name='verify-account'),
     path('upload/', ImageUploadView.as_view(), name='upload'),
+    path('auth/password-reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('auth/password-reset/confirm/', PasswordResetView.as_view(), name='password_reset'),
 
     path('auth/google/', include('allauth.socialaccount.urls')),
     path('auth/login/google/', CustomGoogleLogin.as_view(), name='google_login'),

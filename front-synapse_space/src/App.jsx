@@ -38,7 +38,7 @@ import Chat from "./pages/Chat";
 import { initCometChat } from "./lib/cometchat";
 import ChatWindow from "./components/CometChat/ChatWindow";
 import { Activities } from "./pages/Admin/Activities";
-
+import  ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -122,6 +122,9 @@ function App() {
                   </Route>
                   <Route path="/" element={<PublicRoute />}>
                     <Route path="/reset-password" element={<ResetPassword />} />
+                  </Route>
+                  <Route path="/" element={<PublicRoute />}>
+                    <Route path="/reset-password/:uid/:token" element={<ResetPasswordConfirm />} />
                   </Route>
                   <Route path="/" element={<PublicRoute />}>
                     <Route path="/register" element={<UserRegister />} />

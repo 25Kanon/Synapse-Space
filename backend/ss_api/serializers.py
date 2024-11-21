@@ -26,7 +26,11 @@ import pyotp
 from azure.communication.email import EmailClient
 from azure.core.exceptions import HttpResponseError
 import time
-
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode
 
 logger = logging.getLogger(__name__)
 class UserSerializer(serializers.ModelSerializer):
@@ -541,3 +545,66 @@ class NotificationSerializer(serializers.ModelSerializer):
             except Community.DoesNotExist:
                 return None
         return None
+    
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            self.user = User.objects.get(email=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No user is associated with this email.")
+        return value
+
+    def send_reset_email(self, reset_link):
+        try:
+            connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
+            email_client = EmailClient.from_connection_string(connection_string)
+            sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
+
+            message = {
+                "content": {
+                    "subject": "Password Reset Request",
+                    "plainText": f"Click the link below to reset your password:\n{reset_link}",
+                },
+                "recipients": {
+                    "to": [{"address": self.user.email, "displayName": self.user.username}]
+                },
+                "senderAddress": sender,
+            }
+            print(message)
+            response = email_client.begin_send(message)
+            return response
+
+        except HttpResponseError as ex:
+            raise serializers.ValidationError(f"Failed to send email: {str(ex)}")
+
+    def save(self):
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+
+        reset_link = f"{os.getenv('FRONTEND_URL')}/reset-password/{uid}/{token}/"
+        self.send_reset_email(reset_link)
+        return reset_link
+    
+class PasswordResetSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)
+    token = serializers.CharField(write_only=True)
+    uid = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        try:
+            user_id = force_bytes(urlsafe_base64_decode(data['uid'])).decode()
+            self.user = User.objects.get(pk=user_id)
+        except (User.DoesNotExist, ValueError):
+            raise serializers.ValidationError("Invalid user ID or token.")
+
+        token_generator = PasswordResetTokenGenerator()
+        if not token_generator.check_token(self.user, data['token']):
+            raise serializers.ValidationError("Invalid or expired token.")
+        return data
+
+    def save(self):
+        self.user.set_password(self.validated_data['password'])
+        self.user.save()

@@ -1,4 +1,7 @@
-import React from 'react';
+import React from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import AxiosInstance from "../utils/AxiosInstance";
 
 const ResetPassword = () => {
   const handleResetPassword = async (e) => {
@@ -6,24 +9,20 @@ const ResetPassword = () => {
     const email = e.target.email.value;
 
     try {
-      const response = await fetch("http://localhost:8000/api/auth/reset-password/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+      const response = await AxiosInstance.post("/api/auth/password-reset/", { email });
 
-      if (response.ok) {
-        const data = await response.json();
-        alert(data.message); // Show success message
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error); // Show error message
+      if (response.status === 200) {
+        toast.success(response.data.message); // Show success toast
       }
     } catch (error) {
       console.error("Error resetting password:", error);
-      alert("An error occurred. Please try again later.");
+
+      // Extract and display error message(s) from the response
+      if (error.response?.data?.email) {
+        error.response.data.email.forEach((err) => toast.error(err)); // Show each error
+      } else {
+        toast.error("An unknown error occurred."); // Fallback message
+      }
     }
   };
 

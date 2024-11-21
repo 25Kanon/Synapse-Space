@@ -54,7 +54,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           CreateCommentSerializer, CookieTokenRefreshSerializer, VerifyAccountSerializer,
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
                           DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
-                          PostSerializer, SavedPostSerializer)
+                          PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsStaff
 
@@ -1931,3 +1931,19 @@ class UnfriendView(APIView):
             friendship2.delete()
 
         return Response({"detail": "Friend removed successfully."}, status=status.HTTP_200_OK)
+    
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Password reset link sent to your email."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetView(APIView):
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
