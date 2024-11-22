@@ -108,7 +108,7 @@ export function useModeration(id:number) {
         modActions: reports.filter(r => r.status !== 'pending').length,
         postCount: statCount?.posts ?? 0
     };
-    console.log(statCount);
+    // console.log(statCount);
 
 
     return {

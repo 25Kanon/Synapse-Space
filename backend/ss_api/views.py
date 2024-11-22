@@ -4,7 +4,8 @@ import pyotp
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.contrib.contenttypes.models import ContentType
 import requests
-from django.db.models import Q
+from django.db.models import Q, Count
+
 from django.conf import settings
 import os
 from datetime import datetime, timedelta
@@ -1159,9 +1160,38 @@ class getCommunityStats(APIView):
         community = get_object_or_404(Community, id=community_id)
         members = Membership.objects.filter(community=community).count()
         posts = Post.objects.filter(posted_in=community).count()
+        
+        
+        # Top 10 Most Liked Posts
+        most_liked_posts = (
+            Post.objects.filter(posted_in=community)
+            .annotate(like_count=Count('liked_by'))
+            .order_by('-like_count')[:10]
+            .values('id', 'title', 'like_count')
+        )
+
+        # Top 10 Most Disliked Posts
+        most_disliked_posts = (
+            Post.objects.filter(posted_in=community)
+            .annotate(dislike_count=Count('disliked_by'))
+            .order_by('-dislike_count')[:10]
+            .values('id', 'title', 'dislike_count')
+        )
+
+        # Top 10 Most Commented Posts
+        most_commented_posts = (
+            Post.objects.filter(posted_in=community)
+            .annotate(comment_count=Count('comments'))
+            .order_by('-comment_count')[:10]
+            .values('id', 'title', 'comment_count')
+        )
+        
         return Response({
             'members': members,
-            'posts': posts
+            'posts': posts,
+            'most_liked_posts': list(most_liked_posts),
+            'most_disliked_posts': list(most_disliked_posts),
+            'most_commented_posts': list(most_commented_posts),
         })
 
 class ReportsListCreateView(generics.ListCreateAPIView):
