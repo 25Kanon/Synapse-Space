@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AxiosInstance from '../utils/AxiosInstance'
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const ReportForm = ({type, object, community, comment_post_id}) => {
     const [reason, setReason] = useState('');
     const [content, setContent] = useState('');
@@ -30,9 +31,15 @@ const ReportForm = ({type, object, community, comment_post_id}) => {
             await AxiosInstance.post(`/api/${community}/create-report/`, reportData, {withCredentials:true});
             setSuccess(true);
             setError('');
+            toast.success('Report submitted successfully.');
         } catch (err) {
-            setError('Failed to submit the report. Please try again.');
+            // Handle validation or other errors from the server
+            const errorMessage = err.response?.data?.reason
+                ? err.response.data.reason[0]
+                : 'Failed to submit the report. Please try again.';
+            setError(errorMessage);
             setSuccess(false);
+            toast.error(errorMessage);
         }
     };
 
