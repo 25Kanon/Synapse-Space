@@ -44,6 +44,8 @@ import uuid
 import logging
 from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 
+from azure.communication.email import EmailClient
+from azure.core.exceptions import HttpResponseError
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
@@ -1391,9 +1393,46 @@ class AcceptMembershipView(APIView):
             membership.status = 'accepted'
             membership.save()
             updated_memberships.append(membership)
-
+            
+            user = membership.user
+            email_body = f"Dear {user.username},\n\nCongratulations! You have been accepted into the community '{community.name}'. Welcome aboard!"
+            self.send_acceptance_email(
+                body=email_body,
+                to_email=user.email,
+                username=user.username
+            )
         serializer = MembershipSerializer(updated_memberships, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @staticmethod
+    def send_acceptance_email(body, to_email, username):
+        print(body)
+        connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
+        email_client = EmailClient.from_connection_string(connection_string)
+        sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
+        recipient_email = to_email
+        message = {
+            "content":  {
+                'subject': 'Congratulations! You have been accepted into the community',
+                "plainText": body,
+            },
+             "recipients": {
+                "to": [
+                    {
+                        "address": recipient_email,
+                        "displayName": username
+                    }
+                ]
+            },
+            "senderAddress": sender
+        }
+
+        try:
+            response = email_client.begin_send(message)
+        except HttpResponseError as ex:
+            print('Exception:')
+            print(ex)
+            raise Exception(ex)
 
 
 class BanMembershipView(APIView):

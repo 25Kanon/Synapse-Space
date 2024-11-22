@@ -182,7 +182,7 @@ const CommunityPost = ({
                                 <span className="mx-2 text-gray-400">&rarr;</span> {/* Arrow indicator */}
                                 <Link to={`/community/${community}`} className="flex items-center text-sm text-gray-500 hover:underline">
                                     <div className="w-5 h-5 rounded-full overflow-hidden mr-2">
-                                        {communityObj.community_avatar ? (
+                                        {communityObj && communityObj.community_avatar ? (
                                             <img
                                                 src={communityObj.community_avatar}
                                                 alt="Community avatar"
@@ -194,7 +194,7 @@ const CommunityPost = ({
                                             </div>
                                         )}
                                     </div>
-                                    <span className="text-gray-400">{communityObj.community_name}</span>
+                                    <span className="text-gray-400">{communityObj?.community_name ?? ""}</span>
                                 </Link>
                             </div>
                         </div>
