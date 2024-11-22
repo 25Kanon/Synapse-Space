@@ -1131,7 +1131,7 @@ class UserActivitiesView(APIView):
         ).select_related('post').order_by('-post__created_at')
         liked_posts_data = [like.post for like in liked_posts]
 
-        # Fetch the target user's disliked posts in communities the requestor is a member of
+        # Fetch the target user's disliked posts in communities the requestor is a member of <
         disliked_posts = DislikedPost.objects.filter(
             user=target_user,
             post__posted_in__id__in=requestor_communities
