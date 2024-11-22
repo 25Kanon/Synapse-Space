@@ -186,7 +186,7 @@ const NavBar = () => {
                                                     notification.message.action === "banned_from_community"
                                                         ? `You have been banned from "${notification.message.community_name}".`
                                                         : notification.message.action === "post_reported"
-                                                            ? `Your post in "${notification.message.community_name}" has been reported.`
+                                                            ? `Your post has been reported.`
                                                             : notification.message.action === "comment_reported"
                                                                 ? `Your comment in "${notification.message.community_name}" has been reported.`
                                                                 : notification.message.action === "friend_request_accepted"
@@ -196,18 +196,22 @@ const NavBar = () => {
                                             >
                                                 <Link
                                                     to={
-                                                        notification.message.action === "post_reported"
-                                                            ? `/community/${notification.message.community_id}/post/${notification.message.post_id}`
-                                                            : notification.message.action === "comment_reported"
-                                                                ? `/community/${notification.message.community_id}/post/${notification.message.post_id}#comment-${notification.message.comment_id}`
-                                                                : notification.message.action === "banned_from_community"
-                                                                    ? `/community/${notification.message.community_id}`
-                                                                    : notification.message.action === "friend_request_accepted"
-                                                                        ? `/profile/user/${notification.message.friend?.id}`
-                                                                        : "#"
+                                                        (notification.message.action === "post_reported" &&
+                                                            notification.title === "Malicious Post Detected") ||
+                                                            (notification.message.action === "comment_reported" &&
+                                                                notification.title === "Malicious Comment Detected")
+                                                            ? `/community/${notification.message.community_id}/mod`
+                                                            : notification.message.action === "post_reported"
+                                                                ? `/community/${notification.message.community_id}/post/${notification.message.post_id}`
+                                                                : notification.message.action === "comment_reported"
+                                                                    ? `/community/${notification.message.community_id}/post/${notification.message.post_id}#comment-${notification.message.comment_id}`
+                                                                    : notification.message.action === "banned_from_community"
+                                                                        ? `/community/${notification.message.community_id}`
+                                                                        : notification.message.action === "friend_request_accepted"
+                                                                            ? `/profile/user/${notification.message.friend?.id}`
+                                                                            : "#"
                                                     }
                                                     className="text-sm font-medium truncate hover:underline"
-
                                                     onClick={() => markAsRead(notification.id)}
                                                 >
                                                     {/* Profile or Community Image */}

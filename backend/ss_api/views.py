@@ -1,6 +1,7 @@
 import hashlib
 from collections import defaultdict
 import pyotp
+import json
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.contrib.contenttypes.models import ContentType
 import requests
@@ -31,7 +32,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.serializers import ValidationError
-
+from .textmoderation.get_automoderator import get_automoderator
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 
@@ -648,12 +649,74 @@ class PostCreateView(generics.CreateAPIView):
     queryset = Post.objects.all()
     serializer_class = CreatePostSerializer
 
+    def extract_text_from_content(self, content):
+        """
+        Extracts plain text from the JSON-like structure in the `content` field.
+        
+        :param content: JSON-like string with blocks of text.
+        :return: Combined plain text from all blocks.
+        """
+        try:
+            content_json = json.loads(content)  # Parse the JSON content
+            blocks = content_json.get("blocks", [])
+            text = " ".join(block["data"].get("text", "") for block in blocks if "data" in block)
+            return text
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            raise ValueError("Invalid content format")
+
     def create(self, request, *args, **kwargs):
+        # Get serializer and validate
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(created_by=request.user)
+
+        # Extract plain text from the content
+        raw_content = serializer.validated_data.get("content")
+        plain_text = self.extract_text_from_content(raw_content)
+
+        # Check for malicious content
+        automoderator = get_automoderator()
+        is_malicious = automoderator.is_malicious(plain_text)
+
+        # Save the post
+        post = serializer.save(created_by=request.user)
+
+        # Handle malicious content
+        if is_malicious:
+            # Create a report for the malicious post
+            report = Reports.objects.create(
+                type="post",
+                content=plain_text,
+                author=request.user,
+                content_type=ContentType.objects.get_for_model(Post),
+                object_id=post.id,
+                reason="Automatically flagged as malicious by the system.",
+                community=post.posted_in
+            )
+
+            # Notify community admins
+            community = post.posted_in
+            admins = Membership.objects.filter(
+                community=community,
+                role="admin"
+            ).select_related("user")  # Optimize with `select_related`
+
+            for admin_membership in admins:
+                Notification.objects.create(
+                    user=admin_membership.user,
+                    title="Malicious Post Detected",
+                    message={
+                        "action": "post_reported",
+                        "post_id": post.id,
+                        "post_title": post.title,
+                        "community_id": community.id,
+                        "reason": report.reason,
+                    }
+                )
+
+        # Return the created post response
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 
 class GenerateSignedUrlView(APIView):
@@ -892,7 +955,48 @@ class CommentCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        # Save the comment with the authenticated user as the author
+        comment = serializer.save(author=self.request.user)
+
+        # Extract plain text from the content
+        plain_text = comment.content
+
+        # Check for malicious content
+        automoderator = get_automoderator()
+        is_malicious = automoderator.is_malicious(plain_text)
+
+        if is_malicious:
+            # Create a report for the malicious comment
+            report = Reports.objects.create(
+                type="comment",
+                content=plain_text,
+                author=self.request.user,
+                content_type=ContentType.objects.get_for_model(Comment),
+                object_id=comment.id,
+                reason="Automatically flagged as malicious by the system.",
+                community=comment.post.posted_in
+            )
+
+            # Notify community admins
+            community = comment.post.posted_in
+            admins = Membership.objects.filter(
+                community=community,
+                role="admin"
+            ).select_related("user")  # Optimize with `select_related`
+
+            for admin_membership in admins:
+                Notification.objects.create(
+                    user=admin_membership.user,
+                    title="Malicious Comment Detected",
+                    message={
+                        "action": "comment_reported",
+                        "comment_id": comment.id,
+                        "post_id": comment.post.id,
+                        "community_id": community.id,
+                        "reason": report.reason,
+                    }
+                )
+
 
 class CommentDetailView(generics.RetrieveAPIView):
     queryset = Comment.objects.all()
