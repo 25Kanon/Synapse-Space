@@ -97,18 +97,18 @@ const CreatePost = ({ userName, community, onPostCreated, rules }) => {
             setLoading(true);
             const updatedContent = await moveImagesToPermanentStorage(editorContent);
 
-            const plainText = editorJsToPlainText(updatedContent);
-            const hasProfanity = await profanityCheck(title, plainText);
-
-            if (!hasProfanity) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Post contains profanity!',
-                });
-                setLoading(false);
-                return;
-            }
+            // const plainText = editorJsToPlainText(updatedContent);
+            // const hasProfanity = await profanityCheck(title, plainText);
+            //
+            // if (!hasProfanity) {
+            //     Swal.fire({
+            //         icon: 'error',
+            //         title: 'Oops...',
+            //         text: 'Post contains profanity!',
+            //     });
+            //     setLoading(false);
+            //     return;
+            // }
 
             const formData = new FormData();
             formData.append("title", DOMPurify.sanitize(title));

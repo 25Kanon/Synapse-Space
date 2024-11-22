@@ -2213,31 +2213,31 @@ class RemoveVoteView(APIView):
         CommentVote.objects.filter(user=user, comment=comment).delete()
         return Response({"message": "Vote removed"}, status=status.HTTP_200_OK)
 
-
-class ProfanityCheckView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = ContentSerializer(data=request.data)
-        if serializer.is_valid():
-            title = serializer.validated_data.get('title')
-            content = serializer.validated_data.get('content')
-
-            # Check for profanity in title and content
-            title_contains_profanity = profanity.contains_profanity(title)
-            content_contains_profanity = profanity.contains_profanity(content)
-
-            if title_contains_profanity or content_contains_profanity:
-                return Response({
-                    "message": "Profanity detected in title or content",
-                    "profane_in_title": title_contains_profanity,
-                    "profane_in_content": content_contains_profanity,
-                    "allow": False
-                }, status=status.HTTP_200_OK)
-
-            return Response({
-                "message": "No profanity detected",
-                "profane_in_title": title_contains_profanity,
-                "profane_in_content": content_contains_profanity,
-                "allow": True
-            }, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+# class ProfanityCheckView(APIView):
+#     def post(self, request, *args, **kwargs):
+#         serializer = ContentSerializer(data=request.data)
+#         if serializer.is_valid():
+#             title = serializer.validated_data.get('title')
+#             content = serializer.validated_data.get('content')
+#
+#             # Check for profanity in title and content
+#             title_contains_profanity = profanity.contains_profanity(title)
+#             content_contains_profanity = profanity.contains_profanity(content)
+#
+#             if title_contains_profanity or content_contains_profanity:
+#                 return Response({
+#                     "message": "Profanity detected in title or content",
+#                     "profane_in_title": title_contains_profanity,
+#                     "profane_in_content": content_contains_profanity,
+#                     "allow": False
+#                 }, status=status.HTTP_200_OK)
+#
+#             return Response({
+#                 "message": "No profanity detected",
+#                 "profane_in_title": title_contains_profanity,
+#                 "profane_in_content": content_contains_profanity,
+#                 "allow": True
+#             }, status=status.HTTP_200_OK)
+#
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

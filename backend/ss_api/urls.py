@@ -19,7 +19,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView,
                     PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView,
                     undislikePostView,
-                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView, ProfanityCheckView)
+                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView)
 from django.contrib import admin
 
 
@@ -124,5 +124,5 @@ urlpatterns = [
     path('admin/interactions/', InteractionTrendView.as_view(), name='admin-interactions'),
 
 
-    path('check_profanity/', ProfanityCheckView.as_view(), name='check_profanity'),
+    # path('check_profanity/', ProfanityCheckView.as_view(), name='check_profanity'),
 ]
