@@ -11,6 +11,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
     const { isAuthenticated, user, error } = useContext(AuthContext);
 
     const [likedPosts, setLikedPosts] = useState([]);
+    const [dislikedPosts, setDislikedPosts] = useState([]);
     const [loadingLikedPosts, setLoadingLikedPosts] = useState(false);
 
     // State for user comments
@@ -33,15 +34,18 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
             return [];
         }
     };
-    
+
     const fetchLikedPosts = async () => {
         setLoadingLikedPosts(true);
         try {
-            const response = await AxiosInstance.get(`/activities/`, {
+            const response = await AxiosInstance.get(`api/activities/`, {
                 withCredentials: true,
             });
             if (response.data.liked_posts) {
                 setLikedPosts(response.data.liked_posts);
+            }
+            if (response.data.disliked_posts) {
+                setDislikedPosts(response.data.disliked_posts);
             }
         } catch (error) {
             console.error("Error fetching liked posts:", error);
@@ -76,7 +80,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
         }
     }, [activeTab, user.id]);
 
-     // Fetch liked posts when the "liked" tab is active
+    // Fetch liked posts when the "liked" tab is active
     useEffect(() => {
         if (activeTab === "liked") {
             fetchLikedPosts();
@@ -135,24 +139,23 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                         userComments.map((comment) => (
                             <div
                                 key={comment.id}
-                                className={`w-full my-3 p-3 border border-solid shadow-xl card card-compact ${
-                                    comment.isPinned ? 'border-amber-400' : 'border-gray-300'
-                                }`}
+                                className={`w-full my-3 p-3 border border-solid shadow-xl card card-compact ${comment.isPinned ? 'border-amber-400' : 'border-gray-300'
+                                    }`}
                                 style={{
-                                backgroundColor: '#d2d2d2',
-                                border: '0.5px solid #F9F6EE',
-                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', 
-                                 }}
+                                    backgroundColor: '#d2d2d2',
+                                    border: '0.5px solid #F9F6EE',
+                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                }}
                             >
-                            <div className="flex flex-col">
-                                <p className="text-lg font-bold text-black">{comment.post_title}</p>
-                                <span className="text-sm text-black">
-                                    {comment.created_at
-                                        ? format(new Date(comment.created_at), "eeee, MMMM dd yyyy hh:mm:ss a")
-                                        : ""}
-                                </span>
-                            </div>
-                            <br></br>
+                                <div className="flex flex-col">
+                                    <p className="text-lg font-bold text-black">{comment.post_title}</p>
+                                    <span className="text-sm text-black">
+                                        {comment.created_at
+                                            ? format(new Date(comment.created_at), "eeee, MMMM dd yyyy hh:mm:ss a")
+                                            : ""}
+                                    </span>
+                                </div>
+                                <br></br>
                                 <p className="text-sm text-black">Community: {comment.post_community}</p>
                                 <Link
                                     to={`/community/${comment.post_community_id}/post/${comment.post_id}#comment-${comment.id}`} // Dynamic link to the specific comment
@@ -168,6 +171,52 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                 </div>
             )}
 
+            {activeTab === "liked" && (
+                <div>
+                    <h2 className="font-semibold">User's Posts</h2>
+                    {likedPosts.length > 0 ? (
+                        likedPosts.map((post) => (
+                            <CommunityPost
+                                key={post.id}
+                                userName={post.created_by_username}
+                                community={post.posted_in}
+                                postTitle={post.title}
+                                postContent={post.content}
+                                postId={post.id}
+                                userID={user.id}
+                                userAvatar={post.userAvatar}
+                                createdAt={post.created_at}
+                            />
+                        ))
+                    ) : (
+                        <p>No posts to display.</p>
+                    )}
+
+                </div>
+            )}
+            {activeTab === "disliked" && (
+                <div>
+                    <h2 className="font-semibold">User's Posts</h2>
+                    {dislikedPosts.length > 0 ? (
+                        dislikedPosts.map((post) => (
+                            <CommunityPost
+                                key={post.id}
+                                userName={post.created_by_username}
+                                community={post.posted_in}
+                                postTitle={post.title}
+                                postContent={post.content}
+                                postId={post.id}
+                                userID={user.id}
+                                userAvatar={post.userAvatar}
+                                createdAt={post.created_at}
+                            />
+                        ))
+                    ) : (
+                        <p>No posts to display.</p>
+                    )}
+
+                </div>
+            )}
             {loading && <div className="loading loading-spinner loading-lg"></div>}
             {!hasMore && <div className="mt-4 text-center">No more posts to load</div>}
         </div>

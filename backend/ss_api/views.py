@@ -889,7 +889,7 @@ class UserCommentsView(APIView):
 
         # Filter comments by the user
         comments = Comment.objects.filter(author__id=user_id)
-        serializer = CommentSerializer(comments, many=True)
+        serializer = CommentSerializer(comments, many=True, context={'request': request})
         return Response(serializer.data)
 
 class PostCommentsView(generics.ListAPIView):
@@ -1075,22 +1075,29 @@ class UserActivitiesView(APIView):
     def get(self, request):
         user = request.user
 
-        posts = Post.objects.filter(user=user).order_by('created_at')
-        comments = Comment.objects.filter(user=user).order_by('created_at')
-        
-        # Fetch user's liked posts
-        liked_posts = Likes.objects.filter(user=user).select_related('post').order_by('-post__created_at')
-        liked_posts_data = [like.post for like in liked_posts]  # Extract Post objects
+        # Fetch the user's posts
+        posts = Post.objects.filter(created_by=user).order_by('created_at')
+
+        # Fetch the user's comments
+        comments = Comment.objects.filter(author=user).order_by('created_at')
+
+        # Fetch the user's liked posts
+        liked_posts = LikedPost.objects.filter(user=user).select_related('post').order_by('-post__created_at')
+        liked_posts_data = [like.post for like in liked_posts]
+
+        # Fetch the user's disliked posts
+        disliked_posts = DislikedPost.objects.filter(user=user).select_related('post').order_by('-post__created_at')
+        disliked_posts_data = [dislike.post for dislike in disliked_posts]
 
         activities = {
             'posts': PostSerializer(posts, many=True).data,
-            'comments': CommentSerializer(comments, many=True).data,
-
-            'liked_posts': CommunityPostSerializer(liked_posts, many=True).data
+            'comments': CommentSerializer(comments, many=True, context={'request': request}).data,
+            'liked_posts': CommunityPostSerializer(liked_posts_data, many=True).data,
+            'disliked_posts': CommunityPostSerializer(disliked_posts_data, many=True).data,
         }
 
         return Response(activities)
-
+    
 class CommunityListView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -1840,7 +1847,7 @@ class AdminUserRecentActivityLogView(APIView):
         # Serialize the data
         activities = {
             'posts': PostSerializer(posts, many=True).data,
-            'comments': CommentSerializer(comments, many=True).data,
+            'comments': CommentSerializer(comments, many=True, context={'request': request}).data,
             'liked_posts': LikedPostSerializer(liked_posts, many=True).data,
             'saved_posts': SavedPostSerializer(saved_posts, many=True).data
         }
@@ -1861,7 +1868,7 @@ class AdminUserActivityLogView(APIView):
         # Serialize the data
         activities = {
             'posts': PostSerializer(posts, many=True).data,
-            'comments': CommentSerializer(comments, many=True).data,
+            'comments': CommentSerializer(comments, many=True, context={'request': request}).data,
             'liked_posts': LikedPostSerializer(liked_posts, many=True).data,
         }
 
