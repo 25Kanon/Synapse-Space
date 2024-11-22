@@ -14,6 +14,7 @@ import StyledOutput from "./StyledOutput";
 import AuthContext from "../../context/AuthContext";
 import ReportForm from "../../components/ReportForm";
 import { format } from "date-fns";
+import { useMemberships } from "../../context/MembershipContext";
 const CommunityPost = ({
     userName,
     userAvatar,
@@ -35,7 +36,11 @@ const CommunityPost = ({
     const [role, setRole] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
-
+    const { memberships } = useMemberships();
+    // const [communityAvatar, setCommunityAvatar] = useState("");
+    // useEffect(() =>{if(community){setCommunityAvatar()}},[memberships, community]);\
+    console.log(memberships, community);
+    const communityObj = memberships.find((membership) => membership.community === community);
     // Like/Dislike Handlers
     const handleLikeChange = () => {
         const url = `/api/community/${community}/post/${postId}/${isLiked ? "unlike" : "like"}`;
@@ -87,14 +92,14 @@ const CommunityPost = ({
 
                 if (likesData.status === 200) {
                     setLikes(likesData.data.length);
-                    if (likesData.data.some(like => like.user === userID)) {
+                    if (likesData.data.some(like => like.user === user.id)) {
                         setIsLiked(true);
                     }
                 }
 
                 if (dislikesData.status === 200) {
                     setDislikes(dislikesData.data.length);
-                    if (dislikesData.data.some(dislike => dislike.user === userID)) {
+                    if (dislikesData.data.some(dislike => dislike.user === user.id)) {
                         setIsDisliked(true);
                     }
                 }
@@ -150,26 +155,49 @@ const CommunityPost = ({
                     {/* Post Header */}
                     <div className="flex justify-between items-center h-5">
                         {/* Left: Avatar and Author Info */}
-                        <Link to={`/profile/user/${authorId}`}>
-                            <div className="flex items-center">
-                                <div className="mx-2 avatar">
-                                    <div className="rounded-full h-7 cursor-pointer">
-                                        {userAvatar ? (
+                        <div className="flex items-center">
+                            <Link to={`/profile/user/${authorId}`}>
+                                <div className="flex items-center">
+                                    <div className="mx-2 avatar">
+                                        <div className="rounded-full h-7 cursor-pointer">
+                                            {userAvatar ? (
+                                                <img
+                                                    src={userAvatar}
+                                                    alt="User avatar"
+                                                    className="object-cover w-full h-full rounded-full"
+                                                />
+                                            ) : (
+                                                <div className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
+                                                    <span className="text-sm font-semibold">{userName.charAt(0)}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-sm font-semibold">{userName}</p>
+                                </div>
+                            </Link>
+
+                            {/* User and Community Information */}
+                            <div className="flex items-center text-sm text-gray-500">
+                                <span className="mx-2 text-gray-400">&rarr;</span> {/* Arrow indicator */}
+                                <Link to={`/community/${community}`} className="flex items-center text-sm text-gray-500 hover:underline">
+                                    <div className="w-5 h-5 rounded-full overflow-hidden mr-2">
+                                        {communityObj.community_avatar ? (
                                             <img
-                                                src={userAvatar}
-                                                alt="User avatar"
-                                                className="object-cover w-full h-full rounded-full"
+                                                src={communityObj.community_avatar}
+                                                alt="Community avatar"
+                                                className="object-cover w-full h-full"
                                             />
                                         ) : (
                                             <div className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
-                                                <span className="text-sm font-semibold">{userName.charAt(0)}</span>
+                                                <span className="text-xs font-semibold">C</span>
                                             </div>
                                         )}
                                     </div>
-                                </div>
-                                <p className="text-sm font-semibold">{userName}</p>
+                                    <span className="text-gray-400">{communityObj.community_name}</span>
+                                </Link>
                             </div>
-                        </Link>
+                        </div>
 
                         {/* Right: Dropdown Menu */}
                         <div className="dropdown dropdown-end">
@@ -237,6 +265,7 @@ const CommunityPost = ({
                             <ReportForm type={"post"} object={postId} community={community} />
                         </dialog>
                     </div>
+
                     {/* Post Content */}
                     <p className="text-sm">{createdAt ? format(new Date(createdAt), "eeee, MMMM dd yyyy hh:mm:ss a") : ""}</p>
                     <Link to={`/community/${community}/post/${postId}`}>

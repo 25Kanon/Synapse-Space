@@ -111,7 +111,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
             {activeTab === "posts" && (
                 <div>
                     <h2 className="font-semibold">User's Posts</h2>
-                    {userPosts.length > 0 ? (
+                    {userPosts.length > 0 && (
                         userPosts.map((post) => (
                             <CommunityPost
                                 key={post.id}
@@ -125,8 +125,6 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
                                 createdAt={post.created_at}
                             />
                         ))
-                    ) : (
-                        <p>No posts to display.</p>
                     )}
 
                 </div>
@@ -174,7 +172,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
             {activeTab === "liked" && (
                 <div>
                     <h2 className="font-semibold">User's Posts</h2>
-                    {likedPosts.length > 0 ? (
+                    {likedPosts.length > 0 && (
                         likedPosts.map((post) => (
                             <CommunityPost
                                 key={post.id}
@@ -188,8 +186,6 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
                                 createdAt={post.created_at}
                             />
                         ))
-                    ) : (
-                        <p>No posts to display.</p>
                     )}
 
                 </div>
@@ -197,7 +193,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
             {activeTab === "disliked" && (
                 <div>
                     <h2 className="font-semibold">User's Posts</h2>
-                    {dislikedPosts.length > 0 ? (
+                    {dislikedPosts.length > 0 && (
                         dislikedPosts.map((post) => (
                             <CommunityPost
                                 key={post.id}
@@ -211,8 +207,6 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
                                 createdAt={post.created_at}
                             />
                         ))
-                    ) : (
-                        <p>No posts to display.</p>
                     )}
 
                 </div>
