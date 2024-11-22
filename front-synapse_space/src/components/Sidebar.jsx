@@ -12,7 +12,6 @@ const Sidebar = () => {
   // Separate communities where the user is admin
   const adminCommunities = memberships.filter((membership) => membership.is_admin);
   const memberCommunities = memberships.filter((membership) => !membership.is_admin);
-  console.log(adminCommunities);
   return (
     <aside id="logo-sidebar" className="fixed top-0 left-0 z-40 w-64 pt-20 transition-transform -translate-x-full sm:translate-x-0 lg:block hidden" style={{ height: '95%' }} aria-label="Sidebar">
       <div className="h-full px-3 overflow-y-auto bg-base-200 pb-3 rounded-lg my-2">

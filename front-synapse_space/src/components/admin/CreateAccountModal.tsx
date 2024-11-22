@@ -34,7 +34,6 @@ export default function CreateAccountModal({ isOpen, onClose }: CreateAccountMod
     const uploadFile = async (file: File): Promise<string> => {
         const formData = new FormData();
         formData.append('img', file);
-        console.log("uploading: ",file.name)
 
         try {
             const response = await axiosInstance.post("/api/upload/", formData, {

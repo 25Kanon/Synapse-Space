@@ -97,7 +97,7 @@ const EditProfile = () => {
         e.preventDefault();
 
         try {
-            let uploadedProfilePic = profilePicBlob ? await uploadFile(profilePicBlob, ) : profilePic;
+            let uploadedProfilePic = profilePicBlob ? await uploadFile(profilePicBlob,) : profilePic;
             let uploadedProfileBanner = profileBannerBlob ? await uploadFile(profileBannerBlob) : profileBanner;
             const payload = {
                 username: DOMPurify.sanitize(username),
@@ -129,7 +129,7 @@ const EditProfile = () => {
         try {
             await AxiosInstance.put(
                 "/api/change-password/",
-                { current_password: currentPassword, new_password: newPassword },
+                { current_password: currentPassword, new_password: newPassword, confirm_password: confirmNewPassword },
                 { withCredentials: true }
             );
             setPasswordSuccess("Password updated successfully!");

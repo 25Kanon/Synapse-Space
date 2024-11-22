@@ -29,7 +29,6 @@ const OTPform = () => {
             const response = await AxiosInstance.post('/api/auth/resend-otp/', {
                 username_or_email: usernameOrEmail,
             });
-            console.log(response.data.message);
             return response.data.message;
         } catch (error) {
             console.error('Error resending OTP:', error.response?.data || error.message);

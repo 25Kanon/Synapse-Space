@@ -10,6 +10,7 @@ from django.conf import settings
 import os
 from datetime import datetime, timedelta
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 
 from django.contrib.auth import update_session_auth_hash
@@ -475,6 +476,7 @@ class LogoutView(APIView):
         return response
 
 class ChangePasswordView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
@@ -494,7 +496,7 @@ class ChangePasswordView(APIView):
         # Validate the new password according to Django's password validation rules
         try:
             validate_password(new_password, user)
-        except ValidationError as e:
+        except DjangoValidationError as e:
             return Response({"error": e.messages}, status=status.HTTP_400_BAD_REQUEST)
 
         # Set the new password

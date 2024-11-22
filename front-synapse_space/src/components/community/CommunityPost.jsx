@@ -37,9 +37,6 @@ const CommunityPost = ({
     const navigate = useNavigate();
     const location = useLocation();
     const { memberships } = useMemberships();
-    // const [communityAvatar, setCommunityAvatar] = useState("");
-    // useEffect(() =>{if(community){setCommunityAvatar()}},[memberships, community]);\
-    console.log(memberships, community);
     const communityObj = memberships.find((membership) => membership.community === community);
     // Like/Dislike Handlers
     const handleLikeChange = () => {
