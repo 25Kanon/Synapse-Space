@@ -5,6 +5,7 @@ import AxiosInstance from "../../utils/AxiosInstance";
 import ErrorAlert from "../../components/ErrorAlert";
 import CommunityPost from "../../components/community/CommunityPost";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll"; // Assuming you have this hook
+import { format } from "date-fns";
 
 const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
     const { isAuthenticated, user, error } = useContext(AuthContext);
@@ -117,6 +118,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                                 postId={post.id}
                                 userID={post.created_by}
                                 userAvatar={post.userAvatar}
+                                createdAt={post.created_at}
                             />
                         ))
                     ) : (
@@ -133,18 +135,28 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                         userComments.map((comment) => (
                             <div
                                 key={comment.id}
-                                className="p-4 mb-4 bg-gray-100 rounded-lg hover:shadow-lg"
+                                className={`w-full my-3 p-3 border border-solid shadow-xl card card-compact ${
+                                    comment.isPinned ? 'border-amber-400' : 'border-gray-300'
+                                }`}
+                                style={{
+                                backgroundColor: '#d2d2d2',
+                                border: '0.5px solid #F9F6EE',
+                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', 
+                                 }}
                             >
-                                <div className="flex items-center justify-between">
-                                    <p className="text-lg font-bold text-black">{comment.post_title}</p>
-                                    <span className="text-sm text-black">
-                                        {new Date(comment.created_at).toLocaleString()}
-                                    </span>
-                                </div>
+                            <div className="flex flex-col">
+                                <p className="text-lg font-bold text-black">{comment.post_title}</p>
+                                <span className="text-sm text-black">
+                                    {comment.created_at
+                                        ? format(new Date(comment.created_at), "eeee, MMMM dd yyyy hh:mm:ss a")
+                                        : ""}
+                                </span>
+                            </div>
+                            <br></br>
                                 <p className="text-sm text-black">Community: {comment.post_community}</p>
                                 <Link
                                     to={`/community/${comment.post_community_id}/post/${comment.post_id}#comment-${comment.id}`} // Dynamic link to the specific comment
-                                    className="mt-2 text-black no-underline hover:text-blue-500"
+                                    className="mt-2 text-black no-underline hover:text-[#22c0bd]"
                                 >
                                     {comment.content}
                                 </Link>
@@ -152,31 +164,6 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                         ))
                     ) : (
                         <p className="text-black">No comments to display.</p>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "liked" && (
-                <div>
-                    <h2 className="font-semibold">Liked Posts</h2>
-                    {loadingLikedPosts ? (
-                        <p>Loading liked posts...</p>
-                    ) : likedPosts.length > 0 ? (
-                        likedPosts.map((post) => (
-                            <CommunityPost
-                                key={post.id}
-                                userName={post.created_by_username}
-                                community={post.posted_in}
-                                postTitle={post.title}
-                                postContent={post.content}
-                                postId={post.id}
-                                userID={post.created_by}
-                                userAvatar={post.userAvatar}
-                                createdAt={post.created_at}
-                            />
-                        ))
-                    ) : (
-                        <p>No liked posts to display.</p>
                     )}
                 </div>
             )}

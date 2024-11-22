@@ -64,9 +64,9 @@ const NavBar = () => {
                     <div className="flex items-center justify-start rtl:justify-end">
                         <a href="/" className="flex ms-2 md:me-24">
                             <img
-                                src="https://flowbite.com/docs/images/logo.svg"
-                                className="h-8 me-3"
-                                alt="FlowBite Logo"
+                                src="/images/logo2.png" 
+                                alt="Synapse Space Logo"
+                                className="h-14 w-13"
                             />
                             <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
                                 Synapse Space

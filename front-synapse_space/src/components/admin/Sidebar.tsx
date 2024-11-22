@@ -14,9 +14,13 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="bg-base-100 w-64 min-h-screen p-4">
-            <div className="flex items-center gap-2 mb-8 px-2">
-                <Zap className="w-8 h-8 text-blue-400" />
+        <div className="w-64 min-h-screen p-4 bg-base-100">
+            <div className="flex items-center gap-2 px-2 mb-8">
+                <img
+                    src="/images/logo2.png" 
+                    alt="Synapse Space Logo"
+                    className="h-14 w-13"
+                />
                 <span className="text-xl font-bold">Synapse Space</span>
             </div>
             <nav>

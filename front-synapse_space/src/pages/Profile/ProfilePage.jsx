@@ -13,7 +13,7 @@ const ProfilePage = () => {
     const { user } = useContext(AuthContext); 
     const [userProfile, setUserProfile] = useState({});
     const [activities, setActivities] = useState({});
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('posts');
 
     useEffect(() => {
         // Fetch user profile
