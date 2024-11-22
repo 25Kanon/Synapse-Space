@@ -7,7 +7,7 @@ import CommunityPost from "../../components/community/CommunityPost";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll"; // Assuming you have this hook
 import { format } from "date-fns";
 
-const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
+const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
     const { isAuthenticated, user, error } = useContext(AuthContext);
 
     const [likedPosts, setLikedPosts] = useState([]);
@@ -35,10 +35,10 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
         }
     };
 
-    const fetchLikedPosts = async () => {
+    const fetchLikedPosts = async (userId) => {
         setLoadingLikedPosts(true);
         try {
-            const response = await AxiosInstance.get(`api/activities/`, {
+            const response = await AxiosInstance.get(`api/activities/${userId}`, {
                 withCredentials: true,
             });
             if (response.data.liked_posts) {
@@ -82,10 +82,10 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
 
     // Fetch liked posts when the "liked" tab is active
     useEffect(() => {
-        if (activeTab === "liked") {
-            fetchLikedPosts();
+        if (activeTab === "liked" || activeTab === "disliked") {
+            fetchLikedPosts(userID);
         }
-    }, [activeTab]);
+    }, [activeTab, userID]);
 
     // Handle clicking on a comment to navigate to the full post
     const handleCommentClick = (postId) => {
@@ -103,7 +103,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
     }
 
     // Filter posts created by the logged-in user
-    const userPosts = posts.filter((post) => post.created_by === user.id);
+    const userPosts = posts.filter((post) => post.created_by === userID);
 
     return (
         <div className="mt-4">
@@ -183,7 +183,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                                 postTitle={post.title}
                                 postContent={post.content}
                                 postId={post.id}
-                                userID={user.id}
+                                userID={userID}
                                 userAvatar={post.userAvatar}
                                 createdAt={post.created_at}
                             />
@@ -206,7 +206,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost }) => {
                                 postTitle={post.title}
                                 postContent={post.content}
                                 postId={post.id}
-                                userID={user.id}
+                                userID={userID}
                                 userAvatar={post.userAvatar}
                                 createdAt={post.created_at}
                             />

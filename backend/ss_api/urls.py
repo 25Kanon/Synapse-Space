@@ -46,7 +46,7 @@ urlpatterns = [
      # User Profile URLs
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('profile/<int:user_id>/', UserProfileView.as_view(), name='user-profile-by-id'),  # Fetch another user's profile
-    path('activities/', UserActivitiesView.as_view(), name='user-activities'),
+    path('activities/<int:userId>/', UserActivitiesView.as_view(), name='user-activities'),
     path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),
 
     # Community URLs

@@ -66,7 +66,7 @@ const UserProfilePage = () => {
                     {(isFriend || isSelf()) && (
                         <>
                             <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-                            <ActivitiesDisplay activities={activities} activeTab={activeTab} />
+                            <ActivitiesDisplay activities={activities} activeTab={activeTab} userID={userProfile.id}/>
                         </>
                     )}
                     {!isFriend && <p className="mt-6 text-center">You must be friends to see their activities.</p>}

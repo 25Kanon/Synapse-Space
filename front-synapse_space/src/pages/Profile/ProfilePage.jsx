@@ -40,7 +40,7 @@ const ProfilePage = () => {
                         isSelf={true}
                     />
                     <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-                    <ActivitiesDisplay activities={activities} activeTab={activeTab} />
+                    <ActivitiesDisplay activities={activities} activeTab={activeTab} userID={userProfile.id}/>
                 </div>
             </MainContentContainer>
         </>

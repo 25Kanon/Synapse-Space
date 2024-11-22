@@ -150,10 +150,10 @@ const CommunityPost = ({
                     {/* Post Header */}
                     <div className="flex justify-between items-center h-5">
                         {/* Left: Avatar and Author Info */}
-                        <div className="flex items-center">
-                            <div className="mx-2 avatar">
-                                <div className="rounded-full h-7 cursor-pointer">
-                                    <Link to={`/profile/user/${authorId}`}>
+                        <Link to={`/profile/user/${authorId}`}>
+                            <div className="flex items-center">
+                                <div className="mx-2 avatar">
+                                    <div className="rounded-full h-7 cursor-pointer">
                                         {userAvatar ? (
                                             <img
                                                 src={userAvatar}
@@ -165,11 +165,11 @@ const CommunityPost = ({
                                                 <span className="text-sm font-semibold">{userName.charAt(0)}</span>
                                             </div>
                                         )}
-                                    </Link>
+                                    </div>
                                 </div>
+                                <p className="text-sm font-semibold">{userName}</p>
                             </div>
-                            <p className="text-sm font-semibold">{userName}</p>
-                        </div>
+                        </Link>
 
                         {/* Right: Dropdown Menu */}
                         <div className="dropdown dropdown-end">

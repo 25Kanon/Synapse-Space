@@ -62,16 +62,18 @@ const NavBar = () => {
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start rtl:justify-end">
-                        <a href="" className="flex ms-2 md:me-24">
-                        <img
-                            src="/images/logo2.png" 
-                            alt="Synapse Space Logo"
-                            className="h-14 w-13"
-                        />
-                            <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
-                                Synapse Space
-                            </span>
-                        </a>
+                        <Link to="/">
+                            <a className="flex ms-2 md:me-24">
+                                <img
+                                    src="/images/logo2.png"
+                                    alt="Synapse Space Logo"
+                                    className="h-14 w-13"
+                                />
+                                <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
+                                    Synapse Space
+                                </span>
+                            </a>
+                        </Link>
                     </div>
                     {/* Search form */}
                     {!isOnSearchPage && (
@@ -187,7 +189,9 @@ const NavBar = () => {
                                                             ? `Your post in "${notification.message.community_name}" has been reported.`
                                                             : notification.message.action === "comment_reported"
                                                                 ? `Your comment in "${notification.message.community_name}" has been reported.`
-                                                                : ""
+                                                                : notification.message.action === "friend_request_accepted"
+                                                                    ? `Your friend request to ${notification.message.friend?.name} has been accepted.`
+                                                                    : ""
                                                 } // Add detailed message here
                                             >
                                                 <Link
@@ -198,7 +202,9 @@ const NavBar = () => {
                                                                 ? `/community/${notification.message.community_id}/post/${notification.message.post_id}#comment-${notification.message.comment_id}`
                                                                 : notification.message.action === "banned_from_community"
                                                                     ? `/community/${notification.message.community_id}`
-                                                                    : "#"
+                                                                    : notification.message.action === "friend_request_accepted"
+                                                                        ? `/profile/user/${notification.message.friend?.id}`
+                                                                        : "#"
                                                     }
                                                     className="text-sm font-medium truncate hover:underline"
 
