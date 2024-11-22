@@ -3,6 +3,7 @@ import { ArrowUp, ArrowDown, Trash2, Edit, MessageCircle, Flag } from "lucide-re
 import AuthContext from "../../context/AuthContext";
 import AxiosInstance from "../../utils/AxiosInstance";
 import CommentForm from "./CommentForm";
+import ReportForm from "../ReportForm";
 
 const CommentItem = ({ comment, onReply, onUpdate, onDelete, optionalClasses }) => {
     const [userVote, setUserVote] = useState(comment.user_vote || null); // 'upvote', 'downvote', or null
@@ -105,12 +106,11 @@ const CommentItem = ({ comment, onReply, onUpdate, onDelete, optionalClasses }) 
                         )}
                     </div>
                     <dialog id={`CommentModal${comment.id}`} className="modal">
-                        <div className="modal-box">
-                            <p>Report this comment?</p>
-                            <button className="btn" onClick={() => console.log(`Reported comment ${comment.id}`)}>
-                                Confirm
-                            </button>
-                        </div>
+                        <ReportForm
+                            type="comment"
+                            object={comment.id}
+                            community={comment.post_community_id}
+                        />
                     </dialog>
                 </div>
             </div>

@@ -33,7 +33,6 @@ const CommunityPost = ({
     const [dislikes, setDislikes] = useState(0);
     const { user } = useContext(AuthContext);
     const [role, setRole] = useState("");
-
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -112,32 +111,132 @@ const CommunityPost = ({
         navigate(`/community/${community}/post/${postId}/#comments`);
     };
 
+    const pinPost = async () => {
+        try {
+            const response = await AxiosInstance.post(`/api/community/${community}/post/${postId}/pin/`, {}, { withCredentials: true });
+            console.log("Post pinned successfully", response);
+        } catch (error) {
+            console.error("Error pinning post:", error);
+        }
+    };
+
+    const unpinPost = async () => {
+        try {
+            const response = await AxiosInstance.post(`/api/community/${community}/post/${postId}/unpin/`, {}, { withCredentials: true });
+            console.log("Post unpinned successfully", response);
+            setIsPinned(false);
+        } catch (error) {
+            console.error("Error unpinning post:", error);
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            const response = await AxiosInstance.delete(`/api/community/${community}/post/delete/${postId}/`, { withCredentials: true });
+            console.log("Post deleted successfully");
+            if (location.pathname === "/") {
+                window.location.href = `/`;
+            } else {
+                window.location.href = `/community/${community}`;
+            }
+        } catch (error) {
+            console.error("Error deleting post:", error);
+        }
+    };
     return (
         <>
             <div key={postId} className={`w-full my-5 border border-solid shadow-xl card card-compact ${isPinned ? "border-amber-400" : ""}`}>
-                <div className="card-body">
+                <div className="card-body ">
                     {/* Post Header */}
-                    <div className="flex items-center h-5">
-                        {/* Avatar */}
-                        <div className="mx-2 avatar">
-                            <div className="rounded-full h-7 cursor-pointer">
-                                <Link
-                                    to={`/profile/user/${authorId}`}
-                                    className="rounded-full h-7 cursor-pointer"
-                                >
-                                    {userAvatar ? (
-                                        <img src={userAvatar} alt="User avatar" className="object-cover w-full h-full rounded-full" />
-                                    ) : (
-                                        <div className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
-                                            <span className="text-sm font-semibold">{userName.charAt(0)}</span>
-                                        </div>
-                                    )}
-                                </Link>
+                    <div className="flex justify-between items-center h-5">
+                        {/* Left: Avatar and Author Info */}
+                        <div className="flex items-center">
+                            <div className="mx-2 avatar">
+                                <div className="rounded-full h-7 cursor-pointer">
+                                    <Link to={`/profile/user/${authorId}`}>
+                                        {userAvatar ? (
+                                            <img
+                                                src={userAvatar}
+                                                alt="User avatar"
+                                                className="object-cover w-full h-full rounded-full"
+                                            />
+                                        ) : (
+                                            <div className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
+                                                <span className="text-sm font-semibold">{userName.charAt(0)}</span>
+                                            </div>
+                                        )}
+                                    </Link>
+                                </div>
                             </div>
+                            <p className="text-sm font-semibold">{userName}</p>
                         </div>
-                        <p className="text-sm font-semibold">{userName}</p>
-                    </div>
 
+                        {/* Right: Dropdown Menu */}
+                        <div className="dropdown dropdown-end">
+                            <label tabIndex={0} className="btn btn-ghost btn-circle">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                    />
+                                </svg>
+                            </label>
+                            <ul
+                                tabIndex={0}
+                                className="p-2 shadow menu dropdown-content bg-secondary rounded-box w-52"
+                            >
+                                {role === "moderator" || role === "admin" ? (
+                                    <li>
+                                        {isPinned ? (
+                                            <button onClick={unpinPost}>Unpin Post</button>
+                                        ) : (
+                                            <button onClick={pinPost}>Pin Post</button>
+                                        )}
+                                    </li>
+                                ) : null}
+                                {authorId === user.id ? (
+                                    <>
+                                        <li>
+                                            <Link
+                                                to={{
+                                                    pathname: `/community/${community}/post/${postId}`,
+                                                }}
+                                                state={{ isEditing: true }}
+                                            >
+                                                Edit
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <button onClick={handleDelete}>Delete</button>
+                                        </li>
+                                    </>
+                                ) : (
+                                    <li>
+                                        <button
+                                            onClick={() =>
+                                                document.getElementById(`PostModal${postId}`).showModal()
+                                            }
+                                        >
+                                            Report
+                                        </button>
+                                    </li>
+                                )}
+                            </ul>
+                        </div>
+
+                        {/* Report Modal */}
+                        <dialog id={`PostModal${postId}`} className="modal">
+                            <ReportForm type={"post"} object={postId} community={community} />
+                        </dialog>
+                    </div>
                     {/* Post Content */}
                     <p className="text-sm">{createdAt ? format(new Date(createdAt), "eeee, MMMM dd yyyy hh:mm:ss a") : ""}</p>
                     <Link to={`/community/${community}/post/${postId}`}>
@@ -185,7 +284,7 @@ const CommunityPost = ({
                         <CommentSection postID={postId} />
                     </div>
                 )}
-            </div>
+            </div >
         </>
     );
 };
