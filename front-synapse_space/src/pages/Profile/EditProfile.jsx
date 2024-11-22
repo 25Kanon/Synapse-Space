@@ -153,9 +153,9 @@ const EditProfile = () => {
                 <h1 className="mb-8 text-3xl font-bold">Edit Profile</h1>
                 <form onSubmit={handleProfileSubmit} className="space-y-6 form-control">
                     <Banner profName={username} profAvatar={profilePic} profBanner={profileBanner} />
-                    <div className="flex flex-row justify-center gap-3">
+                    <div className="flex flex-row justify-center gap-3 ">
                         <div>
-                            <label className="block mb-2 text-sm font-bold" htmlFor="avatar">
+                            <label className="block mb-2 text-sm font-bold m-6" htmlFor="avatar">
                                 Profile Picture
                             </label>
                             <input
@@ -167,7 +167,7 @@ const EditProfile = () => {
                             />
                         </div>
                         <div>
-                            <label className="block mb-2 text-sm font-bold" htmlFor="banner">
+                            <label className="block mb-2 text-sm font-bold m-6" htmlFor="banner">
                                 Profile Banner
                             </label>
                             <input

@@ -160,14 +160,21 @@ export const AuthProvider = ({ children }) => {
 
     const isAdmin = async () => {
         const currentUser = user || await checkAuthentication();
+        return currentUser?.is_staff;
+    };
+
+    const isSuperUser = async () => {
+        const currentUser = user || await checkAuthentication();
         return currentUser?.is_superuser;
     };
+
 
     return (
         <AuthContext.Provider value={{
             isAuthenticated,
             isVerified,
             isAdmin,
+            isSuperUser,
             isRejected,
             isCometChatLogin,
             user,

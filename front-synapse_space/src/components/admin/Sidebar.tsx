@@ -1,8 +1,21 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, MessageSquare, UserCog , Settings, Zap, GraduationCap, BadgeCheck } from 'lucide-react';
 
+
+import { LayoutDashboard, Users, MessageSquare, UserCog , Settings, Zap, GraduationCap, BadgeCheck } from 'lucide-react';
+import AuthContext from '../../context/AuthContext';
 const Sidebar = () => {
+    const { isSuperUser } = useContext(AuthContext);
+    const [isSuper, setIsSuper] = useState(false);
+
+    useEffect(() => {
+        const checkSuperUser = async () => {
+            const result = await isSuperUser();
+            setIsSuper(result);
+        };
+        checkSuperUser();
+    }, [isSuperUser]);
+
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
         { icon: Users, label: 'Users', path: '/admin/users' },
@@ -10,8 +23,11 @@ const Sidebar = () => {
         { icon: BadgeCheck, label: 'Student Verification', path: '/admin/verifications' },
         { icon: GraduationCap, label: 'Programs', path: '/admin/programs' },
         { icon: UserCog, label: 'Account', path: '/admin/account' },
-        { icon: Settings, label: 'Settings', path: '/admin/settings' },
     ];
+
+    if (isSuper) {
+        navItems.push({ icon: Settings, label: 'Settings', path: '/admin/settings' });
+    }
 
     return (
         <div className="w-64 min-h-screen p-4 bg-base-100">

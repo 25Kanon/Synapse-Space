@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import {User, Shield, MoreVertical, Edit, Trash2, UserPlus, MessageSquare, TrendingUp} from 'lucide-react';
-import { User as UserType } from '../../components/admin/types'
-import CreateAccountModal from '../../components/admin/CreateAccountModal'
+import React, { useState, useEffect, useContext } from 'react';
+import { User as UserType } from '../../components/admin/types';
+import CreateAccountModal from '../../components/admin/CreateAccountModal';
 import Sidebar from "../../components/admin/Sidebar";
 import Header from "../../components/admin/Header";
-import Students from "../../components/admin/Students"
-import Staffs from "../../components/admin/Staffs"
+import Students from "../../components/admin/Students";
+import Staffs from "../../components/admin/Staffs";
 import AxiosInstance from "../../utils/AxiosInstance";
 import EditUserModal from "../../components/admin/EditUserModal";
-import ErrorAlert from "../../components/ErrorAlert"
-import SuccessAlert from "../../components/SuccessAlert"
-
+import ErrorAlert from "../../components/ErrorAlert";
+import SuccessAlert from "../../components/SuccessAlert";
+import AuthContext from '../../context/AuthContext';
 
 const Users = () => {
+    const { isSuperUser } = useContext(AuthContext);
     const [users, setUsers] = useState<UserType[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -24,9 +24,9 @@ const Users = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await AxiosInstance.get('/api/admin/users', {}, {withCredentials: true});
+            const response = await AxiosInstance.get('/api/admin/users', {}, { withCredentials: true });
             setUsers(response.data);
-            console.log(response.data)
+            console.log(response.data);
         } catch (err: any) {
             setError(err.message || 'Failed to load users');
         } finally {
@@ -42,7 +42,7 @@ const Users = () => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
 
         try {
-            const response = await AxiosInstance.delete(`/api/admin/account/delete/${userId}`, {}, {withCredentials: true});
+            const response = await AxiosInstance.delete(`/api/admin/account/delete/${userId}`, {}, { withCredentials: true });
             setUsers(users.filter(user => user.id !== userId));
             setSuccess('User deleted successfully');
         } catch (err: any) {
@@ -55,33 +55,28 @@ const Users = () => {
         document.getElementById('edit-user').showModal();
     };
 
-
-
     return (
         <div className="flex min-h-screen bg-base-200">
-
-            <Sidebar/>
+            <Sidebar />
             <div className="flex-1">
-                <Header/>
+                <Header />
                 <main>
-
                     <div role="tablist" className="tabs tabs-lifted m-3">
-                        <input type="radio" name="my_tabs_2" role="tab" className="tab card-title" aria-label="Students" defaultChecked/>
-
+                        <input type="radio" name="my_tabs_2" role="tab" className="tab card-title" aria-label="Students" defaultChecked />
                         <div role="tabpanel" className="tab-content bg-base-100 border-base-300 rounded-box p-6">
-                            <Students/>
+                            <Students />
                         </div>
-
-                        <input type="radio" name="my_tabs_2" role="tab" className="tab card-title" aria-label="Staffs"/>
-
-                        <div role="tabpanel" className="tab-content bg-base-100 border-base-300 rounded-box p-6">
-                            <Staffs/>
-                        </div>
-
+                        {isSuperUser && (
+                            <>
+                                <input type="radio" name="my_tabs_2" role="tab" className="tab card-title" aria-label="Staffs" />
+                                <div role="tabpanel" className="tab-content bg-base-100 border-base-300 rounded-box p-6">
+                                    <Staffs />
+                                </div>
+                            </>
+                        )}
                     </div>
                 </main>
             </div>
-
         </div>
     );
 };

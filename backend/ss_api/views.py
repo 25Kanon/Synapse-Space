@@ -1,4 +1,5 @@
 import hashlib
+import json
 from collections import defaultdict
 import pyotp
 import json
@@ -11,6 +12,7 @@ from django.conf import settings
 import os
 from datetime import datetime, timedelta
 
+from django.http import JsonResponse
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 
@@ -40,6 +42,10 @@ from django.contrib.auth import authenticate, get_user_model
 
 # Azure Blob Storage imports
 from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline
+import re
+from better_profanity import profanity
 
 # Other third-party library imports
 import uuid
@@ -48,6 +54,7 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 
 from azure.communication.email import EmailClient
 from azure.core.exceptions import HttpResponseError
+import torch
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
@@ -60,9 +67,9 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
                           DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
                           PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer,
-                          DislikedPostSerializer)
+                          DislikedPostSerializer, ContentSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
-    IsSuperUser, RefreshCookieJWTAuthentication, IsStaff
+    IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff
 
 from .recommender import get_hybrid_recommendations
 
@@ -477,7 +484,6 @@ class LogoutView(APIView):
         return response
 
 class ChangePasswordView(APIView):
-    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
@@ -497,7 +503,7 @@ class ChangePasswordView(APIView):
         # Validate the new password according to Django's password validation rules
         try:
             validate_password(new_password, user)
-        except DjangoValidationError as e:
+        except ValidationError as e:
             return Response({"error": e.messages}, status=status.HTTP_400_BAD_REQUEST)
 
         # Set the new password
@@ -600,6 +606,7 @@ class getMembershipRole(APIView):
 
 
 class MembershipListView(generics.ListAPIView):
+
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = MembershipSerializer
@@ -607,22 +614,6 @@ class MembershipListView(generics.ListAPIView):
     def get_queryset(self):
         student_number = self.request.query_params.get('student_number')
         return Membership.objects.filter(user__student_number=student_number, status='accepted').select_related('community')
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        response_data = []
-
-        for membership in queryset:
-            community = membership.community
-            is_admin = community.is_community_admin(request.user)
-            
-            # Serialize the membership data
-            serialized_data = MembershipSerializer(membership).data
-            serialized_data['is_admin'] = is_admin  # Add is_admin field to the serialized response
-            
-            response_data.append(serialized_data)
-
-        return Response(response_data)
 
 
 class CommunityMembersListView(generics.ListAPIView):
@@ -1195,55 +1186,21 @@ class UserActivitiesView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, userId):
-        authenticated_user = request.user
+    def get(self, request):
+        user = request.user
 
-        # Get the target user by ID
-        try:
-            target_user = User.objects.get(id=userId)
-        except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=404)
+        # Fetch the user's posts
+        posts = Post.objects.filter(created_by=user).order_by('created_at')
 
-        # Check if the authenticated user is the target user or they are friends
-        is_self = authenticated_user == target_user
-        is_friend = Friendship.objects.filter(
-            models.Q(user1=authenticated_user, user2=target_user) |
-            models.Q(user1=target_user, user2=authenticated_user)
-        ).exists()
+        # Fetch the user's comments
+        comments = Comment.objects.filter(author=user).order_by('created_at')
 
-        if not (is_self or is_friend):
-            return Response({"error": "You do not have permission to view this user's activities."}, status=403)
-
-        # Get the communities the requestor is a member of
-        requestor_communities = Membership.objects.filter(
-            user=authenticated_user,
-            status='accepted'
-        ).values_list('community_id', flat=True)
-
-        # Fetch the target user's posts in communities the requestor is a member of
-        posts = Post.objects.filter(
-            created_by=target_user,
-            posted_in__id__in=requestor_communities
-        ).order_by('created_at')
-
-        # Fetch the target user's comments in communities the requestor is a member of
-        comments = Comment.objects.filter(
-            author=target_user,
-            post__posted_in__id__in=requestor_communities
-        ).order_by('created_at')
-
-        # Fetch the target user's liked posts in communities the requestor is a member of
-        liked_posts = LikedPost.objects.filter(
-            user=target_user,
-            post__posted_in__id__in=requestor_communities
-        ).select_related('post').order_by('-post__created_at')
+        # Fetch the user's liked posts
+        liked_posts = LikedPost.objects.filter(user=user).select_related('post').order_by('-post__created_at')
         liked_posts_data = [like.post for like in liked_posts]
 
-        # Fetch the target user's disliked posts in communities the requestor is a member of <
-        disliked_posts = DislikedPost.objects.filter(
-            user=target_user,
-            post__posted_in__id__in=requestor_communities
-        ).select_related('post').order_by('-post__created_at')
+        # Fetch the user's disliked posts
+        disliked_posts = DislikedPost.objects.filter(user=user).select_related('post').order_by('-post__created_at')
         disliked_posts_data = [dislike.post for dislike in disliked_posts]
 
         activities = {
@@ -1254,7 +1211,6 @@ class UserActivitiesView(APIView):
         }
 
         return Response(activities)
-
     
 class CommunityListView(APIView):
     authentication_classes = [CookieJWTAuthentication]
@@ -1499,46 +1455,9 @@ class AcceptMembershipView(APIView):
             membership.status = 'accepted'
             membership.save()
             updated_memberships.append(membership)
-            
-            user = membership.user
-            email_body = f"Dear {user.username},\n\nCongratulations! You have been accepted into the community '{community.name}'. Welcome aboard!"
-            self.send_acceptance_email(
-                body=email_body,
-                to_email=user.email,
-                username=user.username
-            )
+
         serializer = MembershipSerializer(updated_memberships, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    @staticmethod
-    def send_acceptance_email(body, to_email, username):
-        print(body)
-        connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
-        email_client = EmailClient.from_connection_string(connection_string)
-        sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
-        recipient_email = to_email
-        message = {
-            "content":  {
-                'subject': 'Congratulations! You have been accepted into the community',
-                "plainText": body,
-            },
-             "recipients": {
-                "to": [
-                    {
-                        "address": recipient_email,
-                        "displayName": username
-                    }
-                ]
-            },
-            "senderAddress": sender
-        }
-
-        try:
-            response = email_client.begin_send(message)
-        except HttpResponseError as ex:
-            print('Exception:')
-            print(ex)
-            raise Exception(ex)
 
 
 class BanMembershipView(APIView):
@@ -1801,7 +1720,7 @@ class AllStaffsView(generics.ListAPIView):
 
 class UpdateAccountView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser or IsStaff]
+    permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
 
     def put(self, request):
         user_id = request.data.get('id')
@@ -1843,7 +1762,7 @@ class UpdateAccountView(APIView):
 
 class DeleteAccountView (APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated,  IsSuperUserOrStaff]
     def delete(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
 
@@ -1854,7 +1773,7 @@ class DeleteAccountView (APIView):
 
 class CreateAccountView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
     def post(self, request):
         serializer = CreateUserSerializer(data=request.data)
         if serializer.is_valid():
@@ -1869,7 +1788,7 @@ class CreateAccountView(APIView):
 
 class PostCountView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
 
     def get(self, request):
         post_count = Post.objects.all().count()
@@ -1878,7 +1797,7 @@ class PostCountView(APIView):
 
 class UserCountView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated,  IsSuperUserOrStaff]
 
     def get(self, request):
         user_count = User.objects.all().count()
@@ -1887,7 +1806,7 @@ class UserCountView(APIView):
 
 class NewUserCountView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
 
     def get(self, request):
         new_users = User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).count()
@@ -1896,7 +1815,7 @@ class NewUserCountView(APIView):
 
 class EngagementRateView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
 
     def get(self, request):
         active_users = User.objects.filter(is_active=True).count()
@@ -2022,7 +1941,7 @@ class MarkAsReadView(APIView):
 
 class AdminUserRecentActivityLogView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
 
     def get(self, request):
         # Fetch posts created in the last 7 days
@@ -2052,7 +1971,7 @@ class AdminUserRecentActivityLogView(APIView):
 
 class AdminUserActivityLogView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
 
     def get(self, request):
         # Fetch all user activities
@@ -2071,7 +1990,7 @@ class AdminUserActivityLogView(APIView):
 
 class InteractionTrendView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperUser]
+    permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
 
     def get(self, request):
         # Get the time range from query parameters
@@ -2293,3 +2212,32 @@ class RemoveVoteView(APIView):
         user = request.user
         CommentVote.objects.filter(user=user, comment=comment).delete()
         return Response({"message": "Vote removed"}, status=status.HTTP_200_OK)
+
+
+class ProfanityCheckView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ContentSerializer(data=request.data)
+        if serializer.is_valid():
+            title = serializer.validated_data.get('title')
+            content = serializer.validated_data.get('content')
+
+            # Check for profanity in title and content
+            title_contains_profanity = profanity.contains_profanity(title)
+            content_contains_profanity = profanity.contains_profanity(content)
+
+            if title_contains_profanity or content_contains_profanity:
+                return Response({
+                    "message": "Profanity detected in title or content",
+                    "profane_in_title": title_contains_profanity,
+                    "profane_in_content": content_contains_profanity,
+                    "allow": False
+                }, status=status.HTTP_200_OK)
+
+            return Response({
+                "message": "No profanity detected",
+                "profane_in_title": title_contains_profanity,
+                "profane_in_content": content_contains_profanity,
+                "allow": True
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

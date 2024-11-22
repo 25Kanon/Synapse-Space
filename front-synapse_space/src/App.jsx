@@ -40,6 +40,7 @@ import ChatWindow from "./components/CometChat/ChatWindow";
 import { Activities } from "./pages/Admin/Activities";
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 import Footer from './components/Footer';
+import Account from "./pages/Admin/Account";
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -190,6 +191,10 @@ function App() {
 
                   <Route path="/admin/verifications" element={<AdminRoute />}>
                     <Route path="/admin/verifications" element={<Verifications />} />
+                  </Route>
+
+                  <Route path="/admin/Account" element={<AdminRoute />}>
+                    <Route path="/admin/Account" element={<Account/>} />
                   </Route>
 
 

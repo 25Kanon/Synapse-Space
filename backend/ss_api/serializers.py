@@ -639,3 +639,8 @@ class DislikedPostSerializer(serializers.ModelSerializer):
 
     def get_author_pic(self, obj):
         return obj.user.profile_pic
+
+
+class ContentSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255)
+    content = serializers.CharField()
