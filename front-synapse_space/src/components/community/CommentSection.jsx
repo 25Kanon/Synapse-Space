@@ -140,6 +140,7 @@ const CommentSection = ({ postID }) => {
                 onVote={handleVote}
                 onUpdate={updateComment}
                 onDelete={deleteComment}
+                refetchComments={fetchComments}
             />
         </div>
     );
