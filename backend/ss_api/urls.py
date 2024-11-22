@@ -17,7 +17,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     ProgramCreateView, UnverifiedStudentsViewSet, NotificationListView, MarkAsReadView,
                     AdminUserActivityLogView, AdminUserRecentActivityLogView, InteractionTrendView,
                     CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView,
-                    PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView, undislikePostView)
+                    PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView, undislikePostView,
+                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView)
 from django.contrib import admin
 
 
@@ -75,7 +76,10 @@ urlpatterns = [
     path('comments/user/<int:user_id>/', UserCommentsView.as_view(), name='user-comments'),
     path('comments/update/<int:pk>/', CommentUpdateView.as_view(), name='comment-update'),
     path('comments/delete/<int:pk>/', CommentDeleteView.as_view(), name='comment-delete'),
-
+    path("comments/<int:comment_id>/upvote/", UpvoteCommentView.as_view(), name="upvote-comment"),
+    path("comments/<int:comment_id>/downvote/", DownvoteCommentView.as_view(), name="downvote-comment"),
+    path("comments/<int:comment_id>/remove-vote/", RemoveVoteView.as_view(), name="remove-vote"),
+    
     path('<int:community_id>/create-report/', ReportsListCreateView.as_view(), name='report-create'),
     path('community/<int:community_id>/reports/resolve/<int:pk>/', modResolveView.as_view(), name='mod-approve'),
     path('community/<int:community_id>/pending-members/', getPendingCommunityMembersListView.as_view(), name='community-pending-members-list'),

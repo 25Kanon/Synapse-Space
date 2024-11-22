@@ -368,6 +368,8 @@ class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
     author = serializers.CharField(source='author.username', read_only=True)
     author_pic = serializers.SerializerMethodField()
+    vote_score = serializers.SerializerMethodField()
+    user_vote = serializers.SerializerMethodField()
 
     post_title = serializers.CharField(source="post.title", read_only=True)
     post_community = serializers.CharField(source="post.posted_in.name", read_only=True)
@@ -375,15 +377,33 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'content', 'author', 'created_at', 'updated_at', 'post_id', 'post_title', 'post_community_id', 'post_community', 'parent', 'post', 'replies', 'author_pic']
-        read_only_fields = ['id', 'author', 'created_at', 'updated_at', 'author_pic']
+        fields = [
+            'id', 'content', 'author', 'created_at', 'updated_at',
+            'post_id', 'post_title', 'post_community_id', 'post_community',
+            'parent', 'post', 'replies', 'author_pic', 'vote_score', 'user_vote'
+        ]
+        read_only_fields = [
+            'id', 'author', 'created_at', 'updated_at', 'author_pic', 'vote_score', 'user_vote'
+        ]
 
     def get_replies(self, obj):
         replies = Comment.objects.filter(parent=obj)
-        return CommentSerializer(replies, many=True).data
+        return CommentSerializer(replies, many=True, context=self.context).data
 
     def get_author_pic(self, obj):
         return obj.author.profile_pic
+
+    def get_vote_score(self, obj):
+        upvotes = obj.votes.filter(vote="upvote").count()
+        downvotes = obj.votes.filter(vote="downvote").count()
+        return upvotes - downvotes
+
+    def get_user_vote(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            vote = obj.votes.filter(user=user).first()
+            return vote.vote if vote else None
+        return None
 
 
 

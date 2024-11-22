@@ -46,7 +46,7 @@ from urllib.parse import parse_qsl, urljoin, urlparse, unquote
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
-    Program, Notification, SavedPost, DislikedPost
+    Program, Notification, SavedPost, DislikedPost, CommentVote
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -900,10 +900,15 @@ class PostCommentsView(generics.ListAPIView):
         post_id = self.kwargs['post_id']
         return Comment.objects.filter(post_id=post_id, parent=None)
 
+    def get_serializer_context(self):
+        # Pass the request to the serializer context
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class CommentUpdateView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated]
 
     def put(self, request, pk):
         try:
@@ -911,7 +916,7 @@ class CommentUpdateView(APIView):
         except Comment.DoesNotExist:
             return Response({"error": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = CommentSerializer(comment, data=request.data, partial=True)
+        serializer = CommentSerializer(comment, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save(updated_at=timezone.now())
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -921,7 +926,7 @@ class CommentUpdateView(APIView):
 
 class CommentDeleteView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk):
         try:
@@ -2007,3 +2012,52 @@ class getPostDislikesView(APIView):
         dislikes = DislikedPost.objects.filter(post=post)
         serializer = DislikedPostSerializer(dislikes, many=True)
         return Response(serializer.data)
+    
+class UpvoteCommentView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, comment_id):
+        print(comment_id)
+        comment = get_object_or_404(Comment, id=comment_id)
+        user = request.user
+
+        # Check if user already voted
+        vote, created = CommentVote.objects.get_or_create(user=user, comment=comment)
+        if not created and vote.vote == "upvote":
+            vote.delete()  # Remove the upvote
+            return Response({"message": "Upvote removed"}, status=status.HTTP_200_OK)
+
+        # Update to upvote
+        vote.vote = "upvote"
+        vote.save()
+        return Response({"message": "Upvoted successfully"}, status=status.HTTP_201_CREATED)
+
+class DownvoteCommentView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+        user = request.user
+
+        # Check if user already voted
+        vote, created = CommentVote.objects.get_or_create(user=user, comment=comment)
+        if not created and vote.vote == "downvote":
+            vote.delete()  # Remove the downvote
+            return Response({"message": "Downvote removed"}, status=status.HTTP_200_OK)
+
+        # Update to downvote
+        vote.vote = "downvote"
+        vote.save()
+        return Response({"message": "Downvoted successfully"}, status=status.HTTP_201_CREATED)
+
+class RemoveVoteView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+        user = request.user
+        CommentVote.objects.filter(user=user, comment=comment).delete()
+        return Response({"message": "Vote removed"}, status=status.HTTP_200_OK)

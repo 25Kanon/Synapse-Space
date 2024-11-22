@@ -108,8 +108,13 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
-    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')
 
+    def vote_score(self):
+        upvotes = self.votes.filter(vote="upvote").count()
+        downvotes = self.votes.filter(vote="downvote").count()
+        return upvotes - downvotes
+    
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post.id}"
 
@@ -207,4 +212,15 @@ class DislikedPost(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['user', 'post'], name='unique_user_post_dislike')
+        ]
+        
+
+class CommentVote(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="votes")
+    vote = models.CharField(max_length=8, choices=[("upvote", "Upvote"), ("downvote", "Downvote")])
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "comment"], name="unique_user_comment_vote")
         ]
