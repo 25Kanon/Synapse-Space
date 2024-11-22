@@ -595,7 +595,6 @@ class getMembershipRole(APIView):
 
 
 class MembershipListView(generics.ListAPIView):
-
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = MembershipSerializer
@@ -603,6 +602,22 @@ class MembershipListView(generics.ListAPIView):
     def get_queryset(self):
         student_number = self.request.query_params.get('student_number')
         return Membership.objects.filter(user__student_number=student_number, status='accepted').select_related('community')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        response_data = []
+
+        for membership in queryset:
+            community = membership.community
+            is_admin = community.is_community_admin(request.user)
+            
+            # Serialize the membership data
+            serialized_data = MembershipSerializer(membership).data
+            serialized_data['is_admin'] = is_admin  # Add is_admin field to the serialized response
+            
+            response_data.append(serialized_data)
+
+        return Response(response_data)
 
 
 class CommunityMembersListView(generics.ListAPIView):

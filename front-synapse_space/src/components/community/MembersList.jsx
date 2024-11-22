@@ -48,24 +48,28 @@ const MembersList = ({ id }) => {
                     {members.map((member) => (
                         <li key={member.user_id}>
                             <div className="flex shadow bg-base-100 items-center w-full p-2 rounded-full group mt-3">
-                                <div className="avatar placeholder">
-                                    <div className="rounded-full h-7">
-                                        {member.userAvatar ? (
-                                            <img
-                                                src={member.userAvatar}
-                                                alt="User avatar"
-                                                className="w-full h-full object-cover rounded-full"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
-                                                <span className="text-sm font-semibold">
-                                                    {getInitials(member.userName)}
-                                                </span>
-                                            </div>
-                                        )}
+                                <Link to={`/profile/user/${member.user_id}`}>
+                                    <div className="avatar placeholder">
+                                        <div className="rounded-full h-7">
+                                            {member.userAvatar ? (
+                                                <img
+                                                    src={member.userAvatar}
+                                                    alt="User avatar"
+                                                    className="w-full h-full object-cover rounded-full"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
+                                                    <span className="text-sm font-semibold">
+                                                        {getInitials(member.userName)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                                <span className="ms-3 text-sm text-ellipsis overflow-hidden whitespace-nowrap">{member.username}</span>
+                                </Link>
+                                <span className="ms-3 text-sm text-ellipsis overflow-hidden whitespace-nowrap">
+                                    <Link to={`/profile/user/${member.user_id}`}>{member.username}
+                                    </Link></span>
                                 <div className="dropdown dropdown-end ml-auto">
                                     <label tabIndex={0} className="btn btn-ghost btn-circle">
                                         <svg
@@ -91,7 +95,7 @@ const MembersList = ({ id }) => {
                                             <div>
                                                 <li>
                                                     <Link
-                                                        to={`/community/${member.community}/post/${1}/edit`}
+                                                        to={`/profile/user/${member.user_id}`}
                                                     >
                                                         Profile
                                                     </Link>
