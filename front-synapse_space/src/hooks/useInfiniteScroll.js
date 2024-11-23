@@ -17,7 +17,11 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
             if (response && response.data && response.data.results) {
                 const newItems = response.data.results;
 
-                setItems((prev) => (initialLoad ? newItems : [...prev, ...newItems]));
+                setItems((prev) => {
+                    const existingIds = new Set(prev.map((item) => item.id)); // Create a set of existing IDs
+                    const filteredNewItems = newItems.filter((item) => !existingIds.has(item.id)); // Filter out duplicates
+                    return initialLoad ? newItems : [...prev, ...filteredNewItems];
+                });
 
                 // Extract the page number from the `next` field
                 if (response.data.next) {
@@ -41,6 +45,7 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
             setLoading(false);
         }
     };
+
 
     // Reset on dependency change (e.g., community change)
     useEffect(() => {
