@@ -59,16 +59,17 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
 
     // Handle scrolling
     useEffect(() => {
-        if(activeTab === "posts"){
+        if (activeTab === "posts") {
             const handleScroll = () => {
                 if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
                     loadMore();
                 }
             };
-    
+
             window.addEventListener("scroll", handleScroll);
             return () => window.removeEventListener("scroll", handleScroll);
         }
+
     }, [loadMore]);
 
     // Fetch user comments when "comments" tab is active

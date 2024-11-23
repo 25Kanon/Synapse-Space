@@ -1186,21 +1186,55 @@ class UserActivitiesView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user = request.user
+    def get(self, request, userId):
+        authenticated_user = request.user
 
-        # Fetch the user's posts
-        posts = Post.objects.filter(created_by=user).order_by('created_at')
+        # Get the target user by ID
+        try:
+            target_user = User.objects.get(id=userId)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=404)
 
-        # Fetch the user's comments
-        comments = Comment.objects.filter(author=user).order_by('created_at')
+        # Check if the authenticated user is the target user or they are friends
+        is_self = authenticated_user == target_user
+        is_friend = Friendship.objects.filter(
+            models.Q(user1=authenticated_user, user2=target_user) |
+            models.Q(user1=target_user, user2=authenticated_user)
+        ).exists()
 
-        # Fetch the user's liked posts
-        liked_posts = LikedPost.objects.filter(user=user).select_related('post').order_by('-post__created_at')
+        if not (is_self or is_friend):
+            return Response({"error": "You do not have permission to view this user's activities."}, status=403)
+
+        # Get the communities the requestor is a member of
+        requestor_communities = Membership.objects.filter(
+            user=authenticated_user,
+            status='accepted'
+        ).values_list('community_id', flat=True)
+
+        # Fetch the target user's posts in communities the requestor is a member of
+        posts = Post.objects.filter(
+            created_by=target_user,
+            posted_in__id__in=requestor_communities
+        ).order_by('created_at')
+
+        # Fetch the target user's comments in communities the requestor is a member of
+        comments = Comment.objects.filter(
+            author=target_user,
+            post__posted_in__id__in=requestor_communities
+        ).order_by('created_at')
+
+        # Fetch the target user's liked posts in communities the requestor is a member of
+        liked_posts = LikedPost.objects.filter(
+            user=target_user,
+            post__posted_in__id__in=requestor_communities
+        ).select_related('post').order_by('-post__created_at')
         liked_posts_data = [like.post for like in liked_posts]
 
-        # Fetch the user's disliked posts
-        disliked_posts = DislikedPost.objects.filter(user=user).select_related('post').order_by('-post__created_at')
+        # Fetch the target user's disliked posts in communities the requestor is a member of <
+        disliked_posts = DislikedPost.objects.filter(
+            user=target_user,
+            post__posted_in__id__in=requestor_communities
+        ).select_related('post').order_by('-post__created_at')
         disliked_posts_data = [dislike.post for dislike in disliked_posts]
 
         activities = {
@@ -1211,6 +1245,7 @@ class UserActivitiesView(APIView):
         }
 
         return Response(activities)
+
     
 class CommunityListView(APIView):
     authentication_classes = [CookieJWTAuthentication]
