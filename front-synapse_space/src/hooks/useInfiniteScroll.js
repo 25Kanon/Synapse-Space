@@ -14,13 +14,21 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
         setLoading(true);
         try {
             const response = await fetchCallback(page);
-
             if (response && response.data && response.data.results) {
                 const newItems = response.data.results;
 
-                setItems(prev => initialLoad ? newItems : [...prev, ...newItems]);
-                setHasMore(!!response.data.next);
-                setPage(prev => prev + 1);
+                setItems((prev) => (initialLoad ? newItems : [...prev, ...newItems]));
+
+                // Extract the page number from the `next` field
+                if (response.data.next) {
+                    const urlParams = new URL(response.data.next).searchParams;
+                    const nextPage = parseInt(urlParams.get('page'), 10) || page + 1; // Default fallback
+                    setPage(nextPage);
+                    setHasMore(true);
+                } else {
+                    setHasMore(false);
+                }
+
                 setError(null);
                 setInitialLoad(false);
             } else {
