@@ -125,9 +125,8 @@ class VerifyAccountView(APIView):
             user.is_verified = serializer.validated_data.get('is_verified', user.is_verified)
             user.is_rejected = serializer.validated_data.get('is_rejected', user.is_rejected)
 
-            logger.error(user)
-
             user.save()
+            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -208,7 +207,7 @@ def update_cometchat_user(user):
 def delete_cometchat_user(user):
     # Prepare the payload for deleting the CometChat user
     payload = {
-        "permanent": "false"
+        "permanent": false
     }
 
     # Headers for CometChat API

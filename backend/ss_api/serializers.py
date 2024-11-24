@@ -47,20 +47,30 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
+def generate_unique_username(first_name, last_name):
+    base_username = f"{first_name.lower()}.{last_name.lower()}"
+    while User.objects.filter(username=base_username).exists():
+        base_username = f"{first_name.lower()}.{last_name.lower()}{random.randint(1, 9999)}"
+    return base_username
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'username', 'password']
+        fields = ['first_name', 'last_name', 'email', 'password']
         extra_kwargs = {
             'student_number': {'required': True},
             'first_name': {'required': True},
             'last_name': {'required': True},
-            'username': {'required': True},
             'email': {'required': True},
             'password': {'required': True, 'write_only': True},
         }
 
+
     def create(self, validated_data):
+        if 'username' not in validated_data or not validated_data['username']:
+            validated_data['username'] = generate_unique_username(validated_data['first_name'], validated_data['last_name'])
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],

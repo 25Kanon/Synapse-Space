@@ -34,7 +34,6 @@ export default function RegistrationForm() {
 
     const formik = useFormik({
         initialValues: {
-            username:'',
             first_name: '',
             last_name: '',
             email: '',
@@ -46,7 +45,6 @@ export default function RegistrationForm() {
             const sanitizedValues = {
                 first_name: DOMPurify.sanitize(values.first_name),
                 last_name: DOMPurify.sanitize(values.last_name),
-                username: DOMPurify.sanitize(values.email),
                 email: DOMPurify.sanitize(values.email),
                 password: DOMPurify.sanitize(values.password),
                 confirmPassword: DOMPurify.sanitize(values.confirmPassword),
