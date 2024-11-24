@@ -6,6 +6,7 @@ import json
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.contrib.contenttypes.models import ContentType
 import requests
+from django.core.cache import cache
 from django.db.models import Q, Count
 from django.db import models
 from django.conf import settings
@@ -58,7 +59,7 @@ import torch
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
-    Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback
+    Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback, SystemSetting
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -68,7 +69,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
                           PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer,
                           DislikedPostSerializer, ContentSerializer, FeedbackSerializer,
-                          CustomTokenObtainPairSerializerStaff)
+                          CustomTokenObtainPairSerializerStaff, SystemSettingSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff
 
@@ -2470,3 +2471,45 @@ class FeedbackView(APIView):
 #             }, status=status.HTTP_200_OK)
 #
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SettingsView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request):
+        systemSettings = SystemSetting.objects.all()
+
+        return Response(SystemSettingSerializer(systemSettings, many=True).data, status=status.HTTP_200_OK)
+
+class UpdateSettingsView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def patch(self, request, *args, **kwargs):
+
+        key = request.data.get("key")
+        value = request.data.get("value")
+
+        if not key or value is None:
+            return Response(
+                {"error": "Both 'key' and 'value' are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Update the setting in the database
+            system_setting = SystemSetting.objects.get(key=key)
+            system_setting.value = str(value)
+            system_setting.save()
+
+            # Invalidate the cache for this setting
+            cache.delete(key)
+
+            return Response(
+                {"message": f"Setting '{key}' updated successfully."}, status=status.HTTP_200_OK
+            )
+        except SystemSetting.DoesNotExist:
+            return Response(
+                {"error": f"Setting with key '{key}' does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )

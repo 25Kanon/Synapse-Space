@@ -44,6 +44,7 @@ import { Activities } from "./pages/admin/Activities";
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 import Footer from './components/Footer';
 import Account from "./pages/admin/Account";
+import Settings from "./pages/admin/Settings";
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -198,8 +199,12 @@ function App() {
                     <Route path="/management/verifications" element={<Verifications />} />
                   </Route>
 
-                  <Route path="/management/Account" element={<AdminRoute />}>
-                    <Route path="/management/Account" element={<Account/>} />
+                  <Route path="/management/account" element={<AdminRoute />}>
+                    <Route path="/management/account" element={<Account/>} />
+                  </Route>
+
+                  <Route path="/management/settings" element={<AdminRoute />}>
+                    <Route path="/management/settings" element={<Settings/>} />
                   </Route>
 
 

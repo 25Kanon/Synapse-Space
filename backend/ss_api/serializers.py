@@ -21,19 +21,26 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
                      Reports, FriendRequest, Program,
-                     Notification, DislikedPost, Feedback)
+                     Notification, DislikedPost, Feedback, SystemSetting)
 
-from django.contrib.auth import get_user_model, authenticate
-from rest_framework import serializers
-import pyotp
-from azure.communication.email import EmailClient
-from azure.core.exceptions import HttpResponseError
-import time
+
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
+
+from django.contrib.auth import authenticate, get_user_model
+from django.core.cache import cache
+from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils.translation import gettext_lazy as _
+import pyotp
+import os
+from azure.communication.email import EmailClient
+from azure.core.exceptions import HttpResponseError
+import base64
+from django.utils.timezone import now
 
 logger = logging.getLogger(__name__)
 class UserSerializer(serializers.ModelSerializer):
@@ -83,27 +90,18 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
-MAX_LOGIN_ATTEMPTS = 3
-LOCKOUT_DURATION = 600  # 10 minutes
-OTP_RATE_LIMIT = 60  # 1 minute
 
-from django.contrib.auth import authenticate, get_user_model
-from django.core.cache import cache
-from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.utils.translation import gettext_lazy as _
-import pyotp
-import os
-from azure.communication.email import EmailClient
-from azure.core.exceptions import HttpResponseError
-import base64
-from django.utils.timezone import now
+def get_setting(key, default=None):
 
-# Constants for lockout and OTP rate-limiting
-MAX_LOGIN_ATTEMPTS = 3
-LOCKOUT_DURATION = 600  # 10 minutes
-OTP_RATE_LIMIT = 60  # 1 minute
-OTP_INTERVAL = 300  # 5 minutes
+    value = cache.get(key)
+    if value is None:
+        try:
+            # Fetch from the database and update the cache
+            value = SystemSetting.objects.get(key=key).value
+            cache.set(key, value, timeout=3600)  # Cache for 1 hour
+        except SystemSetting.DoesNotExist:
+            value = default
+    return value
 
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     username_or_email = serializers.CharField()
@@ -115,6 +113,12 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         password = data.get('password')
         otp = data.get('otp')
 
+        # Fetch settings dynamically
+        MAX_LOGIN_ATTEMPTS = get_setting("MAX_LOGIN_ATTEMPTS", 3)
+        LOCKOUT_DURATION = get_setting("LOCKOUT_DURATION", 600)
+        OTP_RATE_LIMIT = get_setting("OTP_RATE_LIMIT", 60)
+        OTP_INTERVAL = get_setting("OTP_INTERVAL", 300)
+
         # Check for required fields
         if not username_or_email or not password:
             raise serializers.ValidationError({
@@ -122,17 +126,19 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             })
 
         # Check if the user is locked out
-        if self.is_locked_out(username_or_email):
+        if self.is_locked_out(username_or_email, LOCKOUT_DURATION):
             raise serializers.ValidationError({
-                "message": _("Your account is locked due to too many failed login attempts. Please try again after 10 minutes.")
+                "message": _(
+                    f"Your account is locked due to {MAX_LOGIN_ATTEMPTS} failed login attempts. Please try again after {LOCKOUT_DURATION // 60} minutes."
+                )
             })
 
         # Authenticate the user
         user = self.authenticate_user(username_or_email, password)
         if not user:
-            if self.track_failed_login(username_or_email):
+            if self.track_failed_login(username_or_email, MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATION):
                 raise serializers.ValidationError({
-                    "message": _("Maximum login attempts exceeded. Please try again after 10 minutes.")
+                    "message": _(f"Maximum({MAX_LOGIN_ATTEMPTS}) login attempts exceeded. Please try again after 10 minutes.")
                 })
             raise serializers.ValidationError({
                 "message": _("Invalid credentials. Please check your username or password.")
@@ -163,7 +169,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             if not self.is_valid_secret(user.otp_secret):
                 raise serializers.ValidationError({"message": _("Invalid OTP secret. Please contact support.")})
 
-            totp = self.generate_otp(user.otp_secret)
+            totp = self.generate_otp(user.otp_secret, OTP_INTERVAL)
             body = f"Your OTP is: {totp}"
             self.send_otp(body, user.email, user.username)
 
@@ -172,7 +178,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             return {'message': 'OTP required'}
 
         # Verify the provided OTP
-        if not self.verify_otp(user.otp_secret, otp):
+        if not self.verify_otp(user.otp_secret, otp, OTP_INTERVAL):
             raise serializers.ValidationError({
                 "message": _("The OTP you entered is incorrect or expired. Please try again.")
             })
@@ -180,7 +186,6 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         # Return token data upon successful OTP verification
         self.reset_failed_login(username_or_email)
         return self.get_token_data(user)
-
 
     def authenticate_user(self, username_or_email, password):
         """
@@ -209,24 +214,23 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         refresh.access_token['username'] = user.username
         return data
 
-    def generate_otp(self, user_secret):
+    def generate_otp(self, user_secret, otp_interval):
         """
         Generate a time-based OTP using the user's secret.
         """
         try:
-            totp = pyotp.TOTP(user_secret, interval=OTP_INTERVAL)
+            totp = pyotp.TOTP(user_secret, interval=otp_interval)
             generated_otp = totp.now()
             return generated_otp
         except Exception as e:
-
             raise serializers.ValidationError({"message": _("Error generating OTP. Please try again later.")})
 
-    def verify_otp(self, user_secret, otp):
+    def verify_otp(self, user_secret, otp, otp_interval):
         """
         Verify the provided OTP against the user's secret.
         """
         try:
-            totp = pyotp.TOTP(user_secret, interval=OTP_INTERVAL)
+            totp = pyotp.TOTP(user_secret, interval=otp_interval)
             is_valid = totp.verify(otp)
             return is_valid
         except Exception as e:
@@ -272,7 +276,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         except HttpResponseError as ex:
             raise serializers.ValidationError({"message": _("Failed to send OTP. Please try again later.")})
 
-    def track_failed_login(self, username_or_email):
+    def track_failed_login(self, username_or_email, max_attempts, lockout_duration):
         """
         Increment failed login attempts and lock the account if attempts exceed the limit.
         """
@@ -280,14 +284,14 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         lockout_key = f"lockout:{username_or_email}"
 
         attempts = cache.get(attempts_key, 0) + 1
-        cache.set(attempts_key, attempts, LOCKOUT_DURATION)
+        cache.set(attempts_key, attempts, lockout_duration)
 
-        if attempts >= MAX_LOGIN_ATTEMPTS:
-            cache.set(lockout_key, True, LOCKOUT_DURATION)
+        if attempts >= max_attempts:
+            cache.set(lockout_key, True, lockout_duration)
             return True  # User is now locked out
         return False
 
-    def is_locked_out(self, username_or_email):
+    def is_locked_out(self, username_or_email, lockout_duration):
         """
         Check if the user is currently locked out.
         """
@@ -303,6 +307,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         cache.delete(attempts_key)
         cache.delete(lockout_key)
 
+
 class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
     username_or_email = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -313,6 +318,12 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         password = data.get('password')
         otp = data.get('otp')
 
+        # Fetch settings dynamically
+        MAX_LOGIN_ATTEMPTS = get_setting("MAX_LOGIN_ATTEMPTS", 3)
+        LOCKOUT_DURATION = get_setting("LOCKOUT_DURATION", 600)
+        OTP_RATE_LIMIT = get_setting("OTP_RATE_LIMIT", 60)
+        OTP_INTERVAL = get_setting("OTP_INTERVAL", 300)
+
         # Check for required fields
         if not username_or_email or not password:
             raise serializers.ValidationError({
@@ -320,17 +331,19 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
             })
 
         # Check if the user is locked out
-        if self.is_locked_out(username_or_email):
+        if self.is_locked_out(username_or_email, LOCKOUT_DURATION):
             raise serializers.ValidationError({
-                "message": _("Your account is locked due to too many failed login attempts. Please try again after 10 minutes.")
+                "message": _(
+                    f"Your account is locked due to {MAX_LOGIN_ATTEMPTS} failed login attempts. Please try again after {LOCKOUT_DURATION // 60} minutes."
+                )
             })
 
         # Authenticate the user
         user = self.authenticate_user(username_or_email, password)
         if not user:
-            if self.track_failed_login(username_or_email):
+            if self.track_failed_login(username_or_email, MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATION):
                 raise serializers.ValidationError({
-                    "message": _("Maximum login attempts exceeded. Please try again after 10 minutes.")
+                    "message": _(f"Maximum login({MAX_LOGIN_ATTEMPTS}) attempts exceeded. Please try again after 10 minutes.")
                 })
             raise serializers.ValidationError({
                 "message": _("Invalid credentials. Please check your username or password.")
@@ -361,7 +374,7 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
             if not self.is_valid_secret(user.otp_secret):
                 raise serializers.ValidationError({"message": _("Invalid OTP secret. Please contact support.")})
 
-            totp = self.generate_otp(user.otp_secret)
+            totp = self.generate_otp(user.otp_secret, OTP_INTERVAL)
             body = f"Your OTP is: {totp}"
             self.send_otp(body, user.email, user.username)
 
@@ -370,7 +383,7 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
             return {'message': 'OTP required'}
 
         # Verify the provided OTP
-        if not self.verify_otp(user.otp_secret, otp):
+        if not self.verify_otp(user.otp_secret, otp, OTP_INTERVAL):
             raise serializers.ValidationError({
                 "message": _("The OTP you entered is incorrect or expired. Please try again.")
             })
@@ -378,7 +391,6 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         # Return token data upon successful OTP verification
         self.reset_failed_login(username_or_email)
         return self.get_token_data(user)
-
 
     def authenticate_user(self, username_or_email, password):
         """
@@ -407,24 +419,23 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         refresh.access_token['username'] = user.username
         return data
 
-    def generate_otp(self, user_secret):
+    def generate_otp(self, user_secret, otp_interval):
         """
         Generate a time-based OTP using the user's secret.
         """
         try:
-            totp = pyotp.TOTP(user_secret, interval=OTP_INTERVAL)
+            totp = pyotp.TOTP(user_secret, interval=otp_interval)
             generated_otp = totp.now()
             return generated_otp
         except Exception as e:
-
             raise serializers.ValidationError({"message": _("Error generating OTP. Please try again later.")})
 
-    def verify_otp(self, user_secret, otp):
+    def verify_otp(self, user_secret, otp, otp_interval):
         """
         Verify the provided OTP against the user's secret.
         """
         try:
-            totp = pyotp.TOTP(user_secret, interval=OTP_INTERVAL)
+            totp = pyotp.TOTP(user_secret, interval=otp_interval)
             is_valid = totp.verify(otp)
             return is_valid
         except Exception as e:
@@ -470,7 +481,7 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         except HttpResponseError as ex:
             raise serializers.ValidationError({"message": _("Failed to send OTP. Please try again later.")})
 
-    def track_failed_login(self, username_or_email):
+    def track_failed_login(self, username_or_email, max_attempts, lockout_duration):
         """
         Increment failed login attempts and lock the account if attempts exceed the limit.
         """
@@ -478,14 +489,14 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         lockout_key = f"lockout:{username_or_email}"
 
         attempts = cache.get(attempts_key, 0) + 1
-        cache.set(attempts_key, attempts, LOCKOUT_DURATION)
+        cache.set(attempts_key, attempts, lockout_duration)
 
-        if attempts >= MAX_LOGIN_ATTEMPTS:
-            cache.set(lockout_key, True, LOCKOUT_DURATION)
+        if attempts >= max_attempts:
+            cache.set(lockout_key, True, lockout_duration)
             return True  # User is now locked out
         return False
 
-    def is_locked_out(self, username_or_email):
+    def is_locked_out(self, username_or_email, lockout_duration):
         """
         Check if the user is currently locked out.
         """
@@ -500,6 +511,7 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         lockout_key = f"lockout:{username_or_email}"
         cache.delete(attempts_key)
         cache.delete(lockout_key)
+
 
 class VerifyAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -956,3 +968,16 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = ['id', 'rating', 'feedback', 'created_at']
+
+class SystemSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemSetting
+        fields = ['id', 'key', 'value']
+        extra_kwargs = {
+            'id': {'read_only': True}
+        }
+
+    def update(self, instance, validated_data):
+        instance.value = validated_data.get('value', instance.value)
+        instance.save()
+        return instance

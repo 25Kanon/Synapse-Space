@@ -19,7 +19,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView,
                     PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView,
                     undislikePostView,
-                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView, StaffLoginView)
+                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView, StaffLoginView, SettingsView,
+                    UpdateSettingsView)
 from django.contrib import admin
 
 
@@ -124,6 +125,8 @@ urlpatterns = [
     path('admin/recent-user-activity-log/', AdminUserRecentActivityLogView.as_view(), name='admin-recent-user-activity-log'),
     path('admin/user-activity-log/', AdminUserActivityLogView.as_view(), name='admin-user-activity-log'),
     path('admin/interactions/', InteractionTrendView.as_view(), name='admin-interactions'),
+    path('admin/settings/', SettingsView.as_view(), name='admin-settings'),
+    path('admin/update/settings/', UpdateSettingsView.as_view(), name='update-admin-settings'),
 
 
     # path('check_profanity/', ProfanityCheckView.as_view(), name='check_profanity'),

@@ -234,3 +234,12 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Rating: {self.rating}, Feedback: {self.feedback[:20]}"
+
+
+class SystemSetting(models.Model):
+    key = models.CharField(max_length=100, unique=True)  # Setting name
+    value = models.CharField(max_length=255)  # Setting value (stored as a string for flexibility)
+    description = models.TextField(blank=True, null=True)  # Optional description for the setting
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
