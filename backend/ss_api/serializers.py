@@ -4,6 +4,8 @@ import os
 import pyotp
 import requests
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
+from django.utils.timezone import now
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -80,9 +82,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
-last_otp_generation = {}
-failed_login_attempts = {}
-lockout_times = {}
+MAX_LOGIN_ATTEMPTS = 3
+LOCKOUT_DURATION = 600  # 10 minutes
+OTP_RATE_LIMIT = 60  # 1 minute
 
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     username_or_email = serializers.CharField()
@@ -95,46 +97,55 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         otp = data.get('otp')
 
         if not username_or_email or not password:
-            raise serializers.ValidationError(_("Must include 'username_or_email' and 'password'"))
+            raise serializers.ValidationError({
+                "message": _("Both 'username_or_email' and 'password' are required.")
+            })
 
+        # Check if the user is locked out
+        if self.is_locked_out(username_or_email):
+            raise serializers.ValidationError({
+                "message": _("Your account is locked due to too many failed login attempts. Please try again after 10 minutes.")
+            })
+
+        # Authenticate the user
         user = self.authenticate_user(username_or_email, password)
         if not user:
-            failed_attempts = failed_login_attempts.get(username_or_email, 0)
-            failed_attempts += 1
-            failed_login_attempts[username_or_email] = failed_attempts
+            if self.track_failed_login(username_or_email):
+                raise serializers.ValidationError({
+                    "message": _("Maximum login attempts exceeded. Please try again after 10 minutes.")
+                })
+            raise serializers.ValidationError({
+                "message": _("Invalid credentials. Please check your username or password.")
+            })
 
-            if failed_attempts >= 3:
-                # Raise a validation error and lock the user out for 10 minutes
-                lockout_times[username_or_email] = time.time() + 600  # Store the lockout time
-                raise serializers.ValidationError(_("Maximum login attempts exceeded. Please try again later."))
+        # Reset failed attempts after successful login
+        self.reset_failed_login(username_or_email)
 
-            raise serializers.ValidationError(_('Invalid credentials'))
-
-        # Reset the failed login attempts count for the user
-        failed_login_attempts[username_or_email] = 0
-
-        # Check if the user is currently locked out
-        lockout_time = lockout_times.get(username_or_email)
-        if lockout_time and lockout_time > time.time():
-            raise serializers.ValidationError(_("User is currently locked out. Please try again later."))
-
+        # Handle OTP verification
         if not otp:
-            last_generation_time = last_otp_generation.get(user.id)
-            if last_generation_time and time.time() - last_generation_time < 60:
-                raise serializers.ValidationError(_("OTP generation is rate-limited. Please try again later."))
+            last_otp_time = cache.get(f"otp_generation:{user.id}")
+            if last_otp_time and (now().timestamp() - last_otp_time) < OTP_RATE_LIMIT:
+                raise serializers.ValidationError({
+                    "message": _("OTP generation is rate-limited. Please try again in a minute.")
+                })
 
+            # Generate and send OTP
             totp = self.generate_otp(user.otp_secret)
             body = f"Your OTP is: {totp}"
             self.send_otp(body, user.email, user.username)
 
-            # Update the last OTP generation time for the user
-            last_otp_generation[user.id] = time.time()
-
+            # Store OTP generation time in cache
+            cache.set(f"otp_generation:{user.id}", now().timestamp(), OTP_RATE_LIMIT)
             return {'message': 'OTP required'}
+
+        # Verify the provided OTP
         totp = pyotp.TOTP(user.otp_secret, interval=300)
         if not totp.verify(otp):
-            raise serializers.ValidationError(_(totp.now()))
+            raise serializers.ValidationError({
+                "message": _("The OTP you entered is incorrect or expired. Please try again.")
+            })
 
+        # Return token data upon successful OTP verification
         return self.get_token_data(user)
 
     def authenticate_user(self, username_or_email, password):
@@ -142,7 +153,6 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         Authenticate the user by either username or email.
         """
         user = authenticate(username=username_or_email, password=password)
-
         if not user:
             UserModel = get_user_model()
             try:
@@ -150,7 +160,6 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
                 user = authenticate(username=user_obj.username, password=password)
             except UserModel.DoesNotExist:
                 return None
-
         return user
 
     def get_token_data(self, user):
@@ -164,29 +173,33 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 
         # Add custom claims
         refresh.access_token['username'] = user.username
-
         return data
 
-    def generate_otp(self, user):
-        totp = pyotp.TOTP(user, interval=300)
+    def generate_otp(self, user_secret):
+        """
+        Generate a time-based OTP using the user's secret.
+        """
+        totp = pyotp.TOTP(user_secret, interval=300)
         return totp.now()
 
     @staticmethod
     def send_otp(body, to_email, username):
-        print(body)
+        """
+        Send the OTP to the user's email using Azure Communication Services.
+        """
         connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
         email_client = EmailClient.from_connection_string(connection_string)
         sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
-        recipient_email = to_email
+
         message = {
-            "content":  {
+            "content": {
                 'subject': 'One Time Password for Synapse Space',
                 "plainText": body,
             },
-             "recipients": {
+            "recipients": {
                 "to": [
                     {
-                        "address": recipient_email,
+                        "address": to_email,
                         "displayName": username
                     }
                 ]
@@ -195,20 +208,40 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         }
 
         try:
-            response = email_client.begin_send(message)
+            email_client.begin_send(message)
         except HttpResponseError as ex:
-            print('Exception:')
-            print(ex)
-            raise Exception(ex)
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
+            raise Exception(f"Failed to send email: {ex}")
 
-        # Add custom claims
-        token['username'] = user.username
-        # Add any other custom claims you want to include in the token
+    def track_failed_login(self, username_or_email):
+        """
+        Increment failed login attempts and lock the account if attempts exceed the limit.
+        """
+        attempts_key = f"failed_attempts:{username_or_email}"
+        lockout_key = f"lockout:{username_or_email}"
 
-        return token
+        attempts = cache.get(attempts_key, 0) + 1
+        cache.set(attempts_key, attempts, LOCKOUT_DURATION)
+
+        if attempts >= MAX_LOGIN_ATTEMPTS:
+            cache.set(lockout_key, True, LOCKOUT_DURATION)
+            return True  # User is locked out
+        return False
+
+    def is_locked_out(self, username_or_email):
+        """
+        Check if the user is currently locked out.
+        """
+        lockout_key = f"lockout:{username_or_email}"
+        return cache.get(lockout_key) is not None
+
+    def reset_failed_login(self, username_or_email):
+        """
+        Reset the failed login attempts and lockout status for the user.
+        """
+        attempts_key = f"failed_attempts:{username_or_email}"
+        lockout_key = f"lockout:{username_or_email}"
+        cache.delete(attempts_key)
+        cache.delete(lockout_key)
 
 class VerifyAccountSerializer(serializers.ModelSerializer):
     class Meta:

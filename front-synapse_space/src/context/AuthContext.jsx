@@ -65,7 +65,6 @@ export const AuthProvider = ({ children }) => {
                 },
             });
 
-            // Check response for OTP requirement
             if (response.data.message === "OTP required") {
                 console.log('OTP required');
                 setRequireOTP(true);
@@ -78,8 +77,8 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (error) {
             if (error.response) {
-                setError('Login failed. Please check your credentials and try again.');
-                console.error('An error occurred:', error.response.data);
+                setError(error.response.data.message);
+                console.error('An error occurred:', error.response.data.message);
             } else {
                 setError('An unexpected error occurred.');
                 setRequireOTP(false);

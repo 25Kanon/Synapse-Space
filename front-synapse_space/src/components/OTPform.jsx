@@ -1,11 +1,13 @@
 import React, { useContext, useState } from 'react';
 import AuthContext from '../context/AuthContext';
 import AxiosInstance from '../utils/AxiosInstance';
+import ErrorAlert from "./ErrorAlert";
 const OTPform = () => {
-    const { loginUser, usernameOrEmail } = useContext(AuthContext);
+    const { loginUser, usernameOrEmail, error } = useContext(AuthContext);
     const [otp, setOtp] = useState('');
     const [resendMessage, setResendMessage] = useState(null);
     const [loading, setLoading] = useState(false);
+
     const handleOtpChange = (e, index) => {
         const newOtp = otp.split('');
         newOtp[index] = e.target.value;
@@ -54,6 +56,7 @@ const OTPform = () => {
 
     return (
         <div className="flex flex-col space-y-2 ">
+            {error && <ErrorAlert text={error} classExtensions="max-w-lg"/>}
             <h2 className="card-title justify-center mb-5">Verify it's you.</h2>
             <div className="max-w-sm mx-auto">
                 <p className="text-justify justify-center">
