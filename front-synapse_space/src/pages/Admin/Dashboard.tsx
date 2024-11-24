@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, MessageSquare, ThumbsUp } from 'lucide-react';
+import {FileText, MessageSquare, ThumbsDown, ThumbsUp, Users} from 'lucide-react';
 import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
 import AxiosInstance from "../../utils/AxiosInstance";
@@ -91,9 +91,12 @@ function Dashboard() {
     }, [timeRange]);
 
     const latestData = data[data.length - 1] || {
+        users: 0,
+        communities: 0,
         posts: 0,
         comments: 0,
         liked_posts: 0,
+        disliked_posts: 0,
     };
 
 
@@ -109,6 +112,18 @@ function Dashboard() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <StatCard
+                                title="Total Users"
+                                value={selectedPoint?.users || latestData.users} // Use selected point or latest data
+                                icon={FileText}
+                                color="bg-cyan-500"
+                            />
+                            <StatCard
+                                title="Total Communities"
+                                value={selectedPoint?.communities || latestData.communities} // Use selected point or latest data
+                                icon={Users}
+                                color="bg-rose-500"
+                            />
                             <StatCard
                                 title="Total Posts"
                                 value={selectedPoint?.posts || latestData.posts} // Use selected point or latest data
@@ -126,6 +141,12 @@ function Dashboard() {
                                 value={selectedPoint?.liked_posts || latestData.liked_posts} // Use selected point or latest data
                                 icon={ThumbsUp}
                                 color="bg-amber-500"
+                            />
+                            <StatCard
+                                title="Disliked Posts"
+                                value={selectedPoint?.disliked_posts || latestData.disliked_posts} // Use selected point or latest data
+                                icon={ThumbsDown}
+                                color="bg-red-500"
                             />
                         </div>
 

@@ -15,9 +15,12 @@ type TimeRange = 'day' | 'week' | 'month' | 'year';
 
 interface DataPoint {
     timestamp: string;
+    users: number;
+    communities: number;
     posts: number;
     comments: number;
     liked_posts: number;
+    disliked_posts: number;
 }
 
 interface MetricConfig {
@@ -27,9 +30,12 @@ interface MetricConfig {
 }
 
 const metrics: MetricConfig[] = [
+    { key: 'users', color: '#56f9ff', label: 'Users' },
+    { key: 'communities', color: '#f9ff56', label: 'Communities'},
     { key: 'posts', color: '#3B82F6', label: 'Posts' },
     { key: 'comments', color: '#10B981', label: 'Comments' },
     { key: 'liked_posts', color: '#F59E0B', label: 'Liked Posts' },
+    { key: 'disliked_posts', color: '#EF4444', label: 'Disliked Posts' },
 ];
 
 interface EngagementChartProps {

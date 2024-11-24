@@ -43,11 +43,14 @@ export interface TabInfo {
 }
 
 export type TimeRange = 'day' | 'week' | 'month' | 'year';
-export type Metric = 'all' | 'posts' | 'comments' | 'liked_posts';
+export type Metric = 'all' | 'users' | 'posts' | 'comments' | 'liked_posts' | 'disliked_posts';
 
 export interface EngagementData {
     timestamp: string;
+    users: number;
+    communities: number;
     posts: number;
     comments: number;
     liked_posts: number;
+    disliked_posts: number;
 }

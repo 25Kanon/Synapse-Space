@@ -1,7 +1,7 @@
 import React from 'react';
-import { FileText, MessageSquare, ThumbsUp } from 'lucide-react';
+import {FileText, MessageSquare, ThumbsDown, ThumbsUp, User} from 'lucide-react';
 
-export type Metric = 'all' | 'posts' | 'comments' | 'liked_posts';
+export type Metric = 'all' | 'users' | 'communities' |'posts' | 'comments' | 'liked_posts' | 'disliked_posts';
 
 interface MetricOption {
     value: Metric;
@@ -12,9 +12,12 @@ interface MetricOption {
 
 const metrics: MetricOption[] = [
     { value: 'all', label: 'All Metrics', icon: FileText, color: 'bg-gray-500' },
+    { value: 'users', label: 'Users', icon: User, color: 'bg-cyan-500' },
+    { value: 'communities', label: 'Communities', icon: User, color: 'bg-rose-500' },
     { value: 'posts', label: 'Posts', icon: FileText, color: 'bg-blue-500' },
     { value: 'comments', label: 'Comments', icon: MessageSquare, color: 'bg-emerald-500' },
     { value: 'liked_posts', label: 'Liked Posts', icon: ThumbsUp, color: 'bg-amber-500' },
+    { value: 'disliked_posts', label: 'Disliked Posts', icon: ThumbsDown, color: 'bg-red-500' },
 ];
 
 interface MetricSelectorProps {
