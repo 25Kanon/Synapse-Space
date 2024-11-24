@@ -12,18 +12,18 @@ const CommunityCard = ({ community, getInitials, isJoined }) => {
   return (
     <div className="p-6 mx-auto">
       {/* DaisyUI Card */}
-      <div className="card w-72 bg-base-100 shadow-xl cursor-pointer transform transition-transform hover:scale-105 hover:shadow-2xl" onClick={handleCardClick}>
+      <div className="transition-transform transform shadow-xl cursor-pointer card w-72 bg-base-100 hover:scale-105 hover:shadow-2xl" onClick={handleCardClick}>
         <figure>
           <img
-            className="rounded-t-lg object-cover h-48 w-full"
+            className="object-cover w-full h-48 rounded-t-lg"
             src={community.bannerURL || 'https://via.placeholder.com/150'}
             alt={community.name}
           />
         </figure>
         <div className="card-body">
           <div className="flex items-center mb-2">
-            <div className="avatar placeholder mr-2">
-              <div className="bg-base-200 text-neutral-content w-10 h-10 rounded-full">
+            <div className="mr-2 avatar placeholder">
+              <div className="w-10 h-10 rounded-full bg-base-200 text-neutral-content">
                 {community.imgURL ? (
                     <img src={community.imgURL} alt={`avatar-${community.name}`}/>
                 ) : (
@@ -37,15 +37,15 @@ const CommunityCard = ({ community, getInitials, isJoined }) => {
           </div>
           {community.similarity_score ? (
               <p className="text-sm font-semibold text-green-500">
-                Similarity Score: {community.similarity_score.toFixed(2)}%
+                Similarity Score: {(community.similarity_score * 100).toFixed(2)}%
               </p>
           ) : (<></>)}
-          <h5 className="card-title text-2xl font-bold tracking-tight text-primary">{community.name}</h5>
+          <h5 className="text-2xl font-bold tracking-tight card-title text-primary">{community.name}</h5>
           <p className="mb-3 font-normal text-secondary" dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(marked(community.description))
           }}/>
-          <p className="text-sm text-gray-400 mt-2">{community.name} members • {community.date}</p>
-          <div className="card-actions justify-end">
+          <p className="mt-2 text-sm text-gray-400">{community.name} members • {community.date}</p>
+          <div className="justify-end card-actions">
             {isJoined ? (
                 <span className="text-sm text-green-500">Joined</span>
             ) : (

@@ -11,6 +11,7 @@ import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ResetPassword from './pages/ResetPasswordForm';
 import UserRegister from './pages/UserRegister';
+import AccessDenied from "./components/AccessDenied";
 import ProfilePage from './pages/Profile/ProfilePage';
 import UserProfilePage from './components/profile/UserProfilePage';
 import EditProfile from './pages/Profile/EditProfile';
@@ -131,6 +132,7 @@ function App() {
                   <Route path="/" element={<PublicRoute />}>
                     <Route path="/register" element={<UserRegister />} />
                   </Route>
+                  <Route path="/access-denied" element={<AccessDenied />} />
                   <Route path="/" element={<PublicRoute />}>
                     <Route path="/terms-of-use" element={<TermsOfUse />} />
                   </Route>

@@ -135,42 +135,52 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
 
             {activeTab === "comments" && (
                 <div>
-                    <h2 className="mb-4 font-semibold text-black">Your Comments</h2>
+                    <h2 className="mb-4 font-semibold text-accent dark:text-white">Your Comments</h2>
                     {userComments.length > 0 ? (
                         userComments.map((comment) => (
                             <div
                                 key={comment.id}
-                                className={`w-full my-3 p-3 border border-solid shadow-xl card card-compact ${comment.isPinned ? 'border-amber-400' : 'border-gray-300'
-                                    }`}
+                                className={`w-full my-3 p-3 border border-solid shadow-xl card card-compact border-white`}
                                 style={{
-                                    backgroundColor: '#d2d2d2',
-                                    border: '0.5px solid #F9F6EE',
-                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                    backgroundColor: 'var(--daisyui-base-100)', // Dynamic background color
+                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Maintain shadow
                                 }}
                             >
                                 <div className="flex flex-col">
-                                    <p className="text-lg font-bold text-black">{comment.post_title}</p>
-                                    <span className="text-sm text-black">
+                                    {/* Post Title */}
+                                    <p className="text-lg font-bold text-black dark:text-white">{comment.post_title}</p>
+
+                                    {/* Created At Timestamp */}
+                                    <span className="text-sm text-gray-500 dark:text-gray-300">
                                         {comment.created_at
-                                            ? format(new Date(comment.created_at), "eeee, MMMM dd yyyy hh:mm:ss a")
+                                            ? format(
+                                                new Date(comment.created_at),
+                                                "eeee, MMMM dd yyyy hh:mm:ss a"
+                                            )
                                             : ""}
                                     </span>
                                 </div>
-                                <br></br>
-                                <p className="text-sm text-black">Community: {comment.post_community}</p>
+                                <br />
+                                {/* Community Name */}
+                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                                    Community: {comment.post_community}
+                                </p>
+
+                                {/* Comment Content Link */}
                                 <Link
-                                    to={`/community/${comment.post_community_id}/post/${comment.post_id}#comment-${comment.id}`} // Dynamic link to the specific comment
-                                    className="mt-2 text-black no-underline hover:text-[#22c0bd]"
+                                    to={`/community/${comment.post_community_id}/post/${comment.post_id}#comment-${comment.id}`}
+                                    className="mt-2 text-gray-800 dark:text-white no-underline hover:text-[#22c0bd]" // Hover effect
                                 >
                                     {comment.content}
                                 </Link>
                             </div>
                         ))
                     ) : (
-                        <p className="text-black">No comments to display.</p>
+                        <p className="text-gray-800 dark:text-white">No comments to display.</p>
                     )}
                 </div>
             )}
+
 
             {activeTab === "liked" && (
                 <div>
