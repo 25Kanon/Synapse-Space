@@ -387,18 +387,18 @@ class CommunitySerializer(serializers.ModelSerializer):
 
 class CommunityWithScoreSerializer(serializers.ModelSerializer):
     similarity_score = serializers.FloatField(read_only=True, required=False)
+    reason = serializers.CharField(read_only=True, required=False)
 
     class Meta:
         model = Community
-        fields = ['id', 'bannerURL', 'imgURL', 'name', 'description', 'rules', 'keyword', 'similarity_score']
+        fields = ['id', 'bannerURL', 'imgURL', 'name', 'description', 'rules', 'keyword', 'similarity_score', 'reason']
 
     def to_representation(self, instance):
-        # Add the similarity_score from the context
         representation = super().to_representation(instance)
-        similarity_score = self.context.get('similarity_score')
-        if similarity_score is not None:
-            representation['similarity_score'] = similarity_score
+        representation['similarity_score'] = self.context.get('similarity_score', None)
+        representation['reason'] = self.context.get('reason', None)
         return representation
+
 
 
 

@@ -1745,8 +1745,14 @@ class UserRecommendationsView(APIView):
 
             # Serialize the recommended communities data
             serialized_communities = [
-                CommunityWithScoreSerializer(community[0], context={'similarity_score': community[1]}).data
-                for community in recommendations
+                CommunityWithScoreSerializer(
+                    community,
+                    context={
+                        'similarity_score': score,
+                        'reason': reason
+                    }
+                ).data
+                for community, score, reason in recommendations
             ]
 
             # Return the recommendations as a JSON response
