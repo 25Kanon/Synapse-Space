@@ -44,10 +44,13 @@ def validate_embeddings(embeddings):
 # Content-Based Filtering
 def content_based_recommendation(user_id):
     """
-    Recommend communities based on the user's interests only.
+    Recommend communities based on the user's interests only, excluding communities the user is already a member of.
     """
     # Fetch the user profile
     user = User.objects.get(id=user_id)
+
+    # Get communities the user is already a member of
+    user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
 
     # Use only the user's interests for generating the profile embedding
     user_text = " ".join(user.interests)  # Combine all interests into a single string
@@ -59,8 +62,8 @@ def content_based_recommendation(user_id):
         logger.error("User embedding is empty, cannot proceed with content-based filtering.")
         return []
 
-    # Get all communities and their embeddings
-    communities = list(Community.objects.all())
+    # Get all communities excluding those the user is already a member of
+    communities = list(Community.objects.exclude(id__in=user_memberships))
     community_embeddings = [
         get_embedding(community.description, cache_key=f"community_{community.id}", cache_type="communities")
         for community in communities
@@ -83,18 +86,25 @@ def content_based_recommendation(user_id):
 
 
 
+
 def collaborative_filtering(user_id):
+    """
+    Recommend communities based on memberships of similar users, excluding communities the user is already a member of.
+    """
+    # Fetch communities the user is already a member of
     user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
 
+    # Find users with overlapping memberships
     similar_users = Membership.objects.filter(
         community_id__in=user_memberships
     ).exclude(user_id=user_id).values_list('user_id', flat=True).distinct()
 
+    # Get communities from similar users, excluding those the user is already a member of
     similar_user_memberships = Membership.objects.filter(
         user_id__in=similar_users
     ).values_list('community_id', flat=True).distinct()
 
-    communities = Community.objects.filter(id__in=similar_user_memberships)
+    communities = Community.objects.filter(id__in=similar_user_memberships).exclude(id__in=user_memberships)
     community_embeddings = [
         get_embedding(community.description, cache_key=f"community_{community.id}", cache_type="communities")
         for community in communities
@@ -105,21 +115,25 @@ def collaborative_filtering(user_id):
         logger.error("No valid community embeddings for collaborative filtering.")
         return []
 
+    # Get user embedding
     user = User.objects.get(id=user_id)
-    user_text = " ".join(user.interests) + " " + (user.bio if user.bio else "")
+    user_text = " ".join(user.interests)  # Use only interests for embeddings
     user_embedding = get_embedding(user_text, cache_key=f"user_{user.id}", cache_type="users")
 
     if user_embedding is None:
         logger.error("User embedding is empty for collaborative filtering.")
         return []
 
+    # Compute cosine similarity
     similarities = cosine_similarity([user_embedding], community_embeddings)[0]
 
+    # Sort communities by similarity
     recommended_communities = sorted(
         zip(communities, similarities), key=lambda x: x[1], reverse=True
     )[:5]
 
     return recommended_communities  # Returns list of (Community, similarity_score)
+
 
 
 def get_hybrid_recommendations(user_id, cbf_weight=0.6, cf_weight=0.4):
