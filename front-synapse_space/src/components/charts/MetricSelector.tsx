@@ -1,7 +1,7 @@
 import React from 'react';
 import {FileText, MessageSquare, ThumbsDown, ThumbsUp, User} from 'lucide-react';
 
-export type Metric = 'all' | 'users' | 'communities' |'posts' | 'comments' | 'liked_posts' | 'disliked_posts';
+export type Metric = 'all' | 'users' | 'communities' |'posts' | 'comments' | 'liked_posts' | 'disliked_posts' | 'most_active_user' | 'most_active_community';
 
 interface MetricOption {
     value: Metric;
@@ -18,6 +18,9 @@ const metrics: MetricOption[] = [
     { value: 'comments', label: 'Comments', icon: MessageSquare, color: 'bg-emerald-500' },
     { value: 'liked_posts', label: 'Liked Posts', icon: ThumbsUp, color: 'bg-amber-500' },
     { value: 'disliked_posts', label: 'Disliked Posts', icon: ThumbsDown, color: 'bg-red-500' },
+    { value: 'most_active_user', label: 'Most Active User', icon: User, color: 'bg-cyan-500'},
+    { value: 'most_active_community', label: 'Most Active Community', icon: User, color: 'bg-rose-500'}
+
 ];
 
 interface MetricSelectorProps {

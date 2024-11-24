@@ -36,6 +36,8 @@ const metrics: MetricConfig[] = [
     { key: 'comments', color: '#10B981', label: 'Comments' },
     { key: 'liked_posts', color: '#F59E0B', label: 'Liked Posts' },
     { key: 'disliked_posts', color: '#EF4444', label: 'Disliked Posts' },
+    { key: 'most_active_user', color: '#56f9ff', label: 'Most Active User' },
+    { key: 'most_active_community', color: '#f9ff56', label: 'Most Active Community' },
 ];
 
 interface EngagementChartProps {

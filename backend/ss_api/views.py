@@ -2088,6 +2088,8 @@ class AdminUserActivityLogView(APIView):
 
         return Response(activities, status=status.HTTP_200_OK)
 
+from django.db.models import Count
+
 class InteractionTrendView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, IsSuperUserOrStaff]
@@ -2115,6 +2117,29 @@ class InteractionTrendView(APIView):
         comments = Comment.objects.filter(created_at__gte=start_date).order_by('created_at')
         liked_posts = LikedPost.objects.filter(created_at__gte=start_date).order_by('created_at')
         disliked_posts = DislikedPost.objects.filter(created_at__gte=start_date).order_by('created_at')
+
+        # Find the most active user
+        most_active_user = (
+            User.objects.annotate(
+                post_count=Count('post'),  # Count posts created by the user
+                comment_count=Count('comment')  # Count comments authored by the user
+            )
+            .annotate(activity_count=Count('post') + Count('comment'))  # Combine post and comment counts
+            .order_by('-activity_count')  # Sort by total activity count
+            .first()
+        )
+
+        # Find the most active community
+
+        most_active_community = (
+            Community.objects.annotate(
+                post_count=Count('post'),  # Count the posts in the community
+                comment_count=Count('post__comments')  # Count the comments related to posts in the community
+            )
+            .annotate(activity_count=Count('post') + Count('post__comments'))  # Combine post and comment counts
+            .order_by('-activity_count')  # Sort by total activity count
+            .first()
+        )
 
         # Initialize a dictionary to store counts by date
         activity_counts = defaultdict(
@@ -2177,11 +2202,29 @@ class InteractionTrendView(APIView):
                 'comments': counts['comments'],
                 'liked_posts': counts['liked_posts'],
                 'disliked_posts': counts['disliked_posts'],
+                'most_active_user': most_active_user.username,
+                'most_active_community': most_active_community.name
             }
             for date_str, counts in sorted(activity_counts.items())
         ]
 
+        # Add most active user and community to the response
+        # response_data = {
+        #     "interaction_trend": interaction_trend,
+        #     "most_active_user": {
+        #         "id": most_active_user.id,
+        #         "username": most_active_user.username,
+        #         "activity_count": most_active_user.activity_count,
+        #     } if most_active_user else None,
+        #     "most_active_community": {
+        #         "id": most_active_community.id,
+        #         "name": most_active_community.name,
+        #         "activity_count": most_active_community.activity_count,
+        #     } if most_active_community else None,
+        # }
+
         return Response(interaction_trend, status=status.HTTP_200_OK)
+
     
 class ResendOTPView(APIView):
     def post(self, request):

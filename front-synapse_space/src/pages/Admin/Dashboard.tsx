@@ -24,7 +24,7 @@ function StatCard({ title, value, icon: Icon, color }: {
             </div>
             <div>
                 <p className="text-gray-500 text-sm font-medium">{title}</p>
-                <p className="text-2xl font-semibold">{value.toLocaleString()}</p>
+                <p className="text-2xl font-semibold">{value?.toLocaleString()}</p>
             </div>
         </div>
     );
@@ -97,6 +97,8 @@ function Dashboard() {
         comments: 0,
         liked_posts: 0,
         disliked_posts: 0,
+        most_active_user: null,
+        most_active_community: null,
     };
 
 
@@ -163,19 +165,38 @@ function Dashboard() {
                                 </div>
                                 <MetricSelector selected={selectedMetric} onChange={setSelectedMetric}/>
                             </div>
-                            <div className="mt-6">
-                                {isLoading ? (
-                                    <LoadingState/>
-                                ) : error ? (
-                                    <ErrorState onRetry={loadData}/>
-                                ) : (
-                                    <EngagementChart
-                                        data={data}
-                                        timeRange={timeRange}
-                                        selectedMetric={selectedMetric}
-                                        onPointClick={(point) => setSelectedPoint(point)} // Update selected point
+                            <div className="mt-6 flex flex-row">
+                                <div className="w-full">
+                                    {isLoading ? (
+                                        <LoadingState/>
+                                    ) : error ? (
+                                        <ErrorState onRetry={loadData}/>
+                                    ) : (
+                                        <EngagementChart
+                                            data={data}
+                                            timeRange={timeRange}
+                                            selectedMetric={selectedMetric}
+                                            onPointClick={(point) => setSelectedPoint(point)} // Update selected point
+                                        />
+
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <StatCard
+                                        title="Most Active User"
+                                        value={selectedPoint?.most_active_user || latestData.most_active_user} // Use selected point or latest data
+                                        icon={ThumbsDown}
+                                        color="bg-red-500"
                                     />
-                                )}
+                                    <StatCard
+                                        title="Disliked Posts"
+                                        value={selectedPoint?.most_active_community|| latestData.most_active_community} // Use selected point or latest data
+                                        icon={ThumbsDown}
+                                        color="bg-red-500"
+                                    />
+                                </div>
+
                             </div>
                         </div>
                     </div>
