@@ -1,12 +1,25 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import AuthContext from '../context/AuthContext';
 import AxiosInstance from '../utils/AxiosInstance';
 import ErrorAlert from "./ErrorAlert";
+
 const OTPform = () => {
     const { loginUser, usernameOrEmail, error } = useContext(AuthContext);
     const [otp, setOtp] = useState('');
     const [resendMessage, setResendMessage] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [resendTimer, setResendTimer] = useState(0);
+
+    // Start the resend timer
+    useEffect(() => {
+        let timer;
+        if (resendTimer > 0) {
+            timer = setInterval(() => {
+                setResendTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [resendTimer]);
 
     const handleOtpChange = (e, index) => {
         const newOtp = otp.split('');
@@ -23,7 +36,7 @@ const OTPform = () => {
             if (nextInput) {
                 nextInput.focus();
             }
-        }   
+        }
     };
 
     const resendOTP = async (usernameOrEmail) => {
@@ -34,29 +47,28 @@ const OTPform = () => {
             return response.data.message;
         } catch (error) {
             console.error('Error resending OTP:', error.response?.data || error.message);
-            // Return the error message as a string
             throw error.response?.data?.error || 'Failed to resend OTP.';
         }
     };
 
     const handleResendOTP = async () => {
+        if (resendTimer > 0) return; // Prevent resend if timer is still active
         setLoading(true);
         setResendMessage(null);
         try {
             const message = await resendOTP(usernameOrEmail);
             setResendMessage(message);
+            setResendTimer(60); // Start 1-minute timer
         } catch (error) {
-            // Ensure the error is converted into a string
             setResendMessage(String(error));
         } finally {
             setLoading(false);
         }
     };
 
-
     return (
-        <div className="flex flex-col space-y-2 ">
-            {error && <ErrorAlert text={error} classExtensions="max-w-lg"/>}
+        <div className="flex flex-col space-y-2">
+            {error && <ErrorAlert text={error} classExtensions="max-w-lg" />}
             <h2 className="card-title justify-center mb-5">Verify it's you.</h2>
             <div className="max-w-sm mx-auto">
                 <p className="text-justify justify-center">
@@ -82,7 +94,6 @@ const OTPform = () => {
                                 light:border-gray-400 dark:border-gray-700
                                 text-lg focus:ring-1 ring-blue-700 outline-none`}
                                 type="number"
-                                name=""
                                 id={`otp-input-${index}`}
                                 maxLength={1}
                                 value={otp[index] || ''}
@@ -102,15 +113,14 @@ const OTPform = () => {
                 </div>
             </form>
             <div className="flex flex-row items-center text-sm font-medium space-x-1 text-gray-500">
-                {/* Resend OTP message */}
                 {resendMessage && <p>{resendMessage}</p>}
                 <p>Didn't receive code?</p>
                 <button
-                    className={`flex flex-row text-blue-600 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`flex flex-row text-blue-600 ${loading || resendTimer > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={handleResendOTP}
-                    disabled={loading}
+                    disabled={loading || resendTimer > 0}
                 >
-                    Resend
+                    {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend'}
                 </button>
             </div>
             <div className="flex flex-row justify-center text-sm">
