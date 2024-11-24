@@ -442,21 +442,27 @@ class getCommunityPostSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author_pic = serializers.SerializerMethodField()
+    created_by_username = serializers.SerializerMethodField()
+    community_name = serializers.SerializerMethodField()
 
-    created_by_username = serializers.CharField(source="created_by.username")
-    community_name = serializers.CharField(source="posted_in.name")
     class Meta:
         model = Post
-        fields = [ 'id', 'title','content', 'created_at', 'created_by', 'author_pic', 'posted_in', 'created_by_username', 'community_name']
-
+        fields = [
+            'id', 'title', 'content', 'created_at', 'created_by', 'author_pic',
+            'posted_in', 'created_by_username', 'community_name'
+        ]
 
     def get_created_by_username(self, obj):
-        return obj.created_by.username
+        # Return username or handle missing user gracefully
+        return obj.created_by.username if obj.created_by else "Unknown User"
 
     def get_community_name(self, obj):
-        return obj.posted_in.name
+        # Return community name or handle missing community gracefully
+        return obj.posted_in.name if obj.posted_in else "Unknown Community"
+
     def get_author_pic(self, obj):
-        return obj.created_by.profile_pic
+        # Return profile picture URL or a default placeholder
+        return obj.created_by.profile_pic if obj.created_by and obj.created_by.profile_pic else "https://via.placeholder.com/150"
     
 class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()

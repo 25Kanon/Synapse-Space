@@ -207,7 +207,7 @@ def update_cometchat_user(user):
 def delete_cometchat_user(user):
     # Prepare the payload for deleting the CometChat user
     payload = {
-        "permanent": false
+        "permanent": True
     }
 
     # Headers for CometChat API
@@ -954,7 +954,7 @@ class CommentCreateView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CreateCommentSerializer
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         # Save the comment with the authenticated user as the author
