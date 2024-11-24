@@ -8,10 +8,10 @@ import { useMemberships } from '../context/MembershipContext';
 const Sidebar = () => {
   const navigate = useNavigate();
   const { memberships } = useMemberships();
-
+  const isManaged = (role) => role === "admin" || role === "moderator";
   // Separate communities where the user is admin
-  const adminCommunities = memberships.filter((membership) => membership.is_admin);
-  const memberCommunities = memberships.filter((membership) => !membership.is_admin);
+  const managedCommunities = memberships.filter((membership) => isManaged(membership.role));
+  const memberCommunities = memberships.filter((membership) => !isManaged(membership.role));
   return (
     <aside id="logo-sidebar" className="fixed top-0 left-0 z-40 w-64 pt-20 transition-transform -translate-x-full sm:translate-x-0 lg:block hidden" style={{ height: '95%' }} aria-label="Sidebar">
       <div className="h-full px-3 overflow-y-auto bg-base-200 pb-3 rounded-lg my-2">
@@ -43,11 +43,11 @@ const Sidebar = () => {
         </ul>
         <div className="px-3 py-8 rounded-lg mt-40">
           {/* Admin Communities */}
-          {adminCommunities.length > 0 && (
+          {managedCommunities.length > 0 && (
             <>
               <h3 className="text-md font-semibold mb-2 pt-4">Managed Communities</h3>
               <ul className="font-medium mb-4">
-                {adminCommunities.map((membership) => (
+                {managedCommunities.map((membership) => (
                   <li className='my-2' key={membership.community}>
                     <LgCommunityPill communityID={membership.community} communityName={membership.community_name} commAvatar={membership.community_avatar} />
                   </li>
@@ -55,7 +55,7 @@ const Sidebar = () => {
               </ul>
             </>
           )}
-          {memberCommunities.length > 0 && adminCommunities.length > 0 && (<div className="divider divider-start text-sm"></div>)}
+          {memberCommunities.length > 0 && managedCommunities.length > 0 && (<div className="divider divider-start text-sm"></div>)}
           {/* Member Communities */}
           {memberCommunities.length > 0 && (
             <>

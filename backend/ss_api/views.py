@@ -620,12 +620,9 @@ class MembershipListView(generics.ListAPIView):
 
         for membership in queryset:
             community = membership.community
-            is_admin = community.is_community_admin(request.user)
             
             # Serialize the membership data
             serialized_data = MembershipSerializer(membership).data
-            serialized_data['is_admin'] = is_admin  # Add is_admin field to the serialized response
-            
             response_data.append(serialized_data)
 
         return Response(response_data)

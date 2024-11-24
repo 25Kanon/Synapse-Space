@@ -269,7 +269,7 @@ class MembershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Membership
-        fields = ['id', 'username', 'userAvatar', 'community', 'community_name', 'community_avatar', 'user_id', 'status']
+        fields = ['id', 'username', 'userAvatar', 'community', 'community_name', 'community_avatar', 'user_id', 'status', 'role']
 
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:

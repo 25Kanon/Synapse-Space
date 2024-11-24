@@ -23,14 +23,14 @@ export default function Community() {
 
 
     const fetchCommunityPosts = useCallback(async (page) => {
-        try{
-            const response= await AxiosInstance.get(`/api/community/${id}/posts/?page=${page}`,
+        try {
+            const response = await AxiosInstance.get(`/api/community/${id}/posts/?page=${page}`,
                 {},
                 { withCredentials: true }
             );
             setIsMember(true);
             return response;
-        } catch (error){
+        } catch (error) {
             setError(error?.status);
             console.error(error.message);
             setIsMember(false);
@@ -42,7 +42,7 @@ export default function Community() {
         const fetchCommunityDetails = async () => {
             try {
                 console.log("fetching")
-                const response = await AxiosInstance.get(`/api/community/${id}`, {}, { withCredentials: true,});
+                const response = await AxiosInstance.get(`/api/community/${id}`, {}, { withCredentials: true, });
                 setCommunityDetails(response.data);
             } catch (error) {
                 setError(`Error fetching community details: ${error.message.split(':')[1]}}`);
@@ -50,7 +50,9 @@ export default function Community() {
             }
         };
 
-        fetchCommunityDetails();
+        if (id) {
+            fetchCommunityDetails();
+        }
     }, [id]);
 
 
@@ -89,16 +91,16 @@ export default function Community() {
                 {authError && <ErrorAlert text={authError} classExtensions="fixed z-50" />}
                 <NavBar />
                 <Sidebar />
-                <MembersList id={id}/>
+                <MembersList id={id} />
                 <MainContentContainer>
                     <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} communityID={communityDetails.id} />
                     <div className="flex flex-col items-start 00 mx-10">
-                        <JoinCommuinityBtn communityId={communityDetails.id}/>
+                        <JoinCommuinityBtn communityId={communityDetails.id} />
                         <article className="prose prose-gray">
                             <h2 className="heading-3">About {communityDetails.name}</h2>
                             <p>{communityDetails.description}</p>
                         </article>
-                        <div className="divider"/>
+                        <div className="divider" />
                         <article className="prose prose-gray">
                             <h2 className="heading-3">Rules</h2>
                             <p>{communityDetails.rules}</p>
@@ -114,16 +116,16 @@ export default function Community() {
         <>
             {(scrollError || Error) &&
                 <ErrorAlert
-                    text={ scrollError || Error}
+                    text={scrollError || Error}
                     classExtensions="fixed z-50"
                 />
             }
             <NavBar />
             <Sidebar />
-            <MembersList id={id}/>
+            <MembersList id={id} />
             <MainContentContainer>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL}
-                        commAvatar={communityDetails.imgURL} communityID={communityDetails.id}/>
+                    commAvatar={communityDetails.imgURL} communityID={communityDetails.id} />
                 <CreatePost userName={user.username} community={communityDetails?.id} onPostCreated={() => setPostCreated(true)} rules={communityDetails?.rules} />
                 {communityPosts?.map((post) => (
                     <CommunityPost
@@ -136,7 +138,7 @@ export default function Community() {
                         userID={user.id}
                         authorId={post.created_by}
                         userAvatar={post.userAvatar}
-                        isPinned={post.isPinned}
+                        isPinnedInit={post.isPinned}
                         createdAt={post.created_at}
                     />
                 ))}

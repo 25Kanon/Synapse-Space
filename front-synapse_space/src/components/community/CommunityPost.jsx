@@ -25,7 +25,7 @@ const CommunityPost = ({
     userID,
     showComments,
     authorId,
-    isPinned,
+    isPinnedInit,
     createdAt,
 }) => {
     const [isLiked, setIsLiked] = useState(false);
@@ -37,7 +37,19 @@ const CommunityPost = ({
     const navigate = useNavigate();
     const location = useLocation();
     const { memberships } = useMemberships();
-    const communityObj = memberships.find((membership) => membership.community === community);
+    const [membership, setMembership] = useState({});
+    const [isPinned, setIsPinned] = useState(isPinnedInit);
+    useEffect(() => {
+        if (memberships) {
+            setMembership(memberships.find((membership) => membership.community === community));
+        }
+    }, [memberships, community])
+
+    useEffect(() =>{
+        if (membership){
+            setRole(membership.role);
+        }
+    },[membership])
     // Like/Dislike Handlers
     const handleLikeChange = () => {
         const url = `/api/community/${community}/post/${postId}/${isLiked ? "unlike" : "like"}`;
@@ -179,9 +191,9 @@ const CommunityPost = ({
                                 <span className="mx-2 text-gray-400">&rarr;</span> {/* Arrow indicator */}
                                 <Link to={`/community/${community}`} className="flex items-center text-sm text-gray-500 hover:underline">
                                     <div className="w-5 h-5 rounded-full overflow-hidden mr-2">
-                                        {communityObj && communityObj.community_avatar ? (
+                                        {membership && membership.community_avatar ? (
                                             <img
-                                                src={communityObj.community_avatar}
+                                                src={membership.community_avatar}
                                                 alt="Community avatar"
                                                 className="object-cover w-full h-full"
                                             />
@@ -191,7 +203,7 @@ const CommunityPost = ({
                                             </div>
                                         )}
                                     </div>
-                                    <span className="text-gray-400">{communityObj?.community_name ?? ""}</span>
+                                    <span className="text-gray-400">{membership?.community_name ?? ""}</span>
                                 </Link>
                             </div>
                         </div>

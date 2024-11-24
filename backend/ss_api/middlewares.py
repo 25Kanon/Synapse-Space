@@ -16,6 +16,7 @@ class UpdateLastActiveMiddleware:
         # Use CookieJWTAuthentication to authenticate the user
         auth = CookieJWTAuthentication()
         user = None
+        
         try:
             user, _ = auth.authenticate(request)  # Authenticate and retrieve user
         except Exception as e:

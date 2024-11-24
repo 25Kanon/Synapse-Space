@@ -19,8 +19,6 @@ const MembersList = ({ id }) => {
                 );
 
                 setMembers(response.data);
-                console.log(response.data)
-                console.log("members:", response.data);
             } catch (error) {
                 console.error("Error fetching memberships:", error);
             }

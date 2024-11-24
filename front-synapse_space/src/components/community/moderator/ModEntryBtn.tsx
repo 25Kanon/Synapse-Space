@@ -2,26 +2,29 @@ import React, {useEffect, useState} from "react";
 import {Shield} from "lucide-react";
 import {useNavigate} from "react-router-dom";
 import AxiosInstance from "../../../utils/AxiosInstance";
+import { useMemberships } from "../../../context/MembershipContext";
+
+
 
 function ModEntryBtn({communityID}) {
     const [role, setRole] = useState("");
     const navigate = useNavigate();
+    const { memberships } = useMemberships();
+    const [membership, setMembership] = useState<any>({});
 
     useEffect(() => {
-        const fetchMembership = async () =>  {
-            try{
-                const response = await AxiosInstance.get(`api/community/${communityID}/membership/role/`,{},{withCredentials: true});
-                setRole(response.data.role);
-                console.log(response.data.role);
-            }catch (error){
-                console.log(error);
-            }
+        if (memberships) {
+            setMembership(memberships.find((membership) => membership.community === communityID));
         }
-        fetchMembership();
-    }, [communityID]);
+    }, [memberships, communityID])
+
+    useEffect(() => {
+        if (membership) {
+            setRole(membership.role);
+        }
+    }, [membership])
 
     if (role !== 'moderator' && role !== 'admin' && role !== 'owner') {
-        console.log({role});
         return null;
     }
 
