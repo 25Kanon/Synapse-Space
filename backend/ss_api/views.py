@@ -976,7 +976,8 @@ class CommentCreateView(generics.CreateAPIView):
                 content_type=ContentType.objects.get_for_model(Comment),
                 object_id=comment.id,
                 reason="Automatically flagged as malicious by the system.",
-                community=comment.post.posted_in
+                community=comment.post.posted_in,
+                comment_post_id=Post.objects.get(id=comment.post_id),
             )
 
             # Notify community admins
@@ -1444,6 +1445,16 @@ class modResolveView(generics.UpdateAPIView):
         report.resolved_by = self.request.user
         report.resolved_at = timezone.now()
         report.save()
+
+        if report.status == 'rejected':
+            if report.type == 'post':
+                post = Post.objects.get(id=report.object_id)
+                post.delete()
+            elif report.type == 'comment':
+                logger.error("comment")
+                comment = Comment.objects.get(id=report.object_id)
+                comment.delete()
+            return Response({"message": "Report has been rejected."}, status=status.HTTP_200_OK)
 
         return Response({"message": "Report has been approved."}, status=status.HTTP_200_OK)
 

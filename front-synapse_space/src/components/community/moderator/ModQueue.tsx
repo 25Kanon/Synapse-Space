@@ -51,49 +51,6 @@ function StatusBadge({
     );
 }
 
-function ActionButtons({
-                           type,
-                           onAction,
-                       }: {
-    type: Report['type'];
-    onAction: (action: string) => void;
-}) {
-    const actionsByType = {
-        post: [
-            { label: 'Open', icon: SquareArrowOutUpRight, color: 'text-primary' },
-            { label: 'Lock', icon: Lock, color: 'text-orange-500' },
-            { label: 'Pin', icon: Pin, color: 'text-blue-500' },
-        ],
-        comment: [
-            { label: 'Open', icon: SquareArrowOutUpRight, color: 'text-primary' },
-            { label: 'Hide', icon: AlertTriangle, color: 'text-yellow-500' },
-            { label: 'Delete', icon: Trash2, color: 'text-red-500' },
-        ],
-        user: [
-            { label: 'Open', icon: SquareArrowOutUpRight, color: 'text-primary' },
-            { label: 'Mute', icon: VolumeX, color: 'text-orange-500' },
-            { label: 'Ban', icon: UserCheck, color: 'text-red-500' },
-        ],
-    };
-
-    return (
-        <>
-            {actionsByType[type].map((action) => (
-                <button
-                    key={action.label}
-                    onClick={() => onAction(action.label.toLowerCase())}
-                    className={`p-2 rounded-full hover:bg-gray-100 ${action.color} transition-colors relative group`}
-                    title={action.label}
-                >
-                    <action.icon className="w-5 h-5" />
-                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {action.label}
-                    </span>
-                </button>
-            ))}
-        </>
-    );
-}
 
 export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
     const [hoveredId, setHoveredId] = React.useState<string | null>(null);
@@ -124,7 +81,7 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
         setActionFeedback({ id, action });
         setTimeout(() => setActionFeedback(null), 2000);
     };
-
+    console.log(reports);
     return (
         <div className="space-y-4">
             {reports.length === 0 ? (
@@ -205,17 +162,26 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                                         hoveredId === report.id ? 'opacity-100' : 'opacity-0'
                                     }`}
                                 >
-                                    <ActionButtons
-                                        type={report.type}
-                                        onAction={(action) => handleAction(action, report.id, report.type, report.object_id, report.comment_post_id)}
-                                    />
+
                                     <button
-                                        onClick={() => handleAction('approve', report.id, report.type, report.object_id)}
+                                        onClick={() => handleAction('open', report.id, report.type, report.object_id, report.comment_post_id)}
+                                        className="p-2 rounded-full hover:bg-blue-100 text-primary transition-colors relative group"
+                                        title="Open"
+                                    >
+                                        <SquareArrowOutUpRight className="w-5 h-5"/>
+                                        <span
+                                            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            Open
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleAction('approve', report.id, report.type, report.object_id, )}
                                         className="p-2 rounded-full hover:bg-green-100 text-green-600 transition-colors relative group"
                                         title="Approve"
                                     >
-                                        <CheckCircle className="w-5 h-5" />
-                                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        <CheckCircle className="w-5 h-5"/>
+                                        <span
+                                            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                             Approve
                                         </span>
                                     </button>
@@ -224,8 +190,9 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                                         className="p-2 rounded-full hover:bg-red-100 text-red-600 transition-colors relative group"
                                         title="Reject"
                                     >
-                                        <XCircle className="w-5 h-5" />
-                                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        <XCircle className="w-5 h-5"/>
+                                        <span
+                                            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                             Reject
                                         </span>
                                     </button>
@@ -233,8 +200,9 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
                                         className="p-2 rounded-full hover:bg-gray-100 transition-colors relative group"
                                         title="More actions"
                                     >
-                                        <MoreVertical className="w-5 h-5 text-gray-500" />
-                                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        <MoreVertical className="w-5 h-5 text-gray-500"/>
+                                        <span
+                                            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                             More
                                         </span>
                                     </button>

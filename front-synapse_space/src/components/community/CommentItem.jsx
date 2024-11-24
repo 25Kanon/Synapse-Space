@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, {useState, useContext, useEffect, useRef} from "react";
 import { ArrowUp, ArrowDown, Trash2, Edit, MessageCircle, Flag } from "lucide-react";
 import AuthContext from "../../context/AuthContext";
 import AxiosInstance from "../../utils/AxiosInstance";
@@ -54,8 +54,30 @@ const CommentItem = ({ comment, onReply, onUpdate, onDelete, optionalClasses }) 
         setIsReplying(false);
     };
 
+    useEffect(() => {
+        const hash = location.hash;
+        if (hash) {
+            const id = hash.substring(1);
+            const element = document.getElementById(id);
+            console.log(element);
+
+            if (element) {
+                // Scroll to the element
+                element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+                // Add a temporary highlight class
+                element.classList.add("border-primary");
+
+                // Remove the highlight class after a few seconds
+                setTimeout(() => {
+                    element.classList.remove("border-primary");
+                }, 5000); // 2000 ms (2 seconds)
+            }
+        }
+    }, [location.hash]);
+
     return (
-        <div className={`comment-item flex flex-col p-4 border rounded-lg shadow-sm ${optionalClasses}`}>
+        <div className={`comment-item flex flex-col p-4 border rounded-lg shadow-sm ${optionalClasses}`} id={`comment-${comment.id}`}>
             <div className="flex items-start space-x-4">
                 <div className="vote-controls flex flex-col items-center">
                     <button
