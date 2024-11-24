@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {FileText, MessageSquare, ThumbsDown, ThumbsUp, Users} from 'lucide-react';
+import {FileText, Medal, MessageSquare, ThumbsDown, ThumbsUp, Users, Crown} from 'lucide-react';
 import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
 import AxiosInstance from "../../utils/AxiosInstance";
@@ -9,6 +9,7 @@ import { TimeRangeSelector } from "../../components/charts/TimeRangeSelector";
 import { Metric, MetricSelector } from "../../components/charts/MetricSelector";
 import { EngagementChart } from "../../components/charts/EngagementChart";
 import type { TimeRange, Metric as MetricType, EngagementData } from '../../components/admin/types/activity';
+
 
 
 function StatCard({ title, value, icon: Icon, color }: {
@@ -185,15 +186,15 @@ function Dashboard() {
                                 <div className="flex flex-col gap-2">
                                     <StatCard
                                         title="Most Active User"
-                                        value={selectedPoint?.most_active_user || latestData.most_active_user} // Use selected point or latest data
-                                        icon={ThumbsDown}
-                                        color="bg-red-500"
+                                        value={selectedPoint?.most_active_user || latestData.most_active_user}
+                                        icon={Crown}
+                                        color="bg-primary"
                                     />
                                     <StatCard
-                                        title="Disliked Posts"
-                                        value={selectedPoint?.most_active_community|| latestData.most_active_community} // Use selected point or latest data
-                                        icon={ThumbsDown}
-                                        color="bg-red-500"
+                                        title="Most Active Community"
+                                        value={selectedPoint?.most_active_community|| latestData.most_active_community}
+                                        icon={Medal}
+                                        color="bg-primary"
                                     />
                                 </div>
 
