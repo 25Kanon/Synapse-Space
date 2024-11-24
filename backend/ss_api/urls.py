@@ -19,7 +19,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView,
                     PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView,
                     undislikePostView,
-                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView)
+                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView, StaffLoginView)
 from django.contrib import admin
 
 
@@ -41,6 +41,7 @@ urlpatterns = [
     path('upload/', ImageUploadView.as_view(), name='upload'),
     path('auth/password-reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('auth/password-reset/confirm/', PasswordResetView.as_view(), name='password_reset'),
+    path('auth/staff/login/', StaffLoginView.as_view(), name='staff-login'),
 
     path('auth/google/', include('allauth.socialaccount.urls')),
     path('auth/login/google/', CustomGoogleLogin.as_view(), name='google_login'),

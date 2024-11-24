@@ -17,16 +17,16 @@ const Sidebar = () => {
     }, [isSuperUser]);
 
     const navItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
-        { icon: Users, label: 'Users', path: '/admin/users' },
-        { icon: MessageSquare, label: 'Activities', path: '/admin/activities' },
-        { icon: BadgeCheck, label: 'Student Verification', path: '/admin/verifications' },
-        { icon: GraduationCap, label: 'Programs', path: '/admin/programs' },
-        { icon: UserCog, label: 'Account', path: '/admin/account' },
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/management' },
+        { icon: Users, label: 'Users', path: '/management/users' },
+        { icon: MessageSquare, label: 'Activities', path: '/management/activities' },
+        { icon: BadgeCheck, label: 'Student Verification', path: '/management/verifications' },
+        { icon: GraduationCap, label: 'Programs', path: '/management/programs' },
+        { icon: UserCog, label: 'Account', path: '/management/account' },
     ];
 
     if (isSuper) {
-        navItems.push({ icon: Settings, label: 'Settings', path: '/admin/settings' });
+        navItems.push({ icon: Settings, label: 'Settings', path: '/management/settings' });
     }
 
     return (
@@ -44,7 +44,7 @@ const Sidebar = () => {
                     <NavLink
                         key={item.path}
                         to={item.path}
-                        end={item.path === '/admin'}
+                        end={item.path === '/management'}
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors ${
                                 isActive

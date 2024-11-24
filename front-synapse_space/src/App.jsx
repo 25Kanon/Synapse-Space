@@ -28,21 +28,22 @@ import Discovery from "./pages/Discovery";
 import { ConversationsWithMessagesWrapper } from "./components/Conversations";
 import { NotificationProvider } from "./context/NotificationContext";
 
-import Dashboard from "./pages/Admin/Dashboard"
-import Users from "./pages/Admin/Users"
-import Programs from "./pages/Admin/Programs"
-import Verifications from "./pages/Admin/Verifications"
+import Dashboard from "./pages/admin/Dashboard"
+import Users from "./pages/admin/Users"
+import Programs from "./pages/admin/Programs"
+import Verifications from "./pages/admin/Verifications"
 import HelpCenter from "./pages/HelpCenter";
 import { ToastContainer } from 'react-toastify';
+import Login from "./pages/admin/Login";
 
 
 import Chat from "./pages/Chat";
 import { initCometChat } from "./lib/cometchat";
 import ChatWindow from "./components/CometChat/ChatWindow";
-import { Activities } from "./pages/Admin/Activities";
+import { Activities } from "./pages/admin/Activities";
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 import Footer from './components/Footer';
-import Account from "./pages/Admin/Account";
+import Account from "./pages/admin/Account";
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -125,6 +126,9 @@ function App() {
                     <Route path="/login" element={<UserLogin />} />
                   </Route>
                   <Route path="/" element={<PublicRoute />}>
+                    <Route path="/management/login" element={<Login />} />
+                  </Route>
+                  <Route path="/" element={<PublicRoute />}>
                     <Route path="/reset-password" element={<ResetPassword />} />
                   </Route>
                   <Route path="/" element={<PublicRoute />}>
@@ -174,28 +178,28 @@ function App() {
 
                   {/*admin routes*/}
 
-                  <Route path="/admin" element={<AdminRoute />}>
-                    <Route path="/admin" element={<Dashboard />} />
+                  <Route path="/management" element={<AdminRoute />}>
+                    <Route path="/management" element={<Dashboard />} />
                   </Route>
 
-                  <Route path="/admin/users" element={<AdminRoute />}>
-                    <Route path="/admin/users" element={<Users />} />
+                  <Route path="/management/users" element={<AdminRoute />}>
+                    <Route path="/management/users" element={<Users />} />
                   </Route>
 
-                  <Route path="/admin/programs" element={<AdminRoute />}>
-                    <Route path="/admin/programs" element={<Programs />} />
+                  <Route path="/management/programs" element={<AdminRoute />}>
+                    <Route path="/management/programs" element={<Programs />} />
                   </Route>
 
-                  <Route path="/admin/activities" element={<AdminRoute />}>
-                    <Route path="/admin/activities" element={<Activities />} />
+                  <Route path="/management/activities" element={<AdminRoute />}>
+                    <Route path="/management/activities" element={<Activities />} />
                   </Route>
 
-                  <Route path="/admin/verifications" element={<AdminRoute />}>
-                    <Route path="/admin/verifications" element={<Verifications />} />
+                  <Route path="/management/verifications" element={<AdminRoute />}>
+                    <Route path="/management/verifications" element={<Verifications />} />
                   </Route>
 
-                  <Route path="/admin/Account" element={<AdminRoute />}>
-                    <Route path="/admin/Account" element={<Account/>} />
+                  <Route path="/management/Account" element={<AdminRoute />}>
+                    <Route path="/management/Account" element={<Account/>} />
                   </Route>
 
 

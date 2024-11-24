@@ -138,6 +138,16 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
                 "message": _("Invalid credentials. Please check your username or password.")
             })
 
+        if user.is_google:
+            raise serializers.ValidationError({
+                "message": _("Please login with Google.")
+            })
+
+        if user.is_staff:
+            raise serializers.ValidationError({
+                "message": _("Invalid credentials. Please check your username or password.")
+            })
+
         # Reset failed attempts after successful login
         self.reset_failed_login(username_or_email)
 
@@ -293,6 +303,203 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         cache.delete(attempts_key)
         cache.delete(lockout_key)
 
+class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
+    username_or_email = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    otp = serializers.CharField(write_only=True, required=False)
+
+    def validate(self, data):
+        username_or_email = data.get('username_or_email')
+        password = data.get('password')
+        otp = data.get('otp')
+
+        # Check for required fields
+        if not username_or_email or not password:
+            raise serializers.ValidationError({
+                "message": _("Both 'username_or_email' and 'password' are required.")
+            })
+
+        # Check if the user is locked out
+        if self.is_locked_out(username_or_email):
+            raise serializers.ValidationError({
+                "message": _("Your account is locked due to too many failed login attempts. Please try again after 10 minutes.")
+            })
+
+        # Authenticate the user
+        user = self.authenticate_user(username_or_email, password)
+        if not user:
+            if self.track_failed_login(username_or_email):
+                raise serializers.ValidationError({
+                    "message": _("Maximum login attempts exceeded. Please try again after 10 minutes.")
+                })
+            raise serializers.ValidationError({
+                "message": _("Invalid credentials. Please check your username or password.")
+            })
+
+        if user.is_google:
+            raise serializers.ValidationError({
+                "message": _("Please login with Google.")
+            })
+
+        if not user.is_staff:
+            raise serializers.ValidationError({
+                "message": _("You are not authorized to login here.")
+            })
+
+        # Reset failed attempts after successful login
+        self.reset_failed_login(username_or_email)
+
+        # Handle OTP generation and verification
+        if not otp:
+            last_otp_time = cache.get(f"otp_generation:{user.id}")
+            if last_otp_time and (now().timestamp() - last_otp_time) < OTP_RATE_LIMIT:
+                raise serializers.ValidationError({
+                    "message": _("OTP generation is rate-limited. Please try again in a minute.")
+                })
+
+            # Validate and generate OTP
+            if not self.is_valid_secret(user.otp_secret):
+                raise serializers.ValidationError({"message": _("Invalid OTP secret. Please contact support.")})
+
+            totp = self.generate_otp(user.otp_secret)
+            body = f"Your OTP is: {totp}"
+            self.send_otp(body, user.email, user.username)
+
+            # Store OTP generation time in cache
+            cache.set(f"otp_generation:{user.id}", now().timestamp(), OTP_RATE_LIMIT)
+            return {'message': 'OTP required'}
+
+        # Verify the provided OTP
+        if not self.verify_otp(user.otp_secret, otp):
+            raise serializers.ValidationError({
+                "message": _("The OTP you entered is incorrect or expired. Please try again.")
+            })
+
+        # Return token data upon successful OTP verification
+        self.reset_failed_login(username_or_email)
+        return self.get_token_data(user)
+
+
+    def authenticate_user(self, username_or_email, password):
+        """
+        Authenticate the user by either username or email.
+        """
+        user = authenticate(username=username_or_email, password=password)
+        if not user:
+            UserModel = get_user_model()
+            try:
+                user_obj = UserModel.objects.get(email=username_or_email)
+                user = authenticate(username=user_obj.username, password=password)
+            except UserModel.DoesNotExist:
+                return None
+        return user
+
+    def get_token_data(self, user):
+        refresh = RefreshToken.for_user(user)
+        data = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': user.username,
+            'student_number': user.student_number
+        }
+
+        # Add custom claims
+        refresh.access_token['username'] = user.username
+        return data
+
+    def generate_otp(self, user_secret):
+        """
+        Generate a time-based OTP using the user's secret.
+        """
+        try:
+            totp = pyotp.TOTP(user_secret, interval=OTP_INTERVAL)
+            generated_otp = totp.now()
+            return generated_otp
+        except Exception as e:
+
+            raise serializers.ValidationError({"message": _("Error generating OTP. Please try again later.")})
+
+    def verify_otp(self, user_secret, otp):
+        """
+        Verify the provided OTP against the user's secret.
+        """
+        try:
+            totp = pyotp.TOTP(user_secret, interval=OTP_INTERVAL)
+            is_valid = totp.verify(otp)
+            return is_valid
+        except Exception as e:
+            return False
+
+    def is_valid_secret(self, secret):
+        """
+        Validate the user's OTP secret to ensure it is a valid Base32 string.
+        """
+        try:
+            base64.b32decode(secret)
+            return True
+        except Exception as e:
+            return False
+
+    @staticmethod
+    def send_otp(body, to_email, username):
+        """
+        Send the OTP to the user's email using Azure Communication Services.
+        """
+        connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
+        email_client = EmailClient.from_connection_string(connection_string)
+        sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
+
+        message = {
+            "content": {
+                'subject': 'One Time Password for Synapse Space',
+                "plainText": body,
+            },
+            "recipients": {
+                "to": [
+                    {
+                        "address": to_email,
+                        "displayName": username
+                    }
+                ]
+            },
+            "senderAddress": sender
+        }
+
+        try:
+            email_client.begin_send(message)
+        except HttpResponseError as ex:
+            raise serializers.ValidationError({"message": _("Failed to send OTP. Please try again later.")})
+
+    def track_failed_login(self, username_or_email):
+        """
+        Increment failed login attempts and lock the account if attempts exceed the limit.
+        """
+        attempts_key = f"failed_attempts:{username_or_email}"
+        lockout_key = f"lockout:{username_or_email}"
+
+        attempts = cache.get(attempts_key, 0) + 1
+        cache.set(attempts_key, attempts, LOCKOUT_DURATION)
+
+        if attempts >= MAX_LOGIN_ATTEMPTS:
+            cache.set(lockout_key, True, LOCKOUT_DURATION)
+            return True  # User is now locked out
+        return False
+
+    def is_locked_out(self, username_or_email):
+        """
+        Check if the user is currently locked out.
+        """
+        lockout_key = f"lockout:{username_or_email}"
+        return cache.get(lockout_key) is not None
+
+    def reset_failed_login(self, username_or_email):
+        """
+        Reset the failed login attempts and lockout status for the user.
+        """
+        attempts_key = f"failed_attempts:{username_or_email}"
+        lockout_key = f"lockout:{username_or_email}"
+        cache.delete(attempts_key)
+        cache.delete(lockout_key)
 
 class VerifyAccountSerializer(serializers.ModelSerializer):
     class Meta:

@@ -67,7 +67,8 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
                           DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
                           PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer,
-                          DislikedPostSerializer, ContentSerializer, FeedbackSerializer)
+                          DislikedPostSerializer, ContentSerializer, FeedbackSerializer,
+                          CustomTokenObtainPairSerializerStaff)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff
 
@@ -269,6 +270,49 @@ class LoginView(TokenObtainPairView):
             )
 
         return response
+
+
+
+class StaffLoginView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializerStaff
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        response_data = serializer.validated_data
+
+        # Check if OTP is required
+        if 'message' in response_data and response_data['message'] == 'OTP required':
+            # Respond with a message indicating OTP is required
+            return Response({'message': 'OTP required'}, status=status.HTTP_200_OK)
+
+        # If OTP is provided and valid, generate the token response
+        response = Response(response_data, status=status.HTTP_200_OK)
+
+        # Set cookies for access_token and refresh_token
+        if 'access' in response_data:
+            response.set_cookie(
+                'access',
+                response_data['access'],
+                max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+            )
+        if 'refresh' in response_data:
+            response.set_cookie(
+                'refresh',
+                response_data['refresh'],
+                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+            )
+
+        return response
+
+
 
 class CookieTokenRefreshView(jwt_views.TokenRefreshView):
 

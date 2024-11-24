@@ -89,6 +89,57 @@ export const AuthProvider = ({ children }) => {
     };
 
 
+    const loginStaff = async (e) => {
+        e.preventDefault();
+        setError(null);
+        try {
+            let staffData = {
+                username_or_email: null,
+                password: null,
+            };
+
+            if (requireOTP) {
+                staffData = loginData;
+                staffData.otp = e.target.otp.value;
+                console.log(staffData)
+            } else {
+                staffData.username_or_email = e.target.username_or_email.value;
+                staffData.password = e.target.password.value;
+                setUsernameOrEmail(e.target.username_or_email.value);
+                setLoginData(staffData);// Store login data for OTP
+            }
+
+            const response = await AxiosInstance.post(`/api/auth/staff/login/`, staffData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (response.data.message === "OTP required") {
+                console.log('OTP required');
+                setRequireOTP(true);
+                setLoginData(staffData);
+            } else {
+                console.log('Login successful', response.data);
+                setRequireOTP(false);
+                setLoginData(null);
+                navigate('/management')
+                return response.data;
+            }
+        } catch (error) {
+            if (error.response) {
+                setError(error.response.data.message);
+                console.error('An error occurred:', error.response.data.message);
+            } else {
+                setError('An unexpected error occurred.');
+                setRequireOTP(false);
+                setLoginData(null);
+                console.error('An unexpected error occurred:', error);
+            }
+        }
+    };
+
+
     const logout = async () => {
         try {
             await AxiosInstance.post('/api/auth/logout/', {}, { withCredentials: true, });
@@ -180,6 +231,7 @@ export const AuthProvider = ({ children }) => {
             isLoggedinWithGoogle,
             loading,
             loginUser,
+            loginStaff,
             logout,
             requireOTP,
             error,
