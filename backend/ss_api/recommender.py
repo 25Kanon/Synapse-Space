@@ -1,120 +1,153 @@
 import logging
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import numpy as np
+from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from django.db.models import Q
+import numpy as np
 from .models import Community, User, Membership
 
-# Initialize the fine-tuned RoBERTa model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained('xlm-roberta-large-finetuned-conll03-english')
-model = AutoModelForSequenceClassification.from_pretrained('xlm-roberta-large-finetuned-conll03-english', output_hidden_states=True)
+# Initialize the SentenceTransformer model
+model = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L12-v2')
 logger = logging.getLogger(__name__)
 
-# Generate embeddings for text using a fine-tuned RoBERTa model
-def get_roberta_embedding(text):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-    with torch.no_grad():
-        outputs = model(**inputs)
+# Cache for embeddings to optimize performance
+embedding_cache = {"users": {}, "communities": {}}
 
-    # Check if hidden states are returned
-    if outputs.hidden_states is None:
-        logger.error("No hidden states returned from model.")
-        return None  # or raise an exception depending on your use case
 
-    # Get the last hidden state (from the last layer)
-    last_hidden_state = outputs.hidden_states[-1]
+def get_embedding(text, cache_key=None, cache_type=""):
+    """
+    Generate or retrieve cached embeddings for text.
+    """
+    if cache_key and cache_type in embedding_cache and cache_key in embedding_cache[cache_type]:
+        return embedding_cache[cache_type][cache_key]
 
-    # Average the token embeddings to get the sentence embedding
-    sentence_embedding = last_hidden_state.mean(dim=1).cpu().numpy()  # (1, embedding_size)
+    # Generate embedding
+    if text.strip():
+        embedding = model.encode(text, convert_to_tensor=True).cpu().numpy()
+    else:
+        logger.error(f"Empty text provided for {cache_type}, skipping embedding generation.")
+        return None
 
-    return sentence_embedding
+    # Cache the result
+    if cache_key:
+        embedding_cache[cache_type][cache_key] = embedding
 
-# Content-Based Filtering: Recommend communities based on RoBERTa embeddings with similarity scores
-def content_based_recommendation(user_profile):
-    # Get user interests and bio for profiling
-    user = User.objects.get(id=user_profile)
-    user_text = " ".join(user.interests) + " " + (user.bio if user.bio else "")
-    user_embedding = get_roberta_embedding(user_text)
+    return embedding
+
+
+def validate_embeddings(embeddings):
+    """
+    Filter out empty or invalid embeddings.
+    """
+    return [embedding for embedding in embeddings if embedding is not None and len(embedding) > 0]
+
+
+# Content-Based Filtering
+def content_based_recommendation(user_id):
+    """
+    Recommend communities based on the user's interests only.
+    """
+    # Fetch the user profile
+    user = User.objects.get(id=user_id)
+
+    # Use only the user's interests for generating the profile embedding
+    user_text = " ".join(user.interests)  # Combine all interests into a single string
+
+    # Generate the user's embedding
+    user_embedding = get_embedding(user_text, cache_key=f"user_{user.id}", cache_type="users")
 
     if user_embedding is None:
-        return []  # Handle case where embedding could not be generated
+        logger.error("User embedding is empty, cannot proceed with content-based filtering.")
+        return []
 
-    # Get all communities and compute embeddings for them
-    communities = list(Community.objects.all())  # Convert the QuerySet to a list
-    community_embeddings = []
-    for community in communities:
-        community_embeddings.append(get_roberta_embedding(community.description))
+    # Get all communities and their embeddings
+    communities = list(Community.objects.all())
+    community_embeddings = [
+        get_embedding(community.description, cache_key=f"community_{community.id}", cache_type="communities")
+        for community in communities
+    ]
+    community_embeddings = validate_embeddings(community_embeddings)
 
-    # Compute cosine similarity between user profile and community descriptions
-    similarities = cosine_similarity(user_embedding, np.array(community_embeddings).reshape(len(community_embeddings), -1))
+    if not community_embeddings:
+        logger.error("No valid community embeddings available.")
+        return []
 
-    # Get the top N recommended community indices
-    recommended_community_indices = np.argsort(similarities[0])[-5:][::-1]  # Get top 5 communities sorted by similarity
+    # Compute cosine similarity between the user's embedding and community embeddings
+    similarities = cosine_similarity([user_embedding], community_embeddings)[0]
 
-    # Use the indices to fetch communities and their similarity scores
-    recommended_communities = [(communities[i], similarities[0][i]) for i in recommended_community_indices]
+    # Sort communities by similarity
+    recommended_communities = sorted(
+        zip(communities, similarities), key=lambda x: x[1], reverse=True
+    )[:5]
 
-    return recommended_communities
+    return recommended_communities  # Returns a list of (Community, similarity_score)
 
 
-# Collaborative Filtering: Recommend communities using RoBERTa embeddings with similarity scores
+
 def collaborative_filtering(user_id):
-    # Get all memberships to create user-community pairs
-    memberships = Membership.objects.all()
+    user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
 
-    # Create a list of (user_id, community_id) pairs
-    user_community_pairs = [(str(membership.user.id), str(membership.community.id)) for membership in memberships]
+    similar_users = Membership.objects.filter(
+        community_id__in=user_memberships
+    ).exclude(user_id=user_id).values_list('user_id', flat=True).distinct()
 
-    logger.error("User-Community Pairs: %s", user_community_pairs)  # Debug print
+    similar_user_memberships = Membership.objects.filter(
+        user_id__in=similar_users
+    ).values_list('community_id', flat=True).distinct()
 
-    # Get all unique user and community IDs
-    user_ids = list(set(pair[0] for pair in user_community_pairs))  # Unique user IDs
-    community_ids = list(set(pair[1] for pair in user_community_pairs))  # Unique community IDs
+    communities = Community.objects.filter(id__in=similar_user_memberships)
+    community_embeddings = [
+        get_embedding(community.description, cache_key=f"community_{community.id}", cache_type="communities")
+        for community in communities
+    ]
+    community_embeddings = validate_embeddings(community_embeddings)
 
-    # Get user embedding
+    if not community_embeddings:
+        logger.error("No valid community embeddings for collaborative filtering.")
+        return []
+
     user = User.objects.get(id=user_id)
     user_text = " ".join(user.interests) + " " + (user.bio if user.bio else "")
-    user_embedding = get_roberta_embedding(user_text)
+    user_embedding = get_embedding(user_text, cache_key=f"user_{user.id}", cache_type="users")
 
     if user_embedding is None:
-        return []  # Handle case where embedding could not be generated
+        logger.error("User embedding is empty for collaborative filtering.")
+        return []
 
-    # Get community embeddings
-    communities = list(Community.objects.all())
-    community_embeddings = []
-    for community in communities:
-        community_embeddings.append(get_roberta_embedding(community.description))
+    similarities = cosine_similarity([user_embedding], community_embeddings)[0]
 
-    # Compute cosine similarity between user profile and community descriptions
-    similarities = cosine_similarity(user_embedding, np.array(community_embeddings).reshape(len(community_embeddings), -1))
+    recommended_communities = sorted(
+        zip(communities, similarities), key=lambda x: x[1], reverse=True
+    )[:5]
 
-    # Get the top N recommended community indices
-    recommended_community_indices = np.argsort(similarities[0])[-5:][::-1]  # Top 5
-
-    # Use the indices to fetch communities and their similarity scores
-    recommended_communities = [(communities[i], similarities[0][i]) for i in recommended_community_indices]
-
-    return recommended_communities
+    return recommended_communities  # Returns list of (Community, similarity_score)
 
 
-# Hybrid recommendation function: Combine CBF and CF recommendations with similarity scores
-def get_hybrid_recommendations(user_profile):
-    logger.error("Getting hybrid recommendations...")  # Debug print
+def get_hybrid_recommendations(user_id, cbf_weight=0.6, cf_weight=0.4):
+    cbf_recommendations = content_based_recommendation(user_id)
+    cf_recommendations = collaborative_filtering(user_id)
 
-    # Get recommendations using content-based filtering
-    cbf_recommendations = content_based_recommendation(user_profile)
+    combined_scores = {}
+    combined_communities = {}
 
-    # Get recommendations using collaborative filtering
-    cf_recommendations = collaborative_filtering(user_profile)
+    for community, score in cbf_recommendations:
+        if community.id not in combined_scores:
+            combined_scores[community.id] = 0
+            combined_communities[community.id] = community
+        combined_scores[community.id] += score * cbf_weight
 
-    # Combine both recommendations (deduplicate and limit to top 5)
-    combined_recommendations = {community: score for community, score in cbf_recommendations + cf_recommendations}
+    for community, score in cf_recommendations:
+        if community.id not in combined_scores:
+            combined_scores[community.id] = 0
+            combined_communities[community.id] = community
+        combined_scores[community.id] += score * cf_weight
 
-    # Sort communities by the highest similarity score
-    sorted_combined_recommendations = sorted(combined_recommendations.items(), key=lambda x: x[1], reverse=True)[:5]
+    sorted_recommendations = sorted(
+        combined_scores.items(), key=lambda x: x[1], reverse=True
+    )[:5]
 
-    logger.error("Hybrid recommendations with scores: %s", sorted_combined_recommendations)  # Debug print
+    return [(combined_communities[community_id], score) for community_id, score in sorted_recommendations]
 
-    # Return community IDs and similarity scores instead of community objects
-    final_recommendations = [(community, score) for community, score in sorted_combined_recommendations]
-    return final_recommendations
+def log_hybrid_recommendations(user_id):
+    recommendations = get_hybrid_recommendations(user_id)
+    logger.info(f"Hybrid Recommendations for User {user_id}: {recommendations}")
+    return recommendations

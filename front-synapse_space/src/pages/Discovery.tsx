@@ -48,12 +48,12 @@ export default function Discovery() {
 
     return (
         <>
-            {Error || Error && <ErrorAlert text={Error} classExtensions="fixed z-50" />}
             <NavBar />
             <Sidebar />
             <FriendsList />
 
             <MainContentContainer>
+                {Error || Error && <ErrorAlert text={Error} classExtensions="fixed z-50" />}
                 <div className="flex flex-col justify-between p-5">
                     {!loading && (
                         <div className="flex flex-col justify-start">
