@@ -6,6 +6,7 @@ import requests
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.utils.timezone import now
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -86,6 +87,24 @@ MAX_LOGIN_ATTEMPTS = 3
 LOCKOUT_DURATION = 600  # 10 minutes
 OTP_RATE_LIMIT = 60  # 1 minute
 
+from django.contrib.auth import authenticate, get_user_model
+from django.core.cache import cache
+from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils.translation import gettext_lazy as _
+import pyotp
+import os
+from azure.communication.email import EmailClient
+from azure.core.exceptions import HttpResponseError
+import base64
+from django.utils.timezone import now
+
+# Constants for lockout and OTP rate-limiting
+MAX_LOGIN_ATTEMPTS = 3
+LOCKOUT_DURATION = 600  # 10 minutes
+OTP_RATE_LIMIT = 60  # 1 minute
+OTP_INTERVAL = 300  # 5 minutes
+
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     username_or_email = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -96,6 +115,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         password = data.get('password')
         otp = data.get('otp')
 
+        # Check for required fields
         if not username_or_email or not password:
             raise serializers.ValidationError({
                 "message": _("Both 'username_or_email' and 'password' are required.")
@@ -121,7 +141,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         # Reset failed attempts after successful login
         self.reset_failed_login(username_or_email)
 
-        # Handle OTP verification
+        # Handle OTP generation and verification
         if not otp:
             last_otp_time = cache.get(f"otp_generation:{user.id}")
             if last_otp_time and (now().timestamp() - last_otp_time) < OTP_RATE_LIMIT:
@@ -129,7 +149,10 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
                     "message": _("OTP generation is rate-limited. Please try again in a minute.")
                 })
 
-            # Generate and send OTP
+            # Validate and generate OTP
+            if not self.is_valid_secret(user.otp_secret):
+                raise serializers.ValidationError({"message": _("Invalid OTP secret. Please contact support.")})
+
             totp = self.generate_otp(user.otp_secret)
             body = f"Your OTP is: {totp}"
             self.send_otp(body, user.email, user.username)
@@ -139,14 +162,15 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             return {'message': 'OTP required'}
 
         # Verify the provided OTP
-        totp = pyotp.TOTP(user.otp_secret, interval=300)
-        if not totp.verify(otp):
+        if not self.verify_otp(user.otp_secret, otp):
             raise serializers.ValidationError({
                 "message": _("The OTP you entered is incorrect or expired. Please try again.")
             })
 
         # Return token data upon successful OTP verification
+        self.reset_failed_login(username_or_email)
         return self.get_token_data(user)
+
 
     def authenticate_user(self, username_or_email, password):
         """
@@ -179,8 +203,34 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         """
         Generate a time-based OTP using the user's secret.
         """
-        totp = pyotp.TOTP(user_secret, interval=300)
-        return totp.now()
+        try:
+            totp = pyotp.TOTP(user_secret, interval=OTP_INTERVAL)
+            generated_otp = totp.now()
+            return generated_otp
+        except Exception as e:
+
+            raise serializers.ValidationError({"message": _("Error generating OTP. Please try again later.")})
+
+    def verify_otp(self, user_secret, otp):
+        """
+        Verify the provided OTP against the user's secret.
+        """
+        try:
+            totp = pyotp.TOTP(user_secret, interval=OTP_INTERVAL)
+            is_valid = totp.verify(otp)
+            return is_valid
+        except Exception as e:
+            return False
+
+    def is_valid_secret(self, secret):
+        """
+        Validate the user's OTP secret to ensure it is a valid Base32 string.
+        """
+        try:
+            base64.b32decode(secret)
+            return True
+        except Exception as e:
+            return False
 
     @staticmethod
     def send_otp(body, to_email, username):
@@ -210,7 +260,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         try:
             email_client.begin_send(message)
         except HttpResponseError as ex:
-            raise Exception(f"Failed to send email: {ex}")
+            raise serializers.ValidationError({"message": _("Failed to send OTP. Please try again later.")})
 
     def track_failed_login(self, username_or_email):
         """
@@ -224,7 +274,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 
         if attempts >= MAX_LOGIN_ATTEMPTS:
             cache.set(lockout_key, True, LOCKOUT_DURATION)
-            return True  # User is locked out
+            return True  # User is now locked out
         return False
 
     def is_locked_out(self, username_or_email):
@@ -242,6 +292,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         lockout_key = f"lockout:{username_or_email}"
         cache.delete(attempts_key)
         cache.delete(lockout_key)
+
 
 class VerifyAccountSerializer(serializers.ModelSerializer):
     class Meta:
