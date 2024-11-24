@@ -36,16 +36,16 @@ const MembersList = ({ id }) => {
     return (
         <aside
             id="sidebar"
-            className="fixed top-0 right-0 w-64 pt-20 transition-transform -translate-x-full sm:translate-x-0 lg:block hidden"
+            className="fixed top-0 right-0 hidden w-64 pt-20 transition-transform -translate-x-full sm:translate-x-0 lg:block"
             style={{ height: "95%" }}
             aria-label="Sidebar"
         >
-            <div className="h-full px-3 pb-4 overflow-y-auto bg-base-200 my-3 rounded-lg">
+            <div className="h-full px-3 pb-4 my-3 overflow-y-auto rounded-lg bg-base-200">
                 <p className="text-sm font-semibold">Members</p>
                 <ul className="space-y-2 font-medium my">
                     {members.map((member) => (
                         <li key={member.user_id}>
-                            <div className="flex shadow bg-base-100 items-center w-full p-2 rounded-full group mt-3">
+                            <div className="flex items-center w-full p-2 mt-3 rounded-full shadow bg-base-100 group">
                                 <Link to={`/profile/user/${member.user_id}`}>
                                     <div className="avatar placeholder">
                                         <div className="rounded-full h-7">
@@ -53,10 +53,10 @@ const MembersList = ({ id }) => {
                                                 <img
                                                     src={member.userAvatar}
                                                     alt="User avatar"
-                                                    className="w-full h-full object-cover rounded-full"
+                                                    className="object-cover w-full h-full rounded-full"
                                                 />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">
+                                                <div className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
                                                     <span className="text-sm font-semibold">
                                                         {getInitials(member.userName)}
                                                     </span>
@@ -65,10 +65,10 @@ const MembersList = ({ id }) => {
                                         </div>
                                     </div>
                                 </Link>
-                                <span className="ms-3 text-sm text-ellipsis overflow-hidden whitespace-nowrap">
+                                <span className="overflow-hidden text-sm ms-3 text-ellipsis whitespace-nowrap">
                                     <Link to={`/profile/user/${member.user_id}`}>{member.username}
                                     </Link></span>
-                                <div className="dropdown dropdown-end ml-auto">
+                                <div className="ml-auto dropdown dropdown-end">
                                     <label tabIndex={0} className="btn btn-ghost btn-circle">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"

@@ -21,7 +21,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
                      Reports, FriendRequest, Program,
-                     Notification, DislikedPost)
+                     Notification, DislikedPost, Feedback)
 
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
@@ -744,3 +744,8 @@ class DislikedPostSerializer(serializers.ModelSerializer):
 class ContentSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=255)
     content = serializers.CharField()
+    
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ['id', 'rating', 'feedback', 'created_at']

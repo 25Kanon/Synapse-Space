@@ -3,6 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import UserSetup from ".././pages/UserSetup";
 import ForApproval from "../pages/ForApproval";
+import RegistrationDenied from "../pages/RegistrationDenied";
 
 function PrivateRoute() {
     const { isAuthenticated, isVerified, isRejected, isCometChatLogin,loading: contextLoading } = useContext(AuthContext);
@@ -43,7 +44,7 @@ function PrivateRoute() {
             case null: //isUserRejected is null, setup the account
                 return <UserSetup />;
             case true://isUserRejected is true, show rejected message
-                return <><h1>You have been rejected</h1></>;
+                return <><RegistrationDenied /></>;
             case false://isUserRejected is false, show waiting for approval message
                 return <><ForApproval/></>;
             default:

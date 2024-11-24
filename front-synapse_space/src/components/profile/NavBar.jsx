@@ -7,6 +7,7 @@ import {
     faChevronDown,
     faCheck,
     faTimes,
+    faBars
 } from "@fortawesome/free-solid-svg-icons";
 import AuthContext from "../../context/AuthContext";
 import { useFriends } from "../../context/FriendContext";
@@ -57,13 +58,23 @@ const NavBar = () => {
         }
     };
 
+    const renderDropdown=<ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
+    <li>
+        <Link to="/">Home</Link>
+    </li>
+    <li>
+        <button onClick={handleLogout} className="btn btn-logout">
+            Logout
+        </button>
+    </li>
+    </ul>
+
     return (
         <nav className={`fixed top-0 z-40 w-full ${scrolled ? "bg-base-200" : ""}`}>
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start rtl:justify-end">
-
-                        <Link to="/">
+                        <Link to="/"> 
                             <a className="flex ms-2 md:me-24">
                                 <img
                                     src="/images/logo2.png"
@@ -82,7 +93,7 @@ const NavBar = () => {
                             <input
                                 type="text"
                                 placeholder="search"
-                                className="w-auto max-w-xs input input-bordered"
+                                className="max-w-xs input input-bordered"
                                 name="search"
                                 required
                                 value={searchQuery}
@@ -90,10 +101,15 @@ const NavBar = () => {
                             />
                         </form>
                     )}
+                    <details className="flex justify-center md:hidden dropdown dropdown-end dropdown-bottom z-1">
+                        <summary className="flex items-center h-5 btn">
+                            <FontAwesomeIcon icon={faBars} className="z-40 h-5" />
+                        </summary>
+                        {renderDropdown}
+                    </details>
 
-                    <div className="flex items-center justify-center hidden px-3 my-auto rounded-full ms-3 bg-base-200 dropdown-left sm:block ">
+                    <div className="items-center justify-center hidden px-3 my-auto rounded-full ms-3 bg-base-200 dropdown-left md:flex">
                         <div className="z-40 flex items-center px-2 py-1">
-
                             <Link to="/messages" className="link">
                                 <FontAwesomeIcon icon={faMessage} className="z-40 h-5 mr-5" />
                             </Link>
@@ -272,16 +288,7 @@ const NavBar = () => {
                                         </span>
                                     </p>
                                 </summary>
-                                <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
-                                    <li>
-                                        <Link to="/">Home</Link>
-                                    </li>
-                                    <li>
-                                        <button onClick={handleLogout} className="btn btn-logout">
-                                            Logout
-                                        </button>
-                                    </li>
-                                </ul>
+                                {renderDropdown}
                             </details>
                         </div>
                     </div>

@@ -19,7 +19,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     CommunityPostUpdateView, CommunityPostDeleteView, ResendOTPView, UnfriendView,
                     PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView,
                     undislikePostView,
-                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView)
+                    UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView)
 from django.contrib import admin
 
 
@@ -49,6 +49,7 @@ urlpatterns = [
     path('profile/<int:user_id>/', UserProfileView.as_view(), name='user-profile-by-id'),  # Fetch another user's profile
     path('activities/<int:userId>/', UserActivitiesView.as_view(), name='user-activities'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path('feedback/', FeedbackView.as_view(), name='feedback'),
 
     # Community URLs
     path('community/create/', CommunityCreateView.as_view(), name='community-create'),

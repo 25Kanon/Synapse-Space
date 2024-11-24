@@ -7,6 +7,8 @@ import BannerProfile from '../../components/profile/BannerProfile';
 import MainContentContainer from "../../components/MainContentContainer";
 import ProfileTabs from '../../components/profile/ProfileTabs';
 import ActivitiesDisplay from '../../components/profile/ActivitiesDisplay';
+import Footer from '../../components/Footer';
+import Layout from '../../components/Layout';
 import AxiosInstance from "../../utils/AxiosInstance";
 
 const ProfilePage = () => {
@@ -26,9 +28,7 @@ const ProfilePage = () => {
     }, []);
 
     return (
-        <>
-            <NavBar />
-            <MainContentContainer>
+       <Layout>
                 <div className="p-6">
                     <BannerProfile 
                         first_name={userProfile.first_name} // Use first_name from userProfile
@@ -42,8 +42,7 @@ const ProfilePage = () => {
                     <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
                     <ActivitiesDisplay activities={activities} activeTab={activeTab} userID={userProfile.id}/>
                 </div>
-            </MainContentContainer>
-        </>
+                </Layout>
     );  
 };
 

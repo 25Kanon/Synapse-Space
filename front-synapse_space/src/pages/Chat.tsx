@@ -7,6 +7,7 @@ import NavBar from '../components/NavBar';
 import Sidebar from '../components/Sidebar';
 import FriendsList from '../components/FriendsList';
 import MainContentContainer from '../components/MainContentContainer';
+import Footer from '../components/Footer';
 
 export default function Chat() {
     const { isAuthenticated, user } = useAuthStore();
@@ -28,6 +29,7 @@ export default function Chat() {
                 </div>
 
             </MainContentContainer>
+            <Footer/>
         </>
 
     );

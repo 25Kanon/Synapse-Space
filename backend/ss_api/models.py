@@ -224,3 +224,13 @@ class CommentVote(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["user", "comment"], name="unique_user_comment_vote")
         ]
+        
+class Feedback(models.Model):
+    RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]  # Rating scale 1 to 5
+
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    feedback = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Rating: {self.rating}, Feedback: {self.feedback[:20]}"

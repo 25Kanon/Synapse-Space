@@ -12,6 +12,7 @@ import CreatePost from "../../components/community/CreatePost";
 import CommunityPost from "../../components/community/CommunityPost";
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
+import Layout from "../../components/Layout";
 
 export default function Community() {
     const { user, error: authError } = useContext(AuthContext);
@@ -79,8 +80,8 @@ export default function Community() {
     if (!user) {
         return (
             <div>
-                <div className="hero bg-base-200 min-h-screen">
-                    <p className="text-center text-xl">Welcome to Synapse Space. Please login to continue.</p>
+                <div className="min-h-screen hero bg-base-200">
+                    <p className="text-xl text-center">Welcome to Synapse Space. Please login to continue.</p>
                 </div>
             </div>
         );
@@ -89,12 +90,9 @@ export default function Community() {
         return (
             <>
                 {authError && <ErrorAlert text={authError} classExtensions="fixed z-50" />}
-                <NavBar />
-                <Sidebar />
-                <MembersList id={id} />
-                <MainContentContainer>
+                <Layout showSidebar membersListId={id}>
                     <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} communityID={communityDetails.id} />
-                    <div className="flex flex-col items-start 00 mx-10">
+                    <div className="flex flex-col items-start mx-10 00">
                         <JoinCommuinityBtn communityId={communityDetails.id} />
                         <article className="prose prose-gray">
                             <h2 className="heading-3">About {communityDetails.name}</h2>
@@ -107,7 +105,7 @@ export default function Community() {
                         </article>
 
                     </div>
-                </MainContentContainer>
+                </Layout>
             </>
         );
     }
@@ -120,10 +118,7 @@ export default function Community() {
                     classExtensions="fixed z-50"
                 />
             }
-            <NavBar />
-            <Sidebar />
-            <MembersList id={id} />
-            <MainContentContainer>
+            <Layout showSidebar membersListId={id}>
                 <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL}
                     commAvatar={communityDetails.imgURL} communityID={communityDetails.id} />
                 <CreatePost userName={user.username} community={communityDetails?.id} onPostCreated={() => setPostCreated(true)} rules={communityDetails?.rules} />
@@ -143,8 +138,8 @@ export default function Community() {
                     />
                 ))}
                 {loading && <div className="loading loading-spinner loading-lg"></div>}
-                {!hasMore && <div className="text-center mt-4">No more posts to load</div>}
-            </MainContentContainer>
+                {!hasMore && <div className="mt-4 text-center">No more posts to load</div>}
+            </Layout>
         </>
     );
 }

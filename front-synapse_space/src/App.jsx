@@ -11,8 +11,9 @@ import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ResetPassword from './pages/ResetPasswordForm';
 import UserRegister from './pages/UserRegister';
-import AccessDenied from "./components/AccessDenied";
+import RegistrationDenied from "./pages/RegistrationDenied";
 import ProfilePage from './pages/Profile/ProfilePage';
+import FeedbackForm from './pages/FeedbackForm';
 import UserProfilePage from './components/profile/UserProfilePage';
 import EditProfile from './pages/Profile/EditProfile';
 import Create from './pages/Community/Create';
@@ -132,12 +133,10 @@ function App() {
                   <Route path="/" element={<PublicRoute />}>
                     <Route path="/register" element={<UserRegister />} />
                   </Route>
-                  <Route path="/access-denied" element={<AccessDenied />} />
-                  <Route path="/" element={<PublicRoute />}>
-                    <Route path="/terms-of-use" element={<TermsOfUse />} />
-                  </Route>
-                  <Route path="/" element={<PublicRoute />}>
-                    <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-use" element={<TermsOfUse />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/" element={<PrivateRoute />}>
+                    <Route path="/feedback" element={<FeedbackForm />} />
                   </Route>
                   <Route path="/help-center" element={<HelpCenter />} />
                   <Route path="/community" element={<PrivateRoute />}>
@@ -201,7 +200,6 @@ function App() {
 
 
               </Routes>
-              <Footer/>
               </NotificationProvider>
             </FriendProvider>
           </MembershipsProvider>

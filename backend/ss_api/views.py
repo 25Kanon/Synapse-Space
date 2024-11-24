@@ -58,7 +58,7 @@ import torch
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
-    Program, Notification, SavedPost, DislikedPost, CommentVote
+    Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -67,7 +67,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           ReportsSerializer, FriendRequestSerializer, FriendSerializer, CommunityWithScoreSerializer,
                           DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
                           PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer,
-                          DislikedPostSerializer, ContentSerializer)
+                          DislikedPostSerializer, ContentSerializer, FeedbackSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff
 
@@ -2331,8 +2331,20 @@ class RemoveVoteView(APIView):
         user = request.user
         CommentVote.objects.filter(user=user, comment=comment).delete()
         return Response({"message": "Vote removed"}, status=status.HTTP_200_OK)
+    
+class FeedbackView(APIView):
+    def post(self, request):
+        serializer = FeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # Save feedback to the database
+            return Response({"message": "Feedback submitted successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#
+    def get(self, request):
+        feedbacks = Feedback.objects.all().order_by('-created_at')
+        serializer = FeedbackSerializer(feedbacks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 # class ProfanityCheckView(APIView):
 #     def post(self, request, *args, **kwargs):
 #         serializer = ContentSerializer(data=request.data)
