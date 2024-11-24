@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import UserSetup from ".././pages/UserSetup";
+import ForApproval from "../pages/ForApproval";
 
 function PrivateRoute() {
     const { isAuthenticated, isVerified, isRejected, isCometChatLogin,loading: contextLoading } = useContext(AuthContext);
@@ -44,7 +45,7 @@ function PrivateRoute() {
             case true://isUserRejected is true, show rejected message
                 return <><h1>You have been rejected</h1></>;
             case false://isUserRejected is false, show waiting for approval message
-                return <><h1>Wait for approval</h1></>;
+                return <><ForApproval/></>;
             default:
                 return null; // Optional fallback
         }
