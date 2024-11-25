@@ -108,9 +108,10 @@ const NavBar = () => {
                         {renderDropdown}
                     </details>
 
-                    <div className="items-center justify-center hidden px-3 my-auto rounded-full ms-3 bg-base-200 dropdown-left md:flex">
+                    <div className="flex items-center justify-center hidden px-3 my-auto rounded-full ms-3 bg-base-200 dropdown-left sm:block ">
                         <div className="z-40 flex items-center px-2 py-1">
-                            <Link to="/messages" className="link">
+
+                            <Link to="/chat" className="link">
                                 <FontAwesomeIcon icon={faMessage} className="z-40 h-5 mr-5" />
                             </Link>
                             <details className="z-40 dropdown dropdown-end dropdown-bottom">
@@ -135,7 +136,8 @@ const NavBar = () => {
                                                 className="flex items-center justify-between w-full gap-3 p-2 whitespace-nowrap"
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <div className="avatar placeholder">
+                                                    {/* Profile Picture with Link */}
+                                                    <Link to={`/profile/user/${request.sender}`} className="avatar placeholder">
                                                         <div className="rounded-full h-7">
                                                             {request.sender_profile_pic ? (
                                                                 <img
@@ -152,14 +154,17 @@ const NavBar = () => {
                                                                 </div>
                                                             )}
                                                         </div>
-                                                    </div>
+                                                    </Link>
 
+                                                    {/* Friend's Name with Link */}
                                                     <Link
-                                                        to={`/profile/${request.sender}`}
-                                                        className="flex-1"
+                                                        to={`/profile/user/${request.sender}`}
+                                                        className="flex-1 hover:underline"
                                                     >
                                                         {request.sender_name}
                                                     </Link>
+
+                                                    {/* Accept Button */}
                                                     <button
                                                         onClick={() => acceptFriendRequest(request.id)}
                                                         className="flex items-center gap-1 btn btn-xs btn-primary"
@@ -167,6 +172,8 @@ const NavBar = () => {
                                                         <FontAwesomeIcon icon={faCheck} />
                                                         Accept
                                                     </button>
+
+                                                    {/* Reject Button */}
                                                     <button
                                                         onClick={() => rejectFriendRequest(request.id)}
                                                         className="flex items-center gap-1 btn btn-xs btn-error"
@@ -197,24 +204,32 @@ const NavBar = () => {
                                                     notification.message.action === "banned_from_community"
                                                         ? `You have been banned from "${notification.message.community_name}".`
                                                         : notification.message.action === "post_reported"
-                                                            ? `Your post in "${notification.message.community_name}" has been reported.`
+                                                            ? `Your post has been reported.`
                                                             : notification.message.action === "comment_reported"
                                                                 ? `Your comment in "${notification.message.community_name}" has been reported.`
-                                                                : ""
+                                                                : notification.message.action === "friend_request_accepted"
+                                                                    ? `Your friend request to ${notification.message.friend?.name} has been accepted.`
+                                                                    : ""
                                                 } // Add detailed message here
                                             >
                                                 <Link
                                                     to={
-                                                        notification.message.action === "post_reported"
-                                                            ? `/community/${notification.message.community_id}/post/${notification.message.post_id}`
-                                                            : notification.message.action === "comment_reported"
-                                                                ? `/community/${notification.message.community_id}/post/${notification.message.post_id}#comment-${notification.message.comment_id}`
-                                                                : notification.message.action === "banned_from_community"
-                                                                    ? `/community/${notification.message.community_id}`
-                                                                    : "#"
+                                                        (notification.message.action === "post_reported" &&
+                                                            notification.title === "Malicious Post Detected") ||
+                                                            (notification.message.action === "comment_reported" &&
+                                                                notification.title === "Malicious Comment Detected")
+                                                            ? `/community/${notification.message.community_id}/mod`
+                                                            : notification.message.action === "post_reported"
+                                                                ? `/community/${notification.message.community_id}/post/${notification.message.post_id}`
+                                                                : notification.message.action === "comment_reported"
+                                                                    ? `/community/${notification.message.community_id}/post/${notification.message.post_id}#comment-${notification.message.comment_id}`
+                                                                    : notification.message.action === "banned_from_community"
+                                                                        ? `/community/${notification.message.community_id}`
+                                                                        : notification.message.action === "friend_request_accepted"
+                                                                            ? `/profile/user/${notification.message.friend?.id}`
+                                                                            : "#"
                                                     }
                                                     className="text-sm font-medium truncate hover:underline"
-
                                                     onClick={() => markAsRead(notification.id)}
                                                 >
                                                     {/* Profile or Community Image */}

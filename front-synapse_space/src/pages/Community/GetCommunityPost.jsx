@@ -12,6 +12,7 @@ import { tuple } from "yup";
 import RichTextEditor from "../../components/RichTextEditor";
 import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
+import Footer from '../../components/Footer';
 
 const GetCommunityPost = () => {
     const location = useLocation();
@@ -148,6 +149,7 @@ const GetCommunityPost = () => {
 
     return (
         <>
+        <div className="flex flex-col min-h-screen">
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
             {success && <SuccessAlert text={success} classExtensions="fixed z-50" />}
             <NavBar />
@@ -161,7 +163,7 @@ const GetCommunityPost = () => {
                             <form onSubmit={handleSubmit} className="form form-control">
                                 <label className="text-sm font-bold">Title</label>
                                 <input type="text" name="title" defaultValue={post.title}
-                                       className="input input-primary m-3"
+                                       className="m-3 input input-primary"
                                        onChange={(e) => setTitle(e.target.value)}
                                        required />
                                 <span className="text-sm font-bold">Content</span>
@@ -170,7 +172,7 @@ const GetCommunityPost = () => {
                                     isEditing={isEditing}
                                     initialContent={post.content}
                                 />
-                                <button type="submit" className="btn btn-primary m-6">Save Changes</button>
+                                <button type="submit" className="m-6 btn btn-primary">Save Changes</button>
                             </form>
                         </div>
                     ) : (
@@ -193,7 +195,9 @@ const GetCommunityPost = () => {
                     <h2>Post does not exist</h2>
                 )}
             </MainContentContainer>
-        </>
+            <Footer/> 
+        </div>
+    </>
     );
 };
 

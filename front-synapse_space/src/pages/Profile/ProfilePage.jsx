@@ -2,13 +2,10 @@ import React, { useContext, useState, useEffect } from "react";
 import 'tailwindcss/tailwind.css';
 import 'daisyui';
 import AuthContext from "../../context/AuthContext";
-import NavBar from "../../components/profile/NavBar";
 import BannerProfile from '../../components/profile/BannerProfile';  
-import MainContentContainer from "../../components/MainContentContainer";
 import ProfileTabs from '../../components/profile/ProfileTabs';
 import ActivitiesDisplay from '../../components/profile/ActivitiesDisplay';
-import Footer from '../../components/Footer';
-import Layout from '../../components/Layout';
+import LayoutProfile from '../../components/LayoutProfile';
 import AxiosInstance from "../../utils/AxiosInstance";
 
 const ProfilePage = () => {
@@ -28,21 +25,30 @@ const ProfilePage = () => {
     }, []);
 
     return (
-       <Layout>
-                <div className="p-6">
-                    <BannerProfile 
-                        first_name={userProfile.first_name} // Use first_name from userProfile
-                        last_name={userProfile.last_name} // Add last_name from userProfile
-                        username={userProfile.username} // Pass username
-                        profBanner={userProfile.profile_banner} 
-                        profAvatar={userProfile.profile_pic}
-                        bio={userProfile.bio}
-                        isSelf={true}
-                    />
-                    <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-                    <ActivitiesDisplay activities={activities} activeTab={activeTab} userID={userProfile.id}/>
-                </div>
-                </Layout>
+        <LayoutProfile showSidebar={true} membersListId={userProfile.id}>
+            <div className="p-6">
+                {/* Banner Profile Section */}
+                <BannerProfile 
+                    first_name={userProfile.first_name} // Use first_name from userProfile
+                    last_name={userProfile.last_name} // Add last_name from userProfile
+                    username={userProfile.username} // Pass username
+                    profBanner={userProfile.profile_banner} 
+                    profAvatar={userProfile.profile_pic}
+                    bio={userProfile.bio}
+                    isSelf={true}
+                />
+                
+                {/* Profile Tabs Section */}
+                <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                
+                {/* Activities Display Section */}
+                <ActivitiesDisplay 
+                    activities={activities} 
+                    activeTab={activeTab} 
+                    userID={userProfile.id} 
+                />
+            </div>
+        </LayoutProfile>
     );  
 };
 

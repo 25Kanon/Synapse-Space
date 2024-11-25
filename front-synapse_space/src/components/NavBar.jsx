@@ -7,6 +7,7 @@ import {
     faChevronDown,
     faCheck,
     faTimes,
+    faBars
 } from "@fortawesome/free-solid-svg-icons";
 import AuthContext from "../context/AuthContext";
 import { useFriends } from "../context/FriendContext";
@@ -57,24 +58,33 @@ const NavBar = () => {
         }
     };
 
+    const renderDropdown=<ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
+    <li>
+        <Link to="/profile">Profile</Link>
+    </li>
+    <li>
+        <button onClick={handleLogout} className="btn btn-logout">
+            Logout
+        </button>
+    </li>
+    </ul>
+
     return (
         <nav className={`fixed top-0 z-40 w-full ${scrolled ? "bg-base-200" : ""}`}>
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center justify-start rtl:justify-end">
-                        <Link to="/">
-                            <a className="flex ms-2 md:me-24">
-                                <img
-                                    src="/images/logo2.png"
-                                    alt="Synapse Space Logo"
-                                    className="h-14 w-13"
-                                />
-                                <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
-                                    Synapse Space
-                                </span>
-                            </a>
-                        </Link>
-                    </div>
+                <div className="flex items-center justify-start rtl:justify-end">
+                    <Link to="/" className="flex items-center ms-2 md:me-24">
+                        <img
+                            src="/images/logo2.png"
+                            alt="Synapse Space Logo"
+                            className="h-14 w-13"
+                        />
+                        <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
+                            Synapse Space
+                        </span>
+                    </Link>
+                </div>
                     {/* Search form */}
                     {!isOnSearchPage && (
                         <form onSubmit={handleSearchSubmit}>
@@ -89,6 +99,12 @@ const NavBar = () => {
                             />
                         </form>
                     )}
+                    <details className="flex justify-center md:hidden dropdown dropdown-end dropdown-bottom z-1">
+                        <summary className="flex items-center h-5 btn">
+                            <FontAwesomeIcon icon={faBars} className="z-40 h-5" />
+                        </summary>
+                        {renderDropdown}
+                    </details>
 
                     <div className="flex items-center justify-center hidden px-3 my-auto rounded-full ms-3 bg-base-200 dropdown-left sm:block ">
                         <div className="z-40 flex items-center px-2 py-1">
@@ -260,7 +276,7 @@ const NavBar = () => {
 
                             <details className="dropdown dropdown-end dropdown-bottom z-1">
                                 <summary className="flex items-center h-5 btn">
-                                    <div className="relative avatar placeholder">
+                                    <div className="avatar placeholder">
                                         <div className="rounded-full h-7">
                                             {user.pic ? (
                                                 <img
@@ -277,34 +293,16 @@ const NavBar = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        {/* Green Active Icon */}
-                                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                                     </div>
-                                    <p className="flex items-center text-sm font-semibold ms-2">
+                                    <p className="flex items-center text-sm font-semibold">
                                         {user.username}
                                         <span>
                                             <FontAwesomeIcon icon={faChevronDown} className="ms-3" />
                                         </span>
                                     </p>
                                 </summary>
-                                <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
-                                    <Link
-                                        to="/profile"
-                                        className="font-semibold transition duration-200 ease-in-out "
-                                    >
-                                        <li className="flex items-center justify-center btn btn-sm">
-
-                                            Profile
-                                        </li>
-                                    </Link>
-                                    <li>
-                                        <button onClick={handleLogout} className="btn btn-sm">
-                                            Logout
-                                        </button>
-                                    </li>
-                                </ul>
+                                {renderDropdown}
                             </details>
-
                         </div>
                     </div>
                 </div>

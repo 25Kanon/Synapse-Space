@@ -4,6 +4,7 @@ import Search from '../../components/community/Search';
 import ErrorAlert from "../../components/ErrorAlert";
 import Sidebar from "../../components/Sidebar";
 import NavBar from "../../components/NavBar";
+import Footer from "../../components/Footer";
 import FriendsList from "../../components/FriendsList";
 import MainContentContainer from "../../components/MainContentContainer";
 export default function SearchCommunity() {
@@ -30,6 +31,7 @@ export default function SearchCommunity() {
 
                 <Search />
             </MainContentContainer>
+            <Footer/>
         </>
 
     );

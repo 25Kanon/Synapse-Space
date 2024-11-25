@@ -10,6 +10,7 @@ import BannerCropper from "./BannerCropper";
 import { useMemberships } from "../../context/MembershipContext";
 import AxiosInstance from "../../utils/AxiosInstance";
 import { TagInput } from '../TagInput';
+import Footer from '../../components/Footer';
 
 
 const CreateCommunity = () => {
@@ -137,6 +138,7 @@ const CreateCommunity = () => {
 
 
     return (
+        <>
         <main className="flex items-center justify-center p-5 mt-20 sm:mx-64">
             <div className="w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
                 {error && <ErrorAlert text={error} />}
@@ -244,6 +246,8 @@ const CreateCommunity = () => {
                 </form>
             </div>
         </main>
+        <Footer/>
+        </>
     );
 };
 

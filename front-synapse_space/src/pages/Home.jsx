@@ -8,6 +8,7 @@ import MainContentContainer from "../components/MainContentContainer";
 import AxiosInstance from "../utils/AxiosInstance";
 import CommunityPost from "../components/community/CommunityPost";
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import Footer from '../components/Footer';
 
 export default function Home() {
     const { isAuthenticated, user, error: authError } = useContext(AuthContext);
@@ -75,8 +76,9 @@ export default function Home() {
                     />
                 ))}
                 {loading && <div className="loading loading-spinner loading-lg"></div>}
-                {!hasMore && <div className="text-center mt-4">No more posts to load</div>}
+                {!hasMore && <div className="mt-4 text-center">No more posts to load</div>}
             </MainContentContainer>
+            <Footer/>
         </>
     );
 }

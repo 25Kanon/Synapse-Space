@@ -6,6 +6,7 @@ import ProfileTabs from "../../components/profile/ProfileTabs";
 import ActivitiesDisplay from "../../components/profile/ActivitiesDisplay";
 import AxiosInstance from "../../utils/AxiosInstance";
 import AuthContext from "../../context/AuthContext";
+import Footer from '../../components/Footer';
 import MainContentContainer from "../../components/MainContentContainer";
 const UserProfilePage = () => {
     const { user } = useContext(AuthContext); // Logged-in user
@@ -73,6 +74,7 @@ const UserProfilePage = () => {
                 </div>
 
             </MainContentContainer>
+            <Footer/>           
         </>
     );
 };
