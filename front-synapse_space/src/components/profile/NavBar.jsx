@@ -295,6 +295,8 @@ const NavBar = () => {
                                                 </div>
                                             )}
                                         </div>
+                                        {/* Green Active Icon */}
+                                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                                     </div>
                                     <p className="flex items-center text-sm font-semibold">
                                         {user.username}

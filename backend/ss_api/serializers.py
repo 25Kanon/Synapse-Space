@@ -46,12 +46,17 @@ logger = logging.getLogger(__name__)
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'password']
+        fields = ['id', 'student_number', 'first_name', 'last_name', 'email', 'username', 'bio', 'profile_pic', 'profile_banner', 'interests', 'password']
         extra_kwargs = {
             'password': {'write_only': True}  # Ensure the password is write-only
         }
+        
+def validate_interests(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Interests must be a list of strings.")
+        return value
 
-    def create(self, validated_data):
+def create(self, validated_data):
         user = User(**validated_data)
         user.set_password(validated_data['password'])  # Hash the password
         user.save()

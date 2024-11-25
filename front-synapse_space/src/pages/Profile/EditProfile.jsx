@@ -6,11 +6,15 @@ import AuthContext from "../../context/AuthContext";
 import AvatarCropper from "../../components/avatarCropper";
 import BannerCropper from "../../components/community/BannerCropper";
 import Banner from "../../components/profile/Banner";
+import { TagInput } from "../../components/TagInput";
+import NavBar from "../../components/NavBar";
+import Footer from '../../components/Footer';
 
 const EditProfile = () => {
     const { user } = useContext(AuthContext);
     const [username, setUsername] = useState(user.username || "");
     const [bio, setBio] = useState("");
+    const [interests, setInterests] = useState([]);
     const [profilePic, setProfilePic] = useState(null);
     const [profileBanner, setProfileBanner] = useState(null);
     const [profilePicBlob, setProfilePicBlob] = useState(null);
@@ -22,15 +26,20 @@ const EditProfile = () => {
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [passwordSuccess, setPasswordSuccess] = useState("");
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     const navigate = useNavigate();
 
     useEffect(() => {
         AxiosInstance.get("/api/profile/", { withCredentials: true })
             .then((response) => {
-                const { username, bio, profile_pic, profile_banner } = response.data;
+                const { username, bio, profile_pic, profile_banner, interests } = response.data;
                 setUsername(username || "");
                 setBio(bio || "");
+                setInterests(interests || []);
                 setProfilePic(profile_pic || null);
                 setProfileBanner(profile_banner || null);
             })
@@ -102,6 +111,7 @@ const EditProfile = () => {
             const payload = {
                 username: DOMPurify.sanitize(username),
                 bio: DOMPurify.sanitize(bio),
+                interests,
                 profile_pic: uploadedProfilePic,
                 profile_banner: uploadedProfileBanner,
             };
@@ -110,7 +120,8 @@ const EditProfile = () => {
                 withCredentials: true,
             });
 
-            navigate("/profile");
+            setSuccessMessage("Profile updated successfully!"); // Set success message
+
         } catch (error) {
             console.error("Error updating profile:", error);
         }
@@ -121,27 +132,41 @@ const EditProfile = () => {
         setPasswordError("");
         setPasswordSuccess("");
 
+        console.log("Current Password:", currentPassword);
+        console.log("New Password:", newPassword);
+        console.log("Confirm New Password:", confirmNewPassword);
+
         if (newPassword !== confirmNewPassword) {
             setPasswordError("New password and confirmation do not match.");
             return;
         }
 
         try {
-            await AxiosInstance.put(
+            const response = await AxiosInstance.put(
                 "/api/change-password/",
-                { current_password: currentPassword, new_password: newPassword, confirm_password: confirmNewPassword },
+                {
+                    current_password: currentPassword,
+                    new_password: newPassword,
+                    confirm_password: confirmNewPassword,
+                },
                 { withCredentials: true }
             );
+            console.log("Password update response:", response.data); // Log successful response
             setPasswordSuccess("Password updated successfully!");
+
+            // Reset the input fields
             setCurrentPassword("");
             setNewPassword("");
             setConfirmNewPassword("");
         } catch (error) {
-            setPasswordError("Error updating password: " + (error.response?.data?.error || "Unknown error"));
+            console.error("Password update error:", error.response?.data || error.message); // Log detailed error
+            setPasswordError(error.response?.data?.error || "Unknown error");
         }
-    };
+    }; 
 
     return (
+        <>
+        <NavBar />
         <main className="flex flex-col items-center justify-center p-5 mt-20 sm:mx-64">
             <div className="w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
                 <dialog id="avatar-cropper" className="modal modal-bottom sm:modal-middle">
@@ -155,7 +180,7 @@ const EditProfile = () => {
                     <Banner profName={username} profAvatar={profilePic} profBanner={profileBanner} />
                     <div className="flex flex-row justify-center gap-3 ">
                         <div>
-                            <label className="block mb-2 text-sm font-bold m-6" htmlFor="avatar">
+                            <label className="block m-6 mb-2 text-sm font-bold" htmlFor="avatar">
                                 Profile Picture
                             </label>
                             <input
@@ -167,7 +192,7 @@ const EditProfile = () => {
                             />
                         </div>
                         <div>
-                            <label className="block mb-2 text-sm font-bold m-6" htmlFor="banner">
+                            <label className="block m-6 mb-2 text-sm font-bold" htmlFor="banner">
                                 Profile Banner
                             </label>
                             <input
@@ -203,6 +228,17 @@ const EditProfile = () => {
                             className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
+                    <div>
+                        <label className="block mb-2 text-sm font-bold" htmlFor="interests">
+                            Interests
+                        </label>
+                        <TagInput
+                            value={interests}
+                            onChange={setInterests}
+                            placeholder="Add tags (e.g., food (press enter button))..."
+                            className="w-full input-bordered placeholder-neutral dark:placeholder-accent"
+                        />
+                    </div>
                     <div className="text-center">
                         <button type="submit" className="px-6 py-3 text-white rounded-lg btn btn-primary">
                             Save Changes
@@ -216,50 +252,81 @@ const EditProfile = () => {
                 <form onSubmit={handlePasswordSubmit} className="space-y-6 form-control">
                     {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
                     {passwordSuccess && <p className="text-sm text-green-600">{passwordSuccess}</p>}
-                    <div>
+
+                    {/* Current Password Field */}
+                    <div className="relative">
                         <label className="block mb-2 text-sm font-bold" htmlFor="currentPassword">
                             Current Password
                         </label>
                         <input
-                            type="password"
+                            type={showCurrentPassword ? "text" : "password"}
                             id="currentPassword"
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
                             className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            required
                         />
+                        <i
+                            className={`fa ${showCurrentPassword ? "fa-eye" : "fa-eye-slash"} absolute right-3 top-12 cursor-pointer`}
+                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            aria-hidden="true"
+                        ></i>
                     </div>
-                    <div>
+
+                    {/* New Password Field */}
+                    <div className="relative">
                         <label className="block mb-2 text-sm font-bold" htmlFor="newPassword">
                             New Password
                         </label>
                         <input
-                            type="password"
+                            type={showNewPassword ? "text" : "password"}
                             id="newPassword"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            required
                         />
+                        <i
+                            className={`fa ${showNewPassword ? "fa-eye" : "fa-eye-slash"} absolute right-3 top-12 cursor-pointer`}
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            aria-hidden="true"
+                        ></i>
                     </div>
-                    <div>
+
+                    {/* Confirm New Password Field */}
+                    <div className="relative">
                         <label className="block mb-2 text-sm font-bold" htmlFor="confirmNewPassword">
                             Confirm New Password
                         </label>
                         <input
-                            type="password"
+                            type={showConfirmNewPassword ? "text" : "password"}
                             id="confirmNewPassword"
                             value={confirmNewPassword}
                             onChange={(e) => setConfirmNewPassword(e.target.value)}
                             className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            required
                         />
+                        <i
+                            className={`fa ${showConfirmNewPassword ? "fa-eye" : "fa-eye-slash"} absolute right-3 top-12 cursor-pointer`}
+                            onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                            aria-hidden="true"
+                        ></i>
                     </div>
+
+                    {/* Submit Button */}
                     <div className="text-center">
-                        <button type="submit" className="px-6 py-3 text-white rounded-lg btn btn-primary">
+                        <button
+                            type="submit"
+                            className="px-6 py-3 text-white rounded-lg shadow-md bg-primary hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                        >
                             Update Password
                         </button>
                     </div>
                 </form>
             </div>
         </main>
+        <Footer/>
+        </>
     );
 };
 

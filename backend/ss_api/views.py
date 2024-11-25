@@ -12,6 +12,7 @@ from django.db import models
 from django.conf import settings
 import os
 from datetime import datetime, timedelta
+from difflib import SequenceMatcher
 
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -536,19 +537,31 @@ class ChangePasswordView(APIView):
         new_password = request.data.get("new_password")
         confirm_password = request.data.get("confirm_password")
 
+        print(f"Received data: {request.data}")
+
         # Check that the current password is correct
         if not user.check_password(current_password):
+            print("Current password is incorrect")
             return Response({"error": "Current password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate that the new password is not the same as the current password
+        if current_password == new_password:
+            print("New password cannot be the same as the current password")
+            return Response(
+                {"error": "New password cannot be the same as the current password"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Validate that the new password and confirm password match
         if new_password != confirm_password:
+            print("New passwords do not match")
             return Response({"error": "New passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate the new password according to Django's password validation rules
-        try:
-            validate_password(new_password, user)
-        except ValidationError as e:
-            return Response({"error": e.messages}, status=status.HTTP_400_BAD_REQUEST)
+        # Custom password validation
+        password_errors = self.validate_custom_password_rules(new_password, current_password)
+        if password_errors:
+            print(f"Validation error: {password_errors}")
+            return Response({"error": password_errors}, status=status.HTTP_400_BAD_REQUEST)
 
         # Set the new password
         user.set_password(new_password)
@@ -556,8 +569,33 @@ class ChangePasswordView(APIView):
 
         # Update the session to reflect the new password hash
         update_session_auth_hash(request, user)
+        print("Password changed successfully")
 
         return Response({"message": "Password changed successfully"}, status=status.HTTP_200_OK)
+
+    def validate_custom_password_rules(self, new_password, current_password):
+        errors = []
+
+        # Rule 1: At least 8 characters long
+        if len(new_password) < 8:
+            errors.append("Password must be at least 8 characters long.")
+
+        # Rule 2: A combination of uppercase letters, lowercase letters, numbers, and symbols
+        if not re.search(r"[A-Z]", new_password):
+            errors.append("Password must include at least one uppercase letter.")
+        if not re.search(r"[a-z]", new_password):
+            errors.append("Password must include at least one lowercase letter.")
+        if not re.search(r"[0-9]", new_password):
+            errors.append("Password must include at least one number.")
+        if not re.search(r"[!@#$%^&*(),.?\":/{}|<>_]", new_password):
+            errors.append("Password must include at least one special character (e.g., !, @, #, etc.).")
+
+        # Rule 3: Significantly different from the current password
+        similarity_ratio = SequenceMatcher(None, current_password, new_password).ratio()
+        if similarity_ratio > 0.8:  # Adjust the threshold as needed
+            errors.append("Password must be significantly different from the current password.")
+
+        return errors
     
 class CommunityCreateView(generics.CreateAPIView):
     authentication_classes = [CookieJWTAuthentication]
