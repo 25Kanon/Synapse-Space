@@ -569,6 +569,12 @@ class CreateCommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
         fields = ['id', 'name', 'description', 'rules', 'keyword', 'imgURL', 'bannerURL']
+    
+    def validate_name(self, value):
+        """Ensure the community name is unique."""
+        if Community.objects.filter(name__iexact=value).exists():
+            raise serializers.ValidationError("A community with this name already exists.")
+        return value
 
 
 class CreateMembership(serializers.ModelSerializer):
