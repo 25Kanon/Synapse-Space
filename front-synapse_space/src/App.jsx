@@ -28,23 +28,23 @@ import Discovery from "./pages/Discovery";
 import { ConversationsWithMessagesWrapper } from "./components/Conversations";
 import { NotificationProvider } from "./context/NotificationContext";
 
-import Dashboard from "./pages/admin/Dashboard"
-import Users from "./pages/admin/Users"
-import Programs from "./pages/admin/Programs"
-import Verifications from "./pages/admin/Verifications"
+import Dashboard from "./pages/Admin/Dashboard"
+import Users from "./pages/Admin/Users"
+import Programs from "./pages/Admin/Programs"
+import Verifications from "./pages/Admin/Verifications"
 import HelpCenter from "./pages/HelpCenter";
 import { ToastContainer } from 'react-toastify';
-import Login from "./pages/admin/Login";
+import Login from "./pages/Admin/Login";
 
 
 import Chat from "./pages/Chat";
 import { initCometChat } from "./lib/cometchat";
 import ChatWindow from "./components/CometChat/ChatWindow";
-import { Activities } from "./pages/admin/Activities";
+import { Activities } from "./pages/Admin/Activities";
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 import Footer from './components/Footer';
-import Account from "./pages/admin/Account";
-import Settings from "./pages/admin/Settings";
+import Account from "./pages/Admin/Account";
+import Settings from "./pages/Admin/Settings";
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [theme, setTheme] = useState(() => {
