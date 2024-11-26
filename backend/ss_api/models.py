@@ -73,6 +73,11 @@ class Community(models.Model):
             community=self,
             role__in=['admin']
         ).exists()
+        
+    @property
+    def member_count(self):
+        """Count the number of members in the community."""
+        return Membership.objects.filter(community=self).count()
 
 
 class Post(models.Model):

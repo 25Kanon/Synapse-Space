@@ -7,7 +7,7 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
     const [page, setPage] = useState(1);
     const [error, setError] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
-
+    const [shouldLoadMore, setShouldLoadMore] = useState(false);
     const loadMore = async () => {
         if (loading || (!hasMore && !initialLoad)) return;
 
@@ -53,8 +53,14 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
         setItems([]);
         setPage(1);
         setHasMore(true);
-        loadMore();  // Trigger loading of posts based on new dependencies
+        setShouldLoadMore(true);
     }, dependencies);
 
+    useEffect(() => {
+        if (shouldLoadMore) {
+            setShouldLoadMore(false);
+            loadMore();
+        }
+    }, [shouldLoadMore]);
     return { loading, items, hasMore, loadMore, error };
 };

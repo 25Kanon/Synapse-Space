@@ -11,6 +11,8 @@ import { useMemberships } from "../../context/MembershipContext";
 import AxiosInstance from "../../utils/AxiosInstance";
 import { TagInput } from '../TagInput';
 import Footer from '../../components/Footer';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const CreateCommunity = () => {
@@ -109,7 +111,8 @@ const CreateCommunity = () => {
         }
 
         try {
-            const response = await AxiosInstance.post('/api/community/create/', formData, { withCredentials: true,
+            const response = await AxiosInstance.post('/api/community/create/', formData, {
+                withCredentials: true,
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
@@ -131,7 +134,18 @@ const CreateCommunity = () => {
                 setError("Failed to create community");
             }
         } catch (error) {
-            setError("Error creating community: " + (error.response?.data || "Unknown error"));
+            const errorData = error.response?.data;
+
+            // Extract error message from the response
+            let errorMessage = "An unknown error occurred while creating the community.";
+            if (errorData?.name && Array.isArray(errorData.name)) {
+                errorMessage = errorData.name.join(" "); // Combine all error messages for "name"
+            } else if (typeof errorData === "string") {
+                errorMessage = errorData;
+            }
+
+            setError(`Error creating community: ${errorMessage}`);
+            toast.error(`Error creating community: ${errorMessage}`);
             console.error("An error occurred:", error);
         }
     };
@@ -139,114 +153,114 @@ const CreateCommunity = () => {
 
     return (
         <>
-        <main className="flex items-center justify-center p-5 mt-20 sm:mx-64">
-            <div className="w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
-                {error && <ErrorAlert text={error} />}
-                {success && <SuccessAlert text={success} />}
-                <dialog id="avatar-cropper" className="modal modal-bottom sm:modal-middle">
-                    {imageSrc && (
-                        <AvatarCropper imageSrc={imageSrc} onCropComplete={handleAvatarCrop} cropShape="round" />
+            <main className="flex items-center justify-center p-5 mt-20 sm:mx-64">
+                <div className="w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
+                    {error && <ErrorAlert text={error} />}
+                    {success && <SuccessAlert text={success} />}
+                    <dialog id="avatar-cropper" className="modal modal-bottom sm:modal-middle">
+                        {imageSrc && (
+                            <AvatarCropper imageSrc={imageSrc} onCropComplete={handleAvatarCrop} cropShape="round" />
 
-                    )}
-                </dialog>
-                <dialog id="banner-cropper" className="modal modal-bottom sm:modal-middle">
-                    {imageSrc && (
-                        <BannerCropper imageSrc={imageSrc} onCropComplete={handleBannerCrop} cropShape="rectangle" />
+                        )}
+                    </dialog>
+                    <dialog id="banner-cropper" className="modal modal-bottom sm:modal-middle">
+                        {imageSrc && (
+                            <BannerCropper imageSrc={imageSrc} onCropComplete={handleBannerCrop} cropShape="rectangle" />
 
-                    )}
-                </dialog>
-                <h1 className="mb-8 text-3xl font-bold">Create Community</h1>
+                        )}
+                    </dialog>
+                    <h1 className="mb-8 text-3xl font-bold">Create Community</h1>
 
-                <form onSubmit={handleSubmit} className="space-y-6 form-control">
-                    <Banner communityName={communityName} commAvatar={communityAvatar} commBanner={communityBanner} />
+                    <form onSubmit={handleSubmit} className="space-y-6 form-control">
+                        <Banner communityName={communityName} commAvatar={communityAvatar} commBanner={communityBanner} />
 
-                    <div className="flex flex-row justify-center gap-3">
-                        <div>
-                            <label className="block mb-2 text-sm font-bold" htmlFor="commImg">
-                                Community Avatar</label>
-                            <input
-                                type="file"
-                                id="commImg"
-                                onChange={handleAvatarChange}
-                                className="w-full max-w-xs file-input file-input-bordered file-input-accent"
-                                accept="image/png, image/jpeg"
-                            />
+                        <div className="flex flex-row justify-center gap-3">
+                            <div>
+                                <label className="block mb-2 text-sm font-bold" htmlFor="commImg">
+                                    Community Avatar</label>
+                                <input
+                                    type="file"
+                                    id="commImg"
+                                    onChange={handleAvatarChange}
+                                    className="w-full max-w-xs file-input file-input-bordered file-input-accent"
+                                    accept="image/png, image/jpeg"
+                                />
 
+                            </div>
+
+                            <div>
+                                <label className="block mb-2 text-sm font-bold" htmlFor="commBanner">
+                                    Community Banner</label>
+                                <input
+                                    type="file"
+                                    id="commBanner"
+                                    onChange={handleBannerChange}
+                                    className="w-full max-w-xs file-input file-input-bordered file-input-accent"
+                                    accept="image/png, image/jpeg"
+                                />
+                            </div>
                         </div>
 
+
                         <div>
-                            <label className="block mb-2 text-sm font-bold" htmlFor="commBanner">
-                                Community Banner</label>
+                            <label className="block mb-2 text-sm font-bold" htmlFor="communityName">
+                                Community Name
+                            </label>
                             <input
-                                type="file"
-                                id="commBanner"
-                                onChange={handleBannerChange}
-                                className="w-full max-w-xs file-input file-input-bordered file-input-accent"
-                                accept="image/png, image/jpeg"
+                                type="text"
+                                id="communityName"
+                                value={communityName}
+                                className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter community name"
+                                onChange={(e) => setCommunityName(e.target.value)}
                             />
                         </div>
-                    </div>
+                        <div>
+                            <label className="block mb-2 text-sm font-bold" htmlFor="description">
+                                Description
+                            </label>
+                            <input
+                                type="text"
+                                id="description"
+                                value={description}
+                                className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="Describe your community"
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-2 text-sm font-bold" htmlFor="rules">
+                                Community Rules and Regulations
+                            </label>
+                            <textarea
+                                id="rules"
+                                className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                value={rules}
+                                placeholder="Enter community rules"
+                                rows="4"
+                                onChange={(e) => setRules(e.target.value)}
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label className="block mb-2 text-sm font-bold" htmlFor="keyword">
+                                Community Tags
+                            </label>
 
-
-                    <div>
-                        <label className="block mb-2 text-sm font-bold" htmlFor="communityName">
-                            Community Name
-                        </label>
-                        <input
-                            type="text"
-                            id="communityName"
-                            value={communityName}
-                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter community name"
-                            onChange={(e) => setCommunityName(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label className="block mb-2 text-sm font-bold" htmlFor="description">
-                            Description
-                        </label>
-                        <input
-                            type="text"
-                            id="description"
-                            value={description}
-                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Describe your community"
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label className="block mb-2 text-sm font-bold" htmlFor="rules">
-                            Community Rules and Regulations
-                        </label>
-                        <textarea
-                            id="rules"
-                            className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            value={rules}
-                            placeholder="Enter community rules"
-                            rows="4"
-                            onChange={(e) => setRules(e.target.value)}
-                        ></textarea>
-                    </div>
-                    <div>
-                        <label className="block mb-2 text-sm font-bold" htmlFor="keyword">
-                            Community Tags
-                        </label>
-
-                        <TagInput
-                            value={tags}
-                            onChange={setTags}
-                            placeholder="Add tags (e.g., 'react', 'typescript')..."
-                        />
-                    </div>
-                    <div className="text-center">
-                        <button type="submit" className="px-6 py-3 text-white rounded-lg btn btn-primary">
-                            Create
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </main>
-        <Footer/>
+                            <TagInput
+                                value={tags}
+                                onChange={setTags}
+                                placeholder="Add tags (e.g., 'react', 'typescript')..."
+                            />
+                        </div>
+                        <div className="text-center">
+                            <button type="submit" className="px-6 py-3 text-white rounded-lg btn btn-primary">
+                                Create
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+            <Footer />
         </>
     );
 };

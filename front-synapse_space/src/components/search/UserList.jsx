@@ -8,11 +8,6 @@ const UserList = ({ users = [], resultCount = 0, searchQuery }) => {
 
   return (
     <div className="max-w-full px-4 mx-auto sm:max-w-4xl"> {/* Increased max width */}
-      {resultCount > 0 && (
-        <h2 className="mb-4 text-lg font-bold text-center">
-          {resultCount} users for "{searchQuery}"
-        </h2>
-      )}
       <div
         className="flex gap-5 mt-4 overflow-x-auto"
         style={{

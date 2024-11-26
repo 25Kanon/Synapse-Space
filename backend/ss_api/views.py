@@ -1350,15 +1350,23 @@ class CommunityListView(APIView):
 
         if search_query:
             communities = Community.objects.filter(
-                Q(name__icontains=search_query) |
-                Q(description__icontains=search_query) |
-                Q(keyword__icontains=search_query)  # Ensure your model has a 'keywords' field
+                Q(name__icontains=search_query)
             )
         else:
             communities = Community.objects.all()  # If no search query, get all communities
 
-        serializer = CommunitySerializer(communities, many=True)
-        return Response(serializer.data)
+        # Set up pagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 10  # Set the number of communities per page
+        paginated_communities = paginator.paginate_queryset(communities, request)
+
+        if paginated_communities is None:
+            return Response({"error": "Invalid page number"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CommunitySerializer(paginated_communities, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
 
 class JoinCommunityView(generics.CreateAPIView):
     authentication_classes = [CookieJWTAuthentication]
@@ -1387,16 +1395,25 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'student_number', 'username', 'first_name', 'last_name', 'email', 'profile_pic', 'interests','bio']
 
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size_query_param = 'page_size'  # Allow the page size to be set via a query parameter
+    page_size = 10  # Default page size
+    max_page_size = 50  # Set the maximum page size to prevent excessive loads
+
 class UserListView(generics.ListAPIView):
     serializer_class = CustomUserSerializer
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPageNumberPagination  # Use custom pagination class
+
     def get_queryset(self):
-        queryset = User.objects.all()
+        # Exclude the requesting user from the queryset
+        queryset = User.objects.exclude(id=self.request.user.id)
+
+        # Apply search filter if provided
         search = self.request.query_params.get('search', None)
         if search:
             queryset = queryset.filter(
-                Q(student_number__icontains=search) |
                 Q(username__icontains=search) |
                 Q(first_name__icontains=search) |
                 Q(last_name__icontains=search) |
