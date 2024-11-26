@@ -1,9 +1,16 @@
 import axios from 'axios';
 
+const getCsrfToken = () => {
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : null;
+};
+
+
 const AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URI,
     withCredentials: true,
     headers: {
+        "X-CSRFToken": getCsrfToken(),
         'Content-Type': 'application/json',
     },
 });
