@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 
+from django.db.models import Count
 # Rest Framework imports
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.decorators import api_view
@@ -1385,6 +1386,25 @@ class JoinCommunityView(generics.CreateAPIView):
         membership, created = Membership.objects.get_or_create(user=request.user, community=community)
 
         if created:
+            # Notify admin and moderator users
+            admins_or_moderators = Membership.objects.filter(
+                community=community,
+                role__in=['admin', 'moderator']
+            ).select_related('user')  # Optimize with `select_related`
+
+            for admin_membership in admins_or_moderators:
+                Notification.objects.create(
+                    user=admin_membership.user,
+                    title="New Community Member",
+                    message={
+                        "action": "new_member",
+                        "user_id": request.user.id,
+                        "username": request.user.username,
+                        "community_id": community.id,
+                        "community_name": community.name,
+                    }
+                )
+            
             serializer = MembershipSerializer(membership)
             return Response({"message": "Successfully joined the community.", "membership": serializer.data}, status=status.HTTP_201_CREATED)
         else:
@@ -2188,7 +2208,6 @@ class AdminUserActivityLogView(APIView):
 
         return Response(activities, status=status.HTTP_200_OK)
 
-from django.db.models import Count
 
 class InteractionTrendView(APIView):
     authentication_classes = [CookieJWTAuthentication]
@@ -2334,18 +2353,28 @@ class ResendOTPView(APIView):
 
         try:
             UserModel = get_user_model()
-            user = UserModel.objects.get(email=username_or_email) or UserModel.objects.get(username=username_or_email)
+            print(UserModel.objects.all())  # Print all user objects for debugging
+            
+            # Attempt to fetch the user by email or username
+            user = None
+            if UserModel.objects.filter(email=username_or_email).exists():
+                user = UserModel.objects.get(email=username_or_email)
+            elif UserModel.objects.filter(username=username_or_email).exists():
+                user = UserModel.objects.get(username=username_or_email)
 
-            # Generate and send OTP
+            if not user:
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            if not hasattr(user, 'otp_secret') or not user.otp_secret:
+                return Response({"error": "User does not have an OTP secret configured."}, status=status.HTTP_400_BAD_REQUEST)
+            
             totp = pyotp.TOTP(user.otp_secret, interval=300)
             otp = totp.now()
             body = f"Your OTP is: {otp}"
+            # print(body)
             CustomTokenObtainPairSerializer.send_otp(body, user.email, user.username)
 
             return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
-
-        except UserModel.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

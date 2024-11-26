@@ -259,7 +259,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
         email_client = EmailClient.from_connection_string(connection_string)
         sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
-
+        # print(body)
         message = {
             "content": {
                 'subject': 'One Time Password for Synapse Space',
@@ -458,6 +458,7 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
 
     @staticmethod
     def send_otp(body, to_email, username):
+        # print(body)
         """
         Send the OTP to the user's email using Azure Communication Services.
         """
@@ -598,9 +599,19 @@ class MembershipSerializer(serializers.ModelSerializer):
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
-        fields = ['id','bannerURL','imgURL','name', 'description', 'rules', 'keyword', 'privacy']
+        fields = [
+            'id', 
+            'bannerURL', 
+            'imgURL', 
+            'name', 
+            'description', 
+            'rules', 
+            'keyword', 
+            'privacy', 
+            'member_count'
+        ]
 
-        def update(self, instance, validated_data):
+    def update(self, instance, validated_data):
             # Handle update logic
             if 'imgURL' in validated_data:
                 instance.imgURL = validated_data['imgURL']

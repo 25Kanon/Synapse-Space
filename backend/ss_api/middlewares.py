@@ -20,7 +20,7 @@ class UpdateLastActiveMiddleware:
         try:
             user, _ = auth.authenticate(request)  # Authenticate and retrieve user
         except Exception as e:
-            logger.error(f"Authentication error in UpdateLastActiveMiddleware: {e}")
+            logger.info(f"Authentication error in UpdateLastActiveMiddleware: {e}")
 
         # If the user is authenticated, update last_active
         if user and user.is_authenticated:

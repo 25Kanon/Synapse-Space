@@ -58,33 +58,33 @@ const NavBar = () => {
         }
     };
 
-    const renderDropdown=<ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
-    <li>
-        <Link to="/profile">Profile</Link>
-    </li>
-    <li>
-        <button onClick={handleLogout} className="btn btn-logout">
-            Logout
-        </button>
-    </li>
+    const renderDropdown = <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
+        <li>
+            <Link to="/profile">Profile</Link>
+        </li>
+        <li>
+            <button onClick={handleLogout} className="btn btn-logout">
+                Logout
+            </button>
+        </li>
     </ul>
 
     return (
         <nav className={`fixed top-0 z-40 w-full ${scrolled ? "bg-base-200" : ""}`}>
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
                 <div className="flex items-center justify-between">
-                <div className="flex items-center justify-start rtl:justify-end">
-                    <Link to="/" className="flex items-center ms-2 md:me-24">
-                        <img
-                            src="/images/logo2.png"
-                            alt="Synapse Space Logo"
-                            className="h-14 w-13"
-                        />
-                        <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
-                            Synapse Space
-                        </span>
-                    </Link>
-                </div>
+                    <div className="flex items-center justify-start rtl:justify-end">
+                        <Link to="/" className="flex items-center ms-2 md:me-24">
+                            <img
+                                src="/images/logo2.png"
+                                alt="Synapse Space Logo"
+                                className="h-14 w-13"
+                            />
+                            <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
+                                Synapse Space
+                            </span>
+                        </Link>
+                    </div>
                     {/* Search form */}
                     {!isOnSearchPage && (
                         <form onSubmit={handleSearchSubmit}>
@@ -207,7 +207,9 @@ const NavBar = () => {
                                                                 ? `Your comment in "${notification.message.community_name}" has been reported.`
                                                                 : notification.message.action === "friend_request_accepted"
                                                                     ? `Your friend request to ${notification.message.friend?.name} has been accepted.`
-                                                                    : ""
+                                                                    : notification.message.action === "new_member"
+                                                                        ? `${notification.message.username} wants to join the community "${notification.message.community_name}".`
+                                                                        : ""
                                                 } // Add detailed message here
                                             >
                                                 <Link
@@ -225,7 +227,9 @@ const NavBar = () => {
                                                                         ? `/community/${notification.message.community_id}`
                                                                         : notification.message.action === "friend_request_accepted"
                                                                             ? `/profile/user/${notification.message.friend?.id}`
-                                                                            : "#"
+                                                                            : notification.message.action === "new_member"
+                                                                                ? `/community/${notification.message.community_id}/mod`
+                                                                                : "#"
                                                     }
                                                     className="text-sm font-medium truncate hover:underline"
                                                     onClick={() => markAsRead(notification.id)}

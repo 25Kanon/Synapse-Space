@@ -1,14 +1,15 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import axiosInstance from "../utils/AxiosInstance";
-
+import { AuthContext } from "./AuthContext";
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const { isAuthenticated} = useContext(AuthContext);
     // Function to fetch notifications
     const fetchNotifications = async () => {
+        if(!isAuthenticated) return;
         setLoading(true);
         try {
             const response = await axiosInstance.get("api/notifications", { withCredentials: true });
