@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from datetime import timedelta
 from django.conf import settings
 import os
-
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -111,16 +111,25 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # or your database engine
-        'NAME': 'Synapse space',
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+print(ENVIRONMENT)
+
+if ENVIRONMENT == 'production':
+    DATABASES = {
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'Synapse space'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
+        }
+    }
 
 
 # Password validation
