@@ -81,7 +81,7 @@ export function ModQueue({ reports, onApprove, onReject }: ModQueueProps) {
         setActionFeedback({ id, action });
         setTimeout(() => setActionFeedback(null), 2000);
     };
-    console.log(reports);
+    //console.log(reports);
     return (
         <div className="space-y-4">
             {reports.length === 0 ? (

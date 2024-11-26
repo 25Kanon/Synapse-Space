@@ -102,7 +102,7 @@ export function ModActions({ onOpenSettings }: ModActionsProps) {
                 );
 
                 setUsers(response.data);
-                console.log("members:", response.data);
+                //console.log("members:", response.data);
             } catch (error) {
                 console.error("Error fetching memberships:", error);
             }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import type { ModSettings } from '../types';
 
@@ -10,17 +10,52 @@ type ModSettingsModalProps = {
 };
 
 export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSettingsModalProps) {
-    const [localSettings, setLocalSettings] = React.useState<ModSettings>(settings);
-    const [bannedWordsText, setBannedWordsText] = React.useState(settings.bannedWords.join(', '));
+    // Transform snake_case settings from API to camelCase for local use
+    const transformSettingsToCamelCase = (settings) => ({
+        autoModEnabled: settings.auto_mod_enabled,
+        reportThreshold: settings.report_threshold,
+        wordFilterEnabled: settings.word_filter_enabled,
+        bannedWords: settings.banned_words,
+        newUserRestriction: settings.new_user_restriction,
+        notificationsEnabled: settings.notifications_enabled,
+        autoLockThreshold: settings.auto_lock_threshold,
+        community: settings.community, // Add community ID to local settings
+    });
+
+    // Transform camelCase settings back to snake_case for API requests
+    const transformSettingsToSnakeCase = (settings) => ({
+        auto_mod_enabled: settings.autoModEnabled,
+        report_threshold: settings.reportThreshold,
+        word_filter_enabled: settings.wordFilterEnabled,
+        banned_words: settings.bannedWords,
+        new_user_restriction: settings.newUserRestriction,
+        notifications_enabled: settings.notificationsEnabled,
+        auto_lock_threshold: settings.autoLockThreshold,
+        community: settings.community, // Keep the community ID
+    });
+
+    const [localSettings, setLocalSettings] = React.useState<ModSettings>(transformSettingsToCamelCase(settings));
+    const [bannedWordsText, setBannedWordsText] = React.useState(settings?.banned_words?.join(', ') ?? '');
+
+    // Update local state when settings prop changes
+    useEffect(() => {
+        if (settings) {
+            setLocalSettings(transformSettingsToCamelCase(settings));
+            setBannedWordsText(settings?.banned_words?.join(', ') ?? '');
+        }
+    }, [settings]);
 
     const handleSave = () => {
         const updatedSettings = {
             ...localSettings,
             bannedWords: bannedWordsText.split(',').map(word => word.trim()).filter(Boolean)
         };
-        onSave(updatedSettings);
+        onSave(transformSettingsToSnakeCase(updatedSettings));
         onClose();
     };
+
+    const hasChanges = JSON.stringify(settings) !== JSON.stringify(transformSettingsToSnakeCase(localSettings)) ||
+        bannedWordsText !== settings?.banned_words?.join(', ');
 
     if (!isOpen) return null;
 
@@ -60,7 +95,7 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                                     value={localSettings.reportThreshold}
                                     onChange={(e) => setLocalSettings(prev => ({
                                         ...prev,
-                                        reportThreshold: parseInt(e.target.value)
+                                        reportThreshold: parseInt(e.target.value) || prev.reportThreshold
                                     }))}
                                     className="input input-bordered w-20 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
@@ -88,7 +123,7 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                                 value={bannedWordsText}
                                 onChange={(e) => setBannedWordsText(e.target.value)}
                                 placeholder="Enter banned words separated by commas"
-                                className= " textarea textarea-bordered w-full h-24 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="textarea textarea-bordered w-full h-24 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
                     </div>
@@ -105,7 +140,7 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                                 value={localSettings.newUserRestriction}
                                 onChange={(e) => setLocalSettings(prev => ({
                                     ...prev,
-                                    newUserRestriction: parseInt(e.target.value)
+                                    newUserRestriction: parseInt(e.target.value) || prev.newUserRestriction
                                 }))}
                                 className="input input-bordered w-20 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
@@ -141,7 +176,7 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                                 value={localSettings.autoLockThreshold}
                                 onChange={(e) => setLocalSettings(prev => ({
                                     ...prev,
-                                    autoLockThreshold: parseInt(e.target.value)
+                                    autoLockThreshold: parseInt(e.target.value) || prev.autoLockThreshold
                                 }))}
                                 className="input input-bordered rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
@@ -158,7 +193,8 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                     </button>
                     <button
                         onClick={handleSave}
-                        className="flex items-center space-x-2 px-4 py-2 btn btn-primary rounded-md"
+                        disabled={!hasChanges}
+                        className={`flex items-center space-x-2 px-4 py-2 btn btn-primary rounded-md ${!hasChanges ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         <Save className="w-4 h-4" />
                         <span>Save Settings</span>

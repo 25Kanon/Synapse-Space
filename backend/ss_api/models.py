@@ -248,3 +248,16 @@ class SystemSetting(models.Model):
 
     def __str__(self):
         return f"{self.key}: {self.value}"
+    
+class ModeratorSettings(models.Model):
+    community = models.OneToOneField('Community', on_delete=models.CASCADE, related_name='mod_settings')
+    auto_mod_enabled = models.BooleanField(default=True)
+    report_threshold = models.PositiveIntegerField(default=5)
+    word_filter_enabled = models.BooleanField(default=True)
+    banned_words = models.JSONField(default=list)  # Store list of banned words
+    new_user_restriction = models.PositiveIntegerField(default=0)  # In days
+    notifications_enabled = models.BooleanField(default=True)
+    auto_lock_threshold = models.PositiveIntegerField(default=10)
+
+    def __str__(self):
+        return f"Moderator Settings for {self.community.name}"

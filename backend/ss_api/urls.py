@@ -20,7 +20,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView,
                     undislikePostView,
                     UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView, StaffLoginView, SettingsView,
-                    UpdateSettingsView)
+                    UpdateSettingsView, ModeratorSettingsDetailView)
 from django.contrib import admin
 
 
@@ -127,7 +127,7 @@ urlpatterns = [
     path('admin/interactions/', InteractionTrendView.as_view(), name='admin-interactions'),
     path('admin/settings/', SettingsView.as_view(), name='admin-settings'),
     path('admin/update/settings/', UpdateSettingsView.as_view(), name='update-admin-settings'),
-
+    path('moderator/settings/<int:community_id>/', ModeratorSettingsDetailView.as_view(), name='moderator-settings'),
 
     # path('check_profanity/', ProfanityCheckView.as_view(), name='check_profanity'),
 ]

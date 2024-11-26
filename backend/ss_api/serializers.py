@@ -21,7 +21,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
                      Reports, FriendRequest, Program,
-                     Notification, DislikedPost, Feedback, SystemSetting)
+                     Notification, DislikedPost, Feedback, SystemSetting,
+                     ModeratorSettings)
 
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -1003,3 +1004,8 @@ class SystemSettingSerializer(serializers.ModelSerializer):
         instance.value = validated_data.get('value', instance.value)
         instance.save()
         return instance
+    
+class ModeratorSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ModeratorSettings
+        fields = '__all__'

@@ -61,7 +61,7 @@ import torch
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
-    Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback, SystemSetting
+    Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback, SystemSetting, ModeratorSettings
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -71,7 +71,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
                           PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer,
                           DislikedPostSerializer, ContentSerializer, FeedbackSerializer,
-                          CustomTokenObtainPairSerializerStaff, SystemSettingSerializer)
+                          CustomTokenObtainPairSerializerStaff, SystemSettingSerializer, ModeratorSettingsSerializer)
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff
 
@@ -81,7 +81,7 @@ from django.conf import settings
 
 
 from rest_framework.pagination import PageNumberPagination
-
+from .utils import check_banned_words
 logger = logging.getLogger(__name__)
 
 
@@ -762,12 +762,19 @@ class PostCreateView(generics.CreateAPIView):
         # Check for malicious content
         automoderator = get_automoderator()
         is_malicious = automoderator.is_malicious(plain_text)
-
+        community_id = serializer.validated_data.get("posted_in").id
+        banned_words_found = check_banned_words(plain_text, community_id)
+        
         # Save the post
         post = serializer.save(created_by=request.user)
 
         # Handle malicious content
-        if is_malicious:
+        if is_malicious or banned_words_found:
+            reasons = []
+            if is_malicious:
+                reasons.append("Automatically flagged as malicious by the system.")
+            if banned_words_found:
+                reasons.append(f"Banned words detected: {', '.join(banned_words_found)}")
             # Create a report for the malicious post
             report = Reports.objects.create(
                 type="post",
@@ -775,7 +782,7 @@ class PostCreateView(generics.CreateAPIView):
                 author=request.user,
                 content_type=ContentType.objects.get_for_model(Post),
                 object_id=post.id,
-                reason="Automatically flagged as malicious by the system.",
+                reason="; ".join(reasons),
                 community=post.posted_in
             )
 
@@ -2597,3 +2604,41 @@ class UpdateSettingsView(APIView):
                 {"error": f"Setting with key '{key}' does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+            
+class ModeratorSettingsDetailView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+
+    def get(self, request, community_id):
+        try:
+            # Try to get the moderator settings for the given community
+            mod_settings = ModeratorSettings.objects.get(community_id=community_id)
+        except ModeratorSettings.DoesNotExist:
+            # Create default settings for the community if not found
+            try:
+                community = Community.objects.get(id=community_id)
+                mod_settings = ModeratorSettings.objects.create(community=community)
+            except Community.DoesNotExist:
+                return Response(
+                    {"error": f"Community with ID '{community_id}' does not exist."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        
+        serializer = ModeratorSettingsSerializer(mod_settings)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, community_id):
+        try:
+            # Try to get the moderator settings for the given community
+            mod_settings = ModeratorSettings.objects.get(community_id=community_id)
+        except ModeratorSettings.DoesNotExist:
+            return Response(
+                {"error": f"Setting for community '{community_id}' does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = ModeratorSettingsSerializer(mod_settings, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
