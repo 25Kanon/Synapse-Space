@@ -79,7 +79,7 @@ export function UserDetails({ user }: UserDetailsProps) {
                         <div>
                             <p className="text-sm text-secondary mb-2">Interests</p>
                             <div className="flex flex-wrap gap-2">
-                                {user.interests.map((interest, index) => (
+                                {user?.interests?.map((interest, index) => (
                                     <span
                                         key={index}
                                         className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"

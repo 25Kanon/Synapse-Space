@@ -12,6 +12,7 @@ import {
 import AuthContext from "../context/AuthContext";
 import { useFriends } from "../context/FriendContext";
 import { useNotifications } from "../context/NotificationContext";
+import ChatBadge from "./ChatBadge";
 const NavBar = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
@@ -110,14 +111,14 @@ const NavBar = () => {
                         <div className="z-40 flex items-center px-2 py-1">
 
                             <Link to="/chat" className="link">
-                                <FontAwesomeIcon icon={faMessage} className="z-40 h-5 mr-5" />
+                                <ChatBadge />
                             </Link>
                             <details className="z-40 dropdown dropdown-end dropdown-bottom">
                                 <summary className="flex items-center h-5 btn">
                                     <FontAwesomeIcon icon={faBell} className="h-5" />
                                     {(filteredFriendRequests.length > 0 || unreadNotifications.length > 0) && (
                                         <span
-                                            className="absolute top-0 right-0 z-40 flex items-center justify-center w-5 h-5 text-xs text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                                            className="absolute top-3 right-1 z-40 flex items-center justify-center w-5 h-5 text-xs text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
                                             {filteredFriendRequests.length + unreadNotifications.length}
                                         </span>
                                     )}

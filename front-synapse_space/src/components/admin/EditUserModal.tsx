@@ -76,6 +76,7 @@ function EditUserModal({ user }) {
 
     // Handle file upload to server
     const handleFileUpload = async (file) => {
+        setError(null);
         const formData = new FormData();
         formData.append("img", file);
 

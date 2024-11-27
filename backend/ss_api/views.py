@@ -2128,8 +2128,42 @@ class UnverifiedStudentsViewSet(generics.ListAPIView):
 
         if user.is_verified:
             create_cometchat_user(user)
+            self.send_acceptance_email("Your account has been successfully verified.\nYou are now accepted into Synapse Space.\nWelcome aboard!", user.email, user.username)
+        elif user.is_rejected:
+            self.send_acceptance_email("Your account has been rejected.\nPlease contact the admin for further details.",user.email, user.username)
+
 
         return Response({"message": "User verified successfully."}, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def send_acceptance_email(body, to_email, username):
+        print(body)
+        connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
+        email_client = EmailClient.from_connection_string(connection_string)
+        sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
+        recipient_email = to_email
+        message = {
+            "content": {
+                'subject': 'Welcome to Synapse Space',
+                "plainText": body,
+            },
+            "recipients": {
+                "to": [
+                    {
+                        "address": recipient_email,
+                        "displayName": username
+                    }
+                ]
+            },
+            "senderAddress": sender
+        }
+
+        try:
+            response = email_client.begin_send(message)
+        except HttpResponseError as ex:
+            print('Exception:')
+            print(ex)
+            raise Exception(ex)
 
 
 class NotificationListView(APIView):
