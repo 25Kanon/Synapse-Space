@@ -28,23 +28,23 @@ import Discovery from "./pages/Discovery";
 import { ConversationsWithMessagesWrapper } from "./components/Conversations";
 import { NotificationProvider } from "./context/NotificationContext";
 
-import Dashboard from "./pages/Admin/Dashboard"
-import Users from "./pages/Admin/Users"
-import Programs from "./pages/Admin/Programs"
-import Verifications from "./pages/Admin/Verifications"
+import Dashboard from "./pages/Management/Dashboard"
+import Users from "./pages/Management/Users"
+import Programs from "./pages/Management/Programs"
+import Verifications from "./pages/Management/Verifications"
 import HelpCenter from "./pages/HelpCenter";
 import { ToastContainer } from 'react-toastify';
-import Login from "./pages/Admin/Login";
+import Login from "./pages/Management/Login";
 
 
 import Chat from "./pages/Chat";
 import { initCometChat } from "./lib/cometchat";
 import ChatWindow from "./components/CometChat/ChatWindow";
-import { Activities } from "./pages/Admin/Activities";
+import { Activities } from "./pages/Management/Activities";
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 import Footer from './components/Footer';
-import Account from "./pages/Admin/Account";
-import Settings from "./pages/Admin/Settings";
+import Account from "./pages/Management/Account";
+import Settings from "./pages/Management/Settings";
 function App() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -139,13 +139,11 @@ function App() {
                   </Route>
                   <Route path="/terms-of-use" element={<TermsOfUse />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-
                   <Route path="/" element={<PrivateRoute />}>
                     <Route path="/feedback" element={<FeedbackForm />} />
                   </Route>
-
                   <Route path="/help-center" element={<HelpCenter />} />
-                  <Route path="/community/:id" element={<PrivateRoute />}>
+                  <Route path="/community" element={<PrivateRoute />}>
                     <Route path="/community/:id" element={<Community />} />
                   </Route>
                   <Route path="/community" element={<PrivateRoute />}>

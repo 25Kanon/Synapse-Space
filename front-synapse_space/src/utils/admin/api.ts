@@ -41,7 +41,7 @@ export const fetchUsers = async () => {
     // Simulated API call
     return {
         data: [
-            { id: 1, name: 'Sarah Chen', email: 'sarah@synapse.com', role: 'Admin', status: 'Active', lastActive: '2024-03-15' },
+            { id: 1, name: 'Sarah Chen', email: 'sarah@synapse.com', role: 'Management', status: 'Active', lastActive: '2024-03-15' },
             { id: 2, name: 'Mike Johnson', email: 'mike@synapse.com', role: 'Moderator', status: 'Active', lastActive: '2024-03-14' },
             { id: 3, name: 'Elena Rodriguez', email: 'elena@synapse.com', role: 'Member', status: 'Inactive', lastActive: '2024-03-10' },
         ] as User[]

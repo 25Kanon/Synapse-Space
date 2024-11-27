@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
     type: "module",
-    base: './',
+    base: '/',
     plugins: [react()],
     server: {
         open: true,

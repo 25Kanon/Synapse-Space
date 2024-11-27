@@ -42,7 +42,7 @@ const Sidebar = () => {
           </li>
         </ul>
         <div className="px-3 py-8 rounded-lg mt-40">
-          {/* Admin Communities */}
+          {/* Management Communities */}
           {managedCommunities.length > 0 && (
             <>
               <h3 className="text-md font-semibold mb-2 pt-4">Managed Communities</h3>
