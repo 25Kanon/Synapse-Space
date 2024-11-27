@@ -8,6 +8,7 @@ import {User} from "../../components/admin/types";
 import { UserList } from '../../components/admin/UserList';
 import { UserDetails } from '../../components/admin/UserDetails';
 import {CheckCircle, XCircle} from "lucide-react";
+import {Helmet} from "react-helmet-async";
 
 
 const Verifications = () => {
@@ -93,6 +94,9 @@ const Verifications = () => {
     return (
 
         <div className="flex min-h-screen bg-base-200">
+            <Helmet>
+                <title> Verifications - Synapse Space</title>
+            </Helmet>
             <Sidebar/>
             <div className="flex-1">
                 <Header/>

@@ -9,6 +9,7 @@ import { TimeRangeSelector } from "../../components/charts/TimeRangeSelector";
 import { Metric, MetricSelector } from "../../components/charts/MetricSelector";
 import { EngagementChart } from "../../components/charts/EngagementChart";
 import type { TimeRange, Metric as MetricType, EngagementData } from '../../components/admin/types/activity';
+import {Helmet} from "react-helmet-async";
 
 
 
@@ -105,6 +106,9 @@ function Dashboard() {
 
     return (
         <div className="flex min-h-screen bg-base-200">
+            <Helmet>
+                <title> Dashboard - Synapse Space</title>
+            </Helmet>
             <Sidebar />
             <div className="flex-1">
                 <Header />

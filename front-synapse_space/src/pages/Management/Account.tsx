@@ -10,6 +10,7 @@ import { Metric, MetricSelector } from "../../components/charts/MetricSelector";
 import { EngagementChart } from "../../components/charts/EngagementChart";
 import type { TimeRange, Metric as MetricType, EngagementData } from '../../components/admin/types/activity';
 import EditProfile from '../Profile/EditProfile';
+import {Helmet} from "react-helmet-async";
 
 
 
@@ -17,6 +18,9 @@ function Account() {
 
     return (
         <div className="flex min-h-screen bg-base-200">
+            <Helmet>
+                <title> Account - Synapse Space</title>
+            </Helmet>
             <Sidebar />
             <div className="flex-1">
                 <Header />

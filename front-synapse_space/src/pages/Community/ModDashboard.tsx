@@ -10,6 +10,7 @@ import AxiosInstance from "../../utils/AxiosInstance";
 import ErrorAlert from "../../components/ErrorAlert";
 import SuccessAlert from "../../components/SuccessAlert";
 import Top10Stats from "../../components/Top10Stats";
+import {Helmet} from "react-helmet-async";
 
 
 
@@ -81,6 +82,9 @@ function ModDashboard() {
 
     return (
         <div className="min-h-screen bg-base-100">
+            <Helmet>
+                <title>{communityDetails.name ? communityDetails.name: `Community`} - Settings</title>
+            </Helmet>
             {/* Header */}
             <header className="bg-base-300 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

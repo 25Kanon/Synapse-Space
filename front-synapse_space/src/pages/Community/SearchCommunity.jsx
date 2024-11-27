@@ -7,6 +7,7 @@ import NavBar from "../../components/NavBar";
 import Footer from "../../components/Footer";
 import FriendsList from "../../components/FriendsList";
 import MainContentContainer from "../../components/MainContentContainer";
+import {Helmet} from "react-helmet";
 export default function SearchCommunity() {
     const { user, error } = useContext(AuthContext);
 
@@ -22,6 +23,9 @@ export default function SearchCommunity() {
 
     return (
         <>
+            <Helmet>
+                <title>Search - Synapse Space</title>
+            </Helmet>
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
             <NavBar />
             <Sidebar />

@@ -6,6 +6,7 @@ import { TagInput } from '../../components/TagInput';
 import SuccessAlert from '../../components/SuccessAlert';
 import ErrorAlert from '../../components/ErrorAlert';
 import Loading from '../../components/Loading'
+import { Helmet } from 'react-helmet';
 
 function CommunitySettings() {
     const { community_id } = useParams();
@@ -98,6 +99,9 @@ function CommunitySettings() {
 
     return (
         <div className="min-h-screen bg-base-100">
+            <Helmet>
+                <title>{communityDetails.name ? communityDetails.name: `Community`} - Settings</title>
+            </Helmet>
             {error && <ErrorAlert text={error}/>}
             {success && <SuccessAlert text={success}/>}
             <dialog

@@ -2,6 +2,7 @@ import React from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AxiosInstance from "../utils/AxiosInstance";
+import {Helmet} from "react-helmet-async";
 
 const ResetPassword = () => {
   const handleResetPassword = async (e) => {
@@ -28,6 +29,9 @@ const ResetPassword = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-base-200">
+      <Helmet>
+        <title>Reset Password - Synapse Space</title>
+      </Helmet>
       <form
         onSubmit={handleResetPassword}
         className="w-full max-w-md p-6 space-y-6 rounded-lg shadow-md bg-neutral text-accent"

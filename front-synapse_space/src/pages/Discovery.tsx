@@ -8,7 +8,8 @@ import { useMemberships } from "../context/MembershipContext";
 import CommunityCard from "../components/search/CommunityCard";
 import Loading from "../components/Loading";
 import FriendsList from "../components/FriendsList"; // Import FriendsList
-import Layout from "../components/Layout"; // Import Layout
+import Layout from "../components/Layout";
+import {Helmet} from "react-helmet-async"; // Import Layout
 
 export default function Discovery() {
     const [loading, setLoading] = useState(true);
@@ -45,6 +46,9 @@ export default function Discovery() {
 
     return (
         <Layout showSidebar={true}> {/* Wrap everything inside Layout */}
+            <Helmet>
+                <title>Discovery - Synapse Space</title>
+            </Helmet>
             {Error && <ErrorAlert text={Error} classExtensions="fixed z-50" />}
             <FriendsList /> {/* Add FriendsList */}
             <div className="flex flex-col justify-between p-5">

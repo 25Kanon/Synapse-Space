@@ -3,6 +3,7 @@ import { KeyRound, UserCircle, EyeOff, Eye } from 'lucide-react';
 import OTPformStaff from '../../components/OTPformStaff';
 import AuthContext from '../../context/AuthContext';
 import ErrorAlert from '../../components/ErrorAlert';
+import {Helmet} from "react-helmet-async";
 
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +12,9 @@ function Login() {
 
     return (
      <>
+         <Helmet>
+             <title> Login - Synapse Space</title>
+         </Helmet>
                 {requireOTP ? (
                     <div className="hero bg-base-200 min-h-screen ">
                         <div className="card card-side bg-base-100 shadow-xl p-5 flex flex-row ">

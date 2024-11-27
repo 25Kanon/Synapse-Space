@@ -1,6 +1,7 @@
 import React, { useEffect, useState} from "react";
 import NavBar from "../components/NavBar";
 import {Clock, ShieldCheck} from "lucide-react";
+import {Helmet} from "react-helmet-async";
 
 
 export default function ForApproval() {
@@ -15,6 +16,9 @@ export default function ForApproval() {
 
     return (
         <>
+            <Helmet>
+                <title>Wait for approval - Synapse Space</title>
+            </Helmet>
             <NavBar/>
             <div
                 className="min-h-screen bg-base-300 flex items-center justify-center p-4">

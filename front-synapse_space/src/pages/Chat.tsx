@@ -8,6 +8,7 @@ import Sidebar from '../components/Sidebar';
 import FriendsList from '../components/FriendsList';
 import MainContentContainer from '../components/MainContentContainer';
 import Footer from '../components/Footer';
+import {Helmet} from "react-helmet-async";
 
 export default function Chat() {
     const { isAuthenticated, user } = useAuthStore();
@@ -19,6 +20,9 @@ export default function Chat() {
 
     return (
         <>
+            <Helmet>
+                <title> Chat - Synapse Space</title>
+            </Helmet>
             <NavBar />
             <Sidebar />
             <FriendsList />

@@ -13,6 +13,7 @@ import CommunityPost from "../../components/community/CommunityPost";
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
 import Layout from "../../components/Layout";
+import {Helmet} from "react-helmet";
 
 export default function Community() {
     const { user, error: authError } = useContext(AuthContext);
@@ -89,6 +90,9 @@ export default function Community() {
     if (!isMember) {
         return (
             <>
+                <Helmet>
+                    <title>{communityDetails.name ? communityDetails.name: `Community`} - Synapse Space</title>
+                </Helmet>
                 {authError && <ErrorAlert text={authError} classExtensions="fixed z-50" />}
                 <Layout showSidebar membersListId={id}>
                     <Banner communityName={communityDetails.name} commBanner={communityDetails.bannerURL} commAvatar={communityDetails.imgURL} communityID={communityDetails.id} />

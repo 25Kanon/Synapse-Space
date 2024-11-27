@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import NavBar from "../components/NavBar";
 import Footer from '../components/Footer';
+import {Helmet} from "react-helmet-async";
+import AxiosInstance from "../utils/AxiosInstance";
 
 export default function FeedbackForm() {
   const [feedback, setFeedback] = useState("");
@@ -15,24 +17,16 @@ export default function FeedbackForm() {
     e.preventDefault();
   
     try {
-        const response = await fetch("http://localhost:8000/api/feedback/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ rating, feedback }),
-          });
-        
-          console.log(response)
-  
-      if (response.ok) {
+
+        const response = await AxiosInstance.post('/api/feedback/', {
+            rating,
+            feedback,
+          }, {withCredentials: true});
+
+        console.log(response)
         setSubmitted(true);  // Display success message
         setFeedback("");     // Clear the feedback input
-        setRating(0);        // Reset the rating
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to submit feedback:", errorData);
-      }
+        setRating(0);
     } catch (error) {
       console.error("Error submitting feedback:", error);
     }
@@ -40,6 +34,9 @@ export default function FeedbackForm() {
 
   return (
     <div className="flex flex-col min-h-screen">
+        <Helmet>
+            <title>Feedback - Synapse Space</title>
+        </Helmet>
       <div className="flex items-center justify-center min-h-screen p-4 bg-base-300">
       <NavBar />
         <div className="w-full max-w-md">

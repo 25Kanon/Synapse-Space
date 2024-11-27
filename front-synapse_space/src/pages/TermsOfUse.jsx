@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import {Helmet} from "react-helmet-async";
 
 const TermsOfUse = () => {
     const navigate = useNavigate();
@@ -10,6 +11,9 @@ const TermsOfUse = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-base-100">
+            <Helmet>
+                <title>Terms of Use - Synapse Space</title>
+            </Helmet>
             <div className="container max-w-4xl p-6 bg-base-200 text-base-content shadow-md rounded-lg overflow-y-auto h-[80vh]">
                 <button
                     onClick={handleGoBack}

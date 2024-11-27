@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import NavBar from "../components/NavBar";
 import { useNavigate } from "react-router-dom";
 import { Clock, XCircle } from "lucide-react";
+import {Helmet} from "react-helmet-async";
 
 export default function RegistrationNotApproved() {
   const [dots, setDots] = useState("");
@@ -16,6 +17,9 @@ export default function RegistrationNotApproved() {
 
   return (
     <>
+      <Helmet>
+        <title>Registration Denied - Synapse Space</title>
+      </Helmet>
       <NavBar />
       <div className="flex items-center justify-center min-h-screen p-4 bg-base-300">
         <div className="w-full max-w-md">

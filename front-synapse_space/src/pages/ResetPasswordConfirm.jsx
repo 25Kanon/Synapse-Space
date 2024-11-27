@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AxiosInstance from "../utils/AxiosInstance";
+import {Helmet} from "react-helmet-async";
 
 const ResetPasswordConfirm = () => {
   const { uid, token } = useParams();
@@ -38,6 +39,9 @@ const ResetPasswordConfirm = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <Helmet>
+        <title>Reset Password - Synapse Space</title>
+      </Helmet>
       <form
         onSubmit={handlePasswordReset}
         className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md"

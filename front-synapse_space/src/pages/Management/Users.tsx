@@ -10,6 +10,7 @@ import EditUserModal from "../../components/admin/EditUserModal";
 import ErrorAlert from "../../components/ErrorAlert";
 import SuccessAlert from "../../components/SuccessAlert";
 import AuthContext from '../../context/AuthContext';
+import {Helmet} from "react-helmet-async";
 
 const Users = () => {
     const { isSuperUser } = useContext(AuthContext);
@@ -57,6 +58,9 @@ const Users = () => {
 
     return (
         <div className="flex min-h-screen bg-base-200">
+            <Helmet>
+                <title> Users - Synapse Space</title>
+            </Helmet>
             <Sidebar />
             <div className="flex-1">
                 <Header />

@@ -13,6 +13,8 @@ import RichTextEditor from "../../components/RichTextEditor";
 import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
 import Footer from '../../components/Footer';
+import {Helmet} from "react-helmet";
+import SuccessAlert from "../../components/SuccessAlert";
 
 const GetCommunityPost = () => {
     const location = useLocation();
@@ -149,6 +151,9 @@ const GetCommunityPost = () => {
 
     return (
         <>
+            <Helmet>
+                <title>{post.title ? post.title: `Community`} - Synapse Space</title>
+            </Helmet>
         <div className="flex flex-col min-h-screen">
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
             {success && <SuccessAlert text={success} classExtensions="fixed z-50" />}

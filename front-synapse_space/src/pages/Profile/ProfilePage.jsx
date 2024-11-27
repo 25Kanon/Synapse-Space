@@ -7,6 +7,7 @@ import ProfileTabs from '../../components/profile/ProfileTabs';
 import ActivitiesDisplay from '../../components/profile/ActivitiesDisplay';
 import LayoutProfile from '../../components/LayoutProfile';
 import AxiosInstance from "../../utils/AxiosInstance";
+import {Helmet} from "react-helmet-async";
 
 const ProfilePage = () => {
     const { user } = useContext(AuthContext); 
@@ -26,6 +27,9 @@ const ProfilePage = () => {
 
     return (
         <LayoutProfile showSidebar={true} membersListId={userProfile.id}>
+            <Helmet>
+                <title>{userProfile.username ? userProfile.username: `Profile`} - Synapse Space</title>
+            </Helmet>
             <div className="p-6">
                 {/* Banner Profile Section */}
                 <BannerProfile 

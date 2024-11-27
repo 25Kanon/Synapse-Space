@@ -5,11 +5,15 @@ import FriendsList from "../components/FriendsList";
 import MainContentContainer from "../components/MainContentContainer";
 import AuthContext from "../context/AuthContext";
 import { useContext } from "react";
+import {Helmet} from "react-helmet-async";
 const HelpCenter = () => {
 
   const { isAuthenticated } = useContext(AuthContext);
   return (
     <>
+      <Helmet>
+        <title>Help Center - Synapse Space</title>
+      </Helmet>
       {isAuthenticated && (<>
         <NavBar />
         <Sidebar />

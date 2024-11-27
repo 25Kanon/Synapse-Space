@@ -6,6 +6,7 @@ import { ProgramList } from "../../components/admin/ProgramList";
 import AxiosInstance from "../../utils/AxiosInstance";
 import ErrorAlert from "../../components/ErrorAlert";
 import SuccessAlert from "../../components/SuccessAlert";
+import {Helmet} from "react-helmet-async";
 
 interface Program {
     id: number;
@@ -96,6 +97,9 @@ function Programs() {
 
     return (
         <div className="flex min-h-screen bg-base-200">
+            <Helmet>
+                <title> Programs - Synapse Space</title>
+            </Helmet>
             <Sidebar />
             <div className="flex-1">
                 <Header />

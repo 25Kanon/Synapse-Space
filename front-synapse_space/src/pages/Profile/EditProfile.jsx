@@ -12,6 +12,7 @@ import Banner from "../../components/profile/Banner";
 import { TagInput } from "../../components/TagInput";
 import NavBar from "../../components/profile/NavBar";
 import Footer from '../../components/Footer';
+import {Helmet} from "react-helmet-async";
 
 const EditProfile = () => {
     const { user } = useContext(AuthContext);
@@ -175,6 +176,9 @@ const EditProfile = () => {
 
     return (
         <>
+            <Helmet>
+                <title>{username ? username: `Profile`} - Synapse Space</title>
+            </Helmet>
         <NavBar />
         <main className="flex flex-col items-center justify-center p-5 mt-20 sm:mx-64">          
             <div className="relative w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">

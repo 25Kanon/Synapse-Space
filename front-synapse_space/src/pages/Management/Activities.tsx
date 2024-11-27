@@ -5,6 +5,7 @@ import {TabNavigation} from "../../components/admin/TabNavigation";
 import {useActivityData} from "../../hooks/useActivityData";
 import Sidebar from "../../components/admin/Sidebar";
 import Header from "../../components/admin/Header";
+import {Helmet} from "react-helmet-async";
 
 
 const tabs = [
@@ -92,6 +93,9 @@ export function Activities() {
 
     return (
         <div className="flex min-h-screen bg-base-200">
+            <Helmet>
+                <title> Activities - Synapse Space</title>
+            </Helmet>
             <Sidebar/>
             <div className="flex-1">
                 <Header/>

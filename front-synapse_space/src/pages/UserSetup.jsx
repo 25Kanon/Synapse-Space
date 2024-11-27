@@ -7,6 +7,7 @@ import AuthContext from "../context/AuthContext";
 import AxiosInstance from "../utils/AxiosInstance";
 import {useNavigate} from "react-router-dom";
 import { TagInput } from "../components/TagInput";
+import {Helmet} from "react-helmet-async";
 
 const interestOptions = [
     "Sports", "Music", "Art", "Technology", "Science", "Literature", "Travel", "Cooking", "Photography", "Gaming"
@@ -174,6 +175,9 @@ function UserSetup() {
 
     return (
         <div className="min-h-screen bg-base-200 flex flex-col items-center justify-center p-4">
+            <Helmet>
+                <title>Account Setup - Synapse Space</title>
+            </Helmet>
             {Error && <ErrorAlert text={Error}/>}
             {Success && <SuccessAlert text={Success}/>}
             <dialog

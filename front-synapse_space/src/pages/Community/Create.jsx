@@ -6,6 +6,7 @@ import ErrorAlert from '../../components/ErrorAlert';
 import NavBar from '../../components/NavBar';
 import Sidebar from '../../components/Sidebar'
 import FriendsList from '../../components/FriendsList';
+import {Helmet} from "react-helmet";
 export default function Create() {
     const { user, error} = useContext(AuthContext);
 
@@ -20,6 +21,9 @@ export default function Create() {
     }
     return (
         <>
+            <Helmet>
+                <title>Create Community - Synapse Space</title>
+            </Helmet>
         {error && <ErrorAlert text={error}  classExtensions="fixed z-50" />}
             <NavBar/>
             <Sidebar/>
