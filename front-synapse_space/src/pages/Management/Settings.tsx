@@ -5,13 +5,15 @@ import AxiosInstance from '../../utils/AxiosInstance';
 import ErrorAlert from '../../components/ErrorAlert';
 import SuccessAlert from '../../components/SuccessAlert';
 import { CheckCircle, Save, XCircle } from 'lucide-react';
-import {Helmet} from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
+import {TagInput} from "../../components/TagInput";
 
 interface SettingsInterface {
     max_Login_Attempts: number;
     lockout_Duration: number;
     otp_Rate_Limit: number;
     otp_Interval: number;
+    allowed_Domain: string[];
 }
 
 function Settings() {
@@ -20,6 +22,7 @@ function Settings() {
         lockout_Duration: 0,
         otp_Rate_Limit: 0,
         otp_Interval: 0,
+        allowed_Domain: [],
     });
 
     const [loadingFields, setLoadingFields] = useState<Record<string, boolean>>({});
@@ -45,6 +48,10 @@ function Settings() {
                     case 'OTP_INTERVAL':
                         settingsData.otp_Interval = Number(setting.value);
                         break;
+                    case 'ALLOWED_DOMAIN':
+                        // Split the comma-separated string into an array
+                        settingsData.allowed_Domain = setting.value.split(',').map((domain) => domain.trim());
+                        break;
                     default:
                         console.warn(`Unknown setting key: ${setting.key}`);
                 }
@@ -62,10 +69,17 @@ function Settings() {
         setSuccessFields((prev) => ({ ...prev, [key]: false }));
 
         try {
+            let valueToSave = settings[key];
+
+            // If the key is 'allowed_Domain', convert the array to a comma-separated string
+            if (key === 'allowed_Domain' && Array.isArray(settings[key])) {
+                valueToSave = settings[key].join(',');
+            }
+
             await AxiosInstance.patch('/api/admin/update/settings/', {
                 key: key.toUpperCase(),
-                value: settings[key],
-            }, {withCredentials: true});
+                value: valueToSave,
+            }, { withCredentials: true });
 
             setSuccessFields((prev) => ({ ...prev, [key]: true }));
         } catch (error) {
@@ -76,8 +90,16 @@ function Settings() {
         }
     };
 
-    const handleChange = (key: keyof SettingsInterface) => (value: string) => {
-        setSettings((prev) => ({ ...prev, [key]: Number(value) }));
+    const handleChange = (key: keyof SettingsInterface) => (value: string | string[]) => {
+        if (key === 'allowed_Domain') {
+            // Ensure the value is an array of strings (comma-separated list)
+            setSettings((prev) => ({
+                ...prev,
+                [key]: value instanceof Array ? value : value.split(',').map((item) => item.trim()),
+            }));
+        } else {
+            setSettings((prev) => ({ ...prev, [key]: Number(value) }));
+        }
     };
 
     useEffect(() => {
@@ -101,17 +123,24 @@ function Settings() {
                                 <div key={key} className="flex flex-col space-y-2">
                                     <label className="text-sm font-medium text-secondary">
                                         {key.replace(/([A-Z])/g, ' $1').split('_').join(' ').toUpperCase()}
+                                        {key === 'allowed_Domain' && (<> (comma separated)</>)}
                                     </label>
-                                    <input
-                                        type="number"
-                                        value={value}
-                                        onChange={(e) => handleChange(key as keyof SettingsInterface)(e.target.value)}
-                                        className="input w-full py-2.5 border border-gray-300 rounded-lg"
-                                    />
+                                    {key === 'allowed_Domain' ? (
+                                        <TagInput
+                                            value={value}  // Pass the value as an array
+                                            onChange={handleChange(key as keyof SettingsInterface)}  // Handle array of tags
+                                        />
+                                    ) : (
+                                        <input
+                                            type="number"
+                                            value={value}
+                                            onChange={(e) => handleChange(key as keyof SettingsInterface)(e.target.value)}
+                                            className="input w-full py-2.5 border border-gray-300 rounded-lg"
+                                        />
+                                    )}
+
                                     <button
-                                        className={`btn btn-primary mt-2 ${
-                                            loadingFields[key] ? 'loading' : ''
-                                        }`}
+                                        className={`btn btn-primary mt-2 ${loadingFields[key] ? 'loading' : ''}`}
                                         onClick={() => handleSave(key as keyof SettingsInterface)}
                                         disabled={loadingFields[key]}
                                     >

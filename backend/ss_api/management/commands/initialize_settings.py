@@ -10,6 +10,7 @@ class Command(BaseCommand):
             "LOCKOUT_DURATION": "600", # In seconds
             "OTP_RATE_LIMIT": "60", # In seconds
             "OTP_INTERVAL": "300", # In seconds
+            "ALLOWED_DOMAIN": "tip.edu.ph",
         }
 
         for key, value in default_settings.items():

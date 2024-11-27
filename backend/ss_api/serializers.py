@@ -109,6 +109,37 @@ def get_setting(key, default=None):
             value = default
     return value
 
+
+def is_valid_email(email):
+    # A simple regex for validating an email format
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(email_pattern, email) is not None
+
+
+def filterAllowedEmailDomains(username_or_email):
+    # If it's an email, check if the domain is allowed
+    if is_valid_email(username_or_email):
+        allowed_domains = get_setting("ALLOWED_DOMAIN", "tip.edu.ph")
+        allowed_domains = allowed_domains.split(",")
+        allowed_domains = [domain.strip() for domain in allowed_domains]
+
+        # Extract domain from the email
+        domain = username_or_email.split('@')[-1]
+
+        # Check if domain is allowed
+        if domain not in allowed_domains:
+            raise serializers.ValidationError({
+                "message": _("Invalid email domain. Please try using an email issued by TIP.")
+            })
+
+        return username_or_email  # Return the email if it's valid
+
+    else:
+        # If it's not an email, treat it as a username (no domain check)
+        return username_or_email
+
+
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     username_or_email = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -120,10 +151,10 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         otp = data.get('otp')
 
         # Fetch settings dynamically
-        MAX_LOGIN_ATTEMPTS = get_setting("MAX_LOGIN_ATTEMPTS", 3)
-        LOCKOUT_DURATION = get_setting("LOCKOUT_DURATION", 600)
-        OTP_RATE_LIMIT = get_setting("OTP_RATE_LIMIT", 60)
-        OTP_INTERVAL = get_setting("OTP_INTERVAL", 300)
+        MAX_LOGIN_ATTEMPTS = self.get_int_setting("MAX_LOGIN_ATTEMPTS", 3)
+        LOCKOUT_DURATION = self.get_float_setting("LOCKOUT_DURATION", 600)
+        OTP_RATE_LIMIT = self.get_int_setting("OTP_RATE_LIMIT", 60)
+        OTP_INTERVAL = self.get_float_setting("OTP_INTERVAL", 300)
 
         # Check for required fields
         if not username_or_email or not password:
@@ -140,7 +171,10 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             })
 
         # Authenticate the user
+        filterAllowedEmailDomains(username_or_email)
+
         user = self.authenticate_user(username_or_email, password)
+
         if not user:
             if self.track_failed_login(username_or_email, MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATION):
                 raise serializers.ValidationError({
@@ -154,6 +188,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             raise serializers.ValidationError({
                 "message": _("Please login with Google.")
             })
+
 
         if user.is_staff:
             raise serializers.ValidationError({
@@ -193,6 +228,33 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         self.reset_failed_login(username_or_email)
         return self.get_token_data(user)
 
+    def get_int_setting(self, key, default):
+        """
+        Helper function to retrieve a setting and convert it to an integer.
+        If conversion fails, return the default value.
+        """
+        value = get_setting(key, default)
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            # Log the error for debugging if needed
+            raise serializers.ValidationError({
+                "message": _(f"Setting '{key}' is invalid or not an integer. Using default value.")
+            })
+
+    def get_float_setting(self, key, default):
+        """
+        Helper function to retrieve a setting and convert it to a float.
+        If conversion fails, return the default value.
+        """
+        value = get_setting(key, default)
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            raise serializers.ValidationError({
+                "message": _(f"Setting '{key}' is invalid or not a float. Using default value.")
+            })
+
     def authenticate_user(self, username_or_email, password):
         """
         Authenticate the user by either username or email.
@@ -289,11 +351,14 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         attempts_key = f"failed_attempts:{username_or_email}"
         lockout_key = f"lockout:{username_or_email}"
 
+        # Ensure lockout_duration is a valid number (float or int)
+        lockout_duration = float(lockout_duration)  # Convert to float
+        max_attempts = int(max_attempts)  # Convert to int
         attempts = cache.get(attempts_key, 0) + 1
-        cache.set(attempts_key, attempts, lockout_duration)
+        cache.set(attempts_key, attempts, lockout_duration)  # Set the attempts with the lockout_duration as timeout
 
         if attempts >= max_attempts:
-            cache.set(lockout_key, True, lockout_duration)
+            cache.set(lockout_key, True, lockout_duration)  # Lockout the user for the specified duration
             return True  # User is now locked out
         return False
 
@@ -325,10 +390,22 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         otp = data.get('otp')
 
         # Fetch settings dynamically
-        MAX_LOGIN_ATTEMPTS = get_setting("MAX_LOGIN_ATTEMPTS", 3)
-        LOCKOUT_DURATION = get_setting("LOCKOUT_DURATION", 600)
-        OTP_RATE_LIMIT = get_setting("OTP_RATE_LIMIT", 60)
-        OTP_INTERVAL = get_setting("OTP_INTERVAL", 300)
+        MAX_LOGIN_ATTEMPTS = self.get_int_setting("MAX_LOGIN_ATTEMPTS", 3)
+        LOCKOUT_DURATION = self.get_float_setting("LOCKOUT_DURATION", 600)
+        OTP_RATE_LIMIT = self.get_int_setting("OTP_RATE_LIMIT", 60)
+        OTP_INTERVAL = self.get_float_setting("OTP_INTERVAL", 300)
+
+        # Check for required fields
+        if not username_or_email or not password:
+            raise serializers.ValidationError({
+                "message": _("Both 'username_or_email' and 'password' are required.")
+            })
+
+        # Check if OTP interval is a valid number
+        if OTP_INTERVAL <= 0:
+            raise serializers.ValidationError({
+                "message": _("Invalid OTP interval configuration. It must be a positive number.")
+            })
 
         # Check for required fields
         if not username_or_email or not password:
@@ -344,6 +421,7 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
                 )
             })
 
+        filterAllowedEmailDomains(username_or_email)
         # Authenticate the user
         user = self.authenticate_user(username_or_email, password)
         if not user:
@@ -359,6 +437,8 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
             raise serializers.ValidationError({
                 "message": _("Please login with Google.")
             })
+
+
 
         if not user.is_staff:
             raise serializers.ValidationError({
@@ -398,6 +478,36 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         self.reset_failed_login(username_or_email)
         return self.get_token_data(user)
 
+
+    def get_int_setting(self, key, default):
+        """
+        Helper function to retrieve a setting and convert it to an integer.
+        If conversion fails, return the default value.
+        """
+        value = get_setting(key, default)
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            # Log the error for debugging if needed
+            raise serializers.ValidationError({
+                "message": _(f"Setting '{key}' is invalid or not an integer. Using default value.")
+            })
+
+
+    def get_float_setting(self, key, default):
+        """
+        Helper function to retrieve a setting and convert it to a float.
+        If conversion fails, return the default value.
+        """
+        value = get_setting(key, default)
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            raise serializers.ValidationError({
+                "message": _(f"Setting '{key}' is invalid or not a float. Using default value.")
+            })
+
+
     def authenticate_user(self, username_or_email, password):
         """
         Authenticate the user by either username or email.
@@ -411,6 +521,8 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
             except UserModel.DoesNotExist:
                 return None
         return user
+
+
 
     def get_token_data(self, user):
         refresh = RefreshToken.for_user(user)
@@ -433,7 +545,11 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
             totp = pyotp.TOTP(user_secret, interval=otp_interval)
             generated_otp = totp.now()
             return generated_otp
+        except pyotp.exceptions.InvalidSecretKey:
+            raise serializers.ValidationError({"message": _("Invalid OTP secret. Please contact support.")})
         except Exception as e:
+            # Log the exception or print for debugging
+            print(f"Error generating OTP: {e}")
             raise serializers.ValidationError({"message": _("Error generating OTP. Please try again later.")})
 
     def verify_otp(self, user_secret, otp, otp_interval):
@@ -495,11 +611,14 @@ class CustomTokenObtainPairSerializerStaff(serializers.Serializer):
         attempts_key = f"failed_attempts:{username_or_email}"
         lockout_key = f"lockout:{username_or_email}"
 
+        # Ensure lockout_duration is a valid number (float or int)
+        lockout_duration = float(lockout_duration)  # Convert to float
+        max_attempts = int(max_attempts)  # Convert to int
         attempts = cache.get(attempts_key, 0) + 1
-        cache.set(attempts_key, attempts, lockout_duration)
+        cache.set(attempts_key, attempts, lockout_duration)  # Set the attempts with the lockout_duration as timeout
 
         if attempts >= max_attempts:
-            cache.set(lockout_key, True, lockout_duration)
+            cache.set(lockout_key, True, lockout_duration)  # Lockout the user for the specified duration
             return True  # User is now locked out
         return False
 
