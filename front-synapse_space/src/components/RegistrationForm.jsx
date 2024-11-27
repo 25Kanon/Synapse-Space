@@ -3,8 +3,12 @@ import DOMPurify from 'dompurify';
 import { useFormik } from 'formik';
 import axios from 'axios';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 import SuccessAlert from './SuccessAlert';
 import ErrorAlert from './ErrorAlert';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faCaretSquareLeft } from '@fortawesome/free-regular-svg-icons';
 
 const validationSchema = yup.object({
     first_name: yup
@@ -30,6 +34,9 @@ const validationSchema = yup.object({
 export default function RegistrationForm() {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_BASE_URI;
 
     const formik = useFormik({
@@ -73,11 +80,28 @@ export default function RegistrationForm() {
     });
 
     return (
-        <form className="card-body mx-8 flex-col" onSubmit={formik.handleSubmit}>
+        
+        
+        <form className="flex-col mx-8 card-body" onSubmit={formik.handleSubmit}>
             {successMessage && <SuccessAlert text={successMessage}/>}
             {errorMessage && <ErrorAlert text={errorMessage}/>}
 
-            <h2 className="card-title justify-center">Welcome Back!</h2>
+            {/* Back Button */}
+            <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="absolute top-4 left-4 text-secondary"
+            >
+                <div className="p-3 rounded-full hover:bg-neutral">
+                    <FontAwesomeIcon
+                        icon={faCaretSquareLeft}
+                        className="text-secondary hover:text-accent"
+                        size="2xl" // You can adjust size further if needed
+                    />
+                </div>
+            </button>
+
+            <h2 className="justify-center card-title">Welcome Back!</h2>
             <h3 className="flex justify-center">Create an account</h3>
 
             <div className="form-control">
@@ -88,7 +112,7 @@ export default function RegistrationForm() {
                     type="email"
                     name="email"
                     placeholder="Email"
-                    className="input input-bordered w-full"
+                    className="w-full input input-bordered"
                     onChange={formik.handleChange}
                     value={formik.values.email}
                 />
@@ -104,7 +128,7 @@ export default function RegistrationForm() {
                     type="text"
                     name="first_name"
                     placeholder="First Name"
-                    className="input input-bordered w-full"
+                    className="w-full input input-bordered"
                     onChange={formik.handleChange}
                     value={formik.values.first_name}
                 />
@@ -120,7 +144,7 @@ export default function RegistrationForm() {
                     type="text"
                     name="last_name"
                     placeholder="Last Name"
-                    className="input input-bordered w-full"
+                    className="w-full input input-bordered"
                     onChange={formik.handleChange}
                     value={formik.values.last_name}
                 />
@@ -132,14 +156,21 @@ export default function RegistrationForm() {
                 <label className="label">
                     <span className="label-text">Password</span>
                 </label>
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    className="input input-bordered w-full"
-                    onChange={formik.handleChange}
-                    value={formik.values.password}
-                />
+                <div className="relative">
+                    <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        placeholder="Password"
+                        className="w-full input input-bordered"
+                        onChange={formik.handleChange}
+                        value={formik.values.password}
+                    />
+                    <FontAwesomeIcon
+                        icon={showPassword ? faEye : faEyeSlash}
+                        className="absolute text-gray-600 cursor-pointer right-3 top-3"
+                        onClick={() => setShowPassword(!showPassword)}
+                    />
+                </div>
                 {formik.errors.password ?
                     <span className="label-text text-error">{formik.errors.password}</span> : null}
             </div>
@@ -148,19 +179,26 @@ export default function RegistrationForm() {
                 <label className="label">
                     <span className="label-text">Confirm Password</span>
                 </label>
-                <input
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="Confirm Password"
-                    className="input input-bordered w-full"
-                    onChange={formik.handleChange}
-                    value={formik.values.confirmPassword}
-                />
+                <div className="relative">
+                    <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        placeholder="Confirm Password"
+                        className="w-full input input-bordered"
+                        onChange={formik.handleChange}
+                        value={formik.values.confirmPassword}
+                    />
+                    <FontAwesomeIcon
+                        icon={showConfirmPassword ? faEye : faEyeSlash}
+                        className="absolute text-gray-600 cursor-pointer right-3 top-3"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    />
+                </div>
                 {formik.errors.confirmPassword ?
                     <span className="label-text text-error">{formik.errors.confirmPassword}</span> : null}
             </div>
 
-            <button type="submit" className="btn btn-primary mt-4">Submit</button>
+            <button type="submit" className="mt-4 btn btn-primary">Submit</button>
         </form>
     );
 }
