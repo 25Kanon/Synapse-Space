@@ -123,9 +123,11 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
                                 postTitle={post.title}
                                 postContent={post.content}
                                 postId={post.id}
-                                userID={post.created_by}
+                                userID={userID} // Current user ID
+                                authorId={post.created_by} // Post author's ID
                                 userAvatar={post.userAvatar}
                                 createdAt={post.created_at}
+                                canEdit={post.created_by === userID} // Pass permission to edit/delete
                             />
                         ))
                     )}

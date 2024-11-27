@@ -27,34 +27,34 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-base-200">
       <form
         onSubmit={handleResetPassword}
-        className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md"
+        className="w-full max-w-md p-6 space-y-6 rounded-lg shadow-md bg-neutral text-accent"
       >
-        <h1 className="text-2xl font-semibold text-gray-800">Forgot your Password?</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl font-semibold text-primary">Forgot your Password?</h1>
+        <p className="text-secondary">
           Please provide the email address that you used when you signed up for your account.
         </p>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block text-sm font-medium text-accent">
             Email Address
           </label>
           <input
             type="email"
             id="email"
             name="email"
-            className="w-full mt-1 input input-bordered"
+            className="w-full mt-1 input input-bordered bg-base-100 text-accent"
             required
             placeholder="Enter your email address"
           />
         </div>
-        <p className="text-gray-600">
+        <p className="text-secondary">
           We will send you an email that will allow you to reset your password.
         </p>
         <button
           type="submit"
-          className="w-full btn btn-primary"
+          className="w-full btn btn-primary text-neutral"
         >
           Reset Password
         </button>

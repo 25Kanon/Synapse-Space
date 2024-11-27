@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useContext } from "react";
 import DOMPurify from "dompurify";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { faCaretSquareLeft } from "@fortawesome/free-regular-svg-icons";
 import AxiosInstance from "../../utils/AxiosInstance";
 import AuthContext from "../../context/AuthContext";
 import AvatarCropper from "../../components/avatarCropper";
 import BannerCropper from "../../components/community/BannerCropper";
 import Banner from "../../components/profile/Banner";
 import { TagInput } from "../../components/TagInput";
-import NavBar from "../../components/NavBar";
+import NavBar from "../../components/profile/NavBar";
 import Footer from '../../components/Footer';
 
 const EditProfile = () => {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [username, setUsername] = useState(user.username || "");
     const [bio, setBio] = useState("");
     const [interests, setInterests] = useState([]);
@@ -30,8 +34,6 @@ const EditProfile = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
-
-    const navigate = useNavigate();
 
     useEffect(() => {
         AxiosInstance.get("/api/profile/", { withCredentials: true })
@@ -104,6 +106,8 @@ const EditProfile = () => {
 
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
+        
+        setSuccessMessage("");
 
         try {
             let uploadedProfilePic = profilePicBlob ? await uploadFile(profilePicBlob,) : profilePic;
@@ -116,12 +120,14 @@ const EditProfile = () => {
                 profile_banner: uploadedProfileBanner,
             };
 
-            await AxiosInstance.put("/api/profile/", payload, {
+            const response = await AxiosInstance.put("/api/profile/", payload, {
                 withCredentials: true,
             });
-
+            console.log("Profile update response:", response.data);
             setSuccessMessage("Profile updated successfully!"); // Set success message
-
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => setSuccessMessage(""), 3000);
         } catch (error) {
             console.error("Error updating profile:", error);
         }
@@ -154,6 +160,9 @@ const EditProfile = () => {
             console.log("Password update response:", response.data); // Log successful response
             setPasswordSuccess("Password updated successfully!");
 
+            // Hide success message after 3 seconds
+            setTimeout(() => setPasswordSuccess(""), 3000);
+
             // Reset the input fields
             setCurrentPassword("");
             setNewPassword("");
@@ -167,8 +176,24 @@ const EditProfile = () => {
     return (
         <>
         <NavBar />
-        <main className="flex flex-col items-center justify-center p-5 mt-20 sm:mx-64">
-            <div className="w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
+        <main className="flex flex-col items-center justify-center p-5 mt-20 sm:mx-64">          
+            <div className="relative w-full max-w-3xl p-10 rounded-lg shadow-lg bg-base-200">
+                {/* Back Button */}
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="absolute top-4 left-4"
+                >
+                    <div className="p-3 rounded-full bg-base-200 hover:bg-neutral">
+                        <FontAwesomeIcon
+                            icon={faCaretSquareLeft}
+                            className="text-secondary hover:text-accent"
+                            size="2xl"
+                        />
+                    </div>
+                </button>
+                <br />
+                <br />
                 <dialog id="avatar-cropper" className="modal modal-bottom sm:modal-middle">
                     {avatarImageSrc && <AvatarCropper imageSrc={avatarImageSrc} onCropComplete={handleAvatarCrop} />}
                 </dialog>
@@ -177,6 +202,7 @@ const EditProfile = () => {
                 </dialog>
                 <h1 className="mb-8 text-3xl font-bold">Edit Profile</h1>
                 <form onSubmit={handleProfileSubmit} className="space-y-6 form-control">
+                    {successMessage && <p className="text-sm text-center text-green-600">{successMessage}</p>}
                     <Banner profName={username} profAvatar={profilePic} profBanner={profileBanner} />
                     <div className="flex flex-row justify-center gap-3 ">
                         <div>
@@ -266,11 +292,13 @@ const EditProfile = () => {
                             className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                             required
                         />
-                        <i
-                            className={`fa ${showCurrentPassword ? "fa-eye" : "fa-eye-slash"} absolute right-3 top-12 cursor-pointer`}
+                        <FontAwesomeIcon
+                            icon={showCurrentPassword ? faEye : faEyeSlash}
+                            className={`absolute right-3 top-12 cursor-pointer ${
+                                document.documentElement.getAttribute("data-theme") === "dark" ? "text-black" : "text-gray-600"
+                            }`}
                             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                            aria-hidden="true"
-                        ></i>
+                        />
                     </div>
 
                     {/* New Password Field */}
@@ -286,11 +314,13 @@ const EditProfile = () => {
                             className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                             required
                         />
-                        <i
-                            className={`fa ${showNewPassword ? "fa-eye" : "fa-eye-slash"} absolute right-3 top-12 cursor-pointer`}
+                        <FontAwesomeIcon
+                            icon={showNewPassword ? faEye : faEyeSlash}
+                            className={`absolute right-3 top-12 cursor-pointer ${
+                                document.documentElement.getAttribute("data-theme") === "dark" ? "text-black" : "text-gray-600"
+                            }`}
                             onClick={() => setShowNewPassword(!showNewPassword)}
-                            aria-hidden="true"
-                        ></i>
+                        />
                     </div>
 
                     {/* Confirm New Password Field */}
@@ -306,11 +336,13 @@ const EditProfile = () => {
                             className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                             required
                         />
-                        <i
-                            className={`fa ${showConfirmNewPassword ? "fa-eye" : "fa-eye-slash"} absolute right-3 top-12 cursor-pointer`}
+                        <FontAwesomeIcon
+                            icon={showConfirmNewPassword ? faEye : faEyeSlash}
+                            className={`absolute right-3 top-12 cursor-pointer ${
+                                document.documentElement.getAttribute("data-theme") === "dark" ? "text-black" : "text-gray-600"
+                            }`}
                             onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
-                            aria-hidden="true"
-                        ></i>
+                        />
                     </div>
 
                     {/* Submit Button */}
