@@ -139,29 +139,30 @@ function App() {
                   </Route>
                   <Route path="/terms-of-use" element={<TermsOfUse />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
                   <Route path="/" element={<PrivateRoute />}>
                     <Route path="/feedback" element={<FeedbackForm />} />
                   </Route>
                   <Route path="/help-center" element={<HelpCenter />} />
-                  <Route path="/community" element={<PrivateRoute />}>
+                  <Route path="/" element={<PrivateRoute />}>
                     <Route path="/community/:id" element={<Community />} />
                   </Route>
-                  <Route path="/community" element={<PrivateRoute />}>
+                  <Route path="/" element={<PrivateRoute />}>
                     <Route path="/community/:community_id/post/:post_id" element={<GetCommunityPost />} />
                   </Route>
-                  <Route path="/community/" element={<PrivateRoute />}>
+                  <Route path="/" element={<PrivateRoute />}>
                     <Route path="/community/:community_id/mod" element={<ModDashboard />} />
                   </Route>
-                  <Route path="/community/:community_id/settings" element={<PrivateRoute />}>
+                  <Route path="/" element={<PrivateRoute />}>
                     <Route path="/community/:community_id/settings" element={<CommunitySettings />} />
                   </Route>
-                  <Route path="/community" element={<PrivateRoute />}>
+                  <Route path="/" element={<PrivateRoute />}>
                     <Route path="/community/create" element={<Create />} />
                   </Route>
-                  <Route path="/search" element={<PrivateRoute />}>
+                  <Route path="/" element={<PrivateRoute />}>
                     <Route path="/search" element={<SearchCommunity />} />
                   </Route>
-                  <Route path="/discover" element={<PrivateRoute />}>
+                  <Route path="/" element={<PrivateRoute />}>
                     <Route path="/discover" element={<Discovery />} />
                   </Route>
 
@@ -178,31 +179,31 @@ function App() {
 
                   {/*admin routes*/}
 
-                  <Route path="/management" element={<AdminRoute />}>
+                  <Route path="/" element={<AdminRoute />}>
                     <Route path="/management" element={<Dashboard />} />
                   </Route>
 
-                  <Route path="/management/users" element={<AdminRoute />}>
+                  <Route path="/" element={<AdminRoute />}>
                     <Route path="/management/users" element={<Users />} />
                   </Route>
 
-                  <Route path="/management/programs" element={<AdminRoute />}>
+                  <Route path="/" element={<AdminRoute />}>
                     <Route path="/management/programs" element={<Programs />} />
                   </Route>
 
-                  <Route path="/management/activities" element={<AdminRoute />}>
+                  <Route path="/" element={<AdminRoute />}>
                     <Route path="/management/activities" element={<Activities />} />
                   </Route>
 
-                  <Route path="/management/verifications" element={<AdminRoute />}>
+                  <Route path="/" element={<AdminRoute />}>
                     <Route path="/management/verifications" element={<Verifications />} />
                   </Route>
 
-                  <Route path="/management/account" element={<AdminRoute />}>
+                  <Route path="/" element={<AdminRoute />}>
                     <Route path="/management/account" element={<Account/>} />
                   </Route>
 
-                  <Route path="/management/settings" element={<AdminRoute />}>
+                  <Route path="/" element={<AdminRoute />}>
                     <Route path="/management/settings" element={<Settings/>} />
                   </Route>
 
