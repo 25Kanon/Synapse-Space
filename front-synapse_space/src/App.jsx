@@ -125,10 +125,9 @@ function App() {
                   </Route>
                   <Route path="/" element={<PublicRoute />}>
                     <Route path="/login" element={<UserLogin />} />
-                  </Route>
-                  <Route path="/" element={<PublicRoute />}>
                     <Route path="/management/login" element={<Login />} />
                   </Route>
+
                   <Route path="/" element={<PublicRoute />}>
                     <Route path="/reset-password" element={<ResetPassword />} />
                   </Route>
