@@ -37,7 +37,7 @@ export const NotificationProvider = ({ children }) => {
     // Function to mark a notification as read
     const markAsRead = async (id) => {
         try {
-            await axiosInstance.post(`api/notifications/${id}/read/`, { withCredentials: true });
+            await AxiosInstance.post(`api/notifications/${id}/read/`, { withCredentials: true });
             setNotifications((prev) =>
                 prev.map((notif) =>
                     notif.id === id ? { ...notif, is_read: true } : notif

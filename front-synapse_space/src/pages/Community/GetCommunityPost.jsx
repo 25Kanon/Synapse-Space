@@ -152,7 +152,7 @@ const GetCommunityPost = () => {
     return (
         <>
             <Helmet>
-                <title>{post.title ? post.title: `Community`} - Synapse Space</title>
+                <title>{post?.title ? post.title: `Community`} - Synapse Space</title>
             </Helmet>
         <div className="flex flex-col min-h-screen">
             {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}

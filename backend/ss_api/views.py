@@ -754,31 +754,34 @@ class PostCreateView(generics.CreateAPIView):
         # Get serializer and validate
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
+        #print(request.data)
         # Extract plain text from the content
         raw_content = serializer.validated_data.get("content")
-        plain_text = self.extract_text_from_content(raw_content)
-
+        content = self.extract_text_from_content(raw_content)
+        title = serializer.validated_data.get("title")
         # Check for malicious content
         automoderator = get_automoderator()
-        is_malicious = automoderator.is_malicious(plain_text)
+        is_malicious_content = automoderator.is_malicious(content)
+        is_malicious_title = automoderator.is_malicious(title)
         community_id = serializer.validated_data.get("posted_in").id
-        banned_words_found = check_banned_words(plain_text, community_id)
-        
+        title_banned_words_found = check_banned_words(title, community_id)
+        content_banned_words_found = check_banned_words(content, community_id)
+        banned_words_found = title_banned_words_found or content_banned_words_found
+        is_malicious = is_malicious_content or is_malicious_title
         # Save the post
         post = serializer.save(created_by=request.user)
 
         # Handle malicious content
         if is_malicious or banned_words_found:
             reasons = []
-            if is_malicious:
+            if is_malicious or is_malicious_title:
                 reasons.append("Automatically flagged as malicious by the system.")
             if banned_words_found:
                 reasons.append(f"Banned words detected: {', '.join(banned_words_found)}")
             # Create a report for the malicious post
             report = Reports.objects.create(
                 type="post",
-                content=plain_text,
+                content=title if is_malicious_title or title_banned_words_found else content,
                 author=request.user,
                 content_type=ContentType.objects.get_for_model(Post),
                 object_id=post.id,
@@ -1051,22 +1054,27 @@ class CommentCreateView(generics.CreateAPIView):
         # Save the comment with the authenticated user as the author
         comment = serializer.save(author=self.request.user)
 
-        # Extract plain text from the content
-        plain_text = comment.content
-
+        content = serializer.validated_data.get("content")
         # Check for malicious content
         automoderator = get_automoderator()
-        is_malicious = automoderator.is_malicious(plain_text)
+        is_malicious = automoderator.is_malicious(content)
+        community_id = comment.post.posted_in
+        banned_words_found = check_banned_words(content, community_id)
 
-        if is_malicious:
+        if is_malicious or banned_words_found:
+            reason = []
+            if is_malicious:
+                reason.append("Automatically flagged as malicious by the system.")
+            if banned_words_found:
+                reason.append(f"Banned words detected: {', '.join(banned_words_found)}")
             # Create a report for the malicious comment
             report = Reports.objects.create(
                 type="comment",
-                content=plain_text,
+                content=content,
                 author=self.request.user,
                 content_type=ContentType.objects.get_for_model(Comment),
                 object_id=comment.id,
-                reason="Automatically flagged as malicious by the system.",
+                reason="; ".join(reason),
                 community=comment.post.posted_in,
                 comment_post_id=Post.objects.get(id=comment.post_id),
             )
