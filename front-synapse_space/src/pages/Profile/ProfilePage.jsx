@@ -39,6 +39,7 @@ const ProfilePage = () => {
                     profBanner={userProfile.profile_banner} 
                     profAvatar={userProfile.profile_pic}
                     bio={userProfile.bio}
+                    interests={userProfile.interests}
                     isSelf={true}
                 />
                 

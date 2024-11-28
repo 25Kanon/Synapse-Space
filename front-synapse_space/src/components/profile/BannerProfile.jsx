@@ -11,6 +11,7 @@ const BannerProfile = ({
     profAvatar,
     profBanner,
     bio,
+    interests,
     profileId = null,
     isSelf = false,
 }) => {
@@ -115,6 +116,11 @@ const BannerProfile = ({
 
             <p className="mt-1 text-sm text-gray-600 ml-36">@{username}</p>
             <p className="mt-1 text-sm text-gray-600 ml-36">{bio || "No bio available"}</p>
+            {interests && interests.length > 0 && (
+                <p className="mt-1 text-sm text-gray-600 ml-36">
+                    <strong>Interests:</strong> {interests.join(', ')}
+                </p>
+            )}
         </div>
     );
 };
