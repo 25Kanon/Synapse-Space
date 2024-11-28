@@ -103,8 +103,7 @@ const MembersList = ({ id }) => {
                                             <>
                                                 <li>
                                                     <Link
-                                                        to={`/community/${member.community
-                                                            }/post/${1}/delete`}
+                                                        to={`/chat/${member.user_id}`}
                                                     >
                                                         Message
                                                     </Link>

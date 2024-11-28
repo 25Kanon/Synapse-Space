@@ -37,7 +37,7 @@ export default function Community() {
             console.error(error.message);
             setIsMember(false);
         }
-    });
+    },[postCreated]);
 
 
     useEffect(() => {

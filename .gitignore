@@ -19,3 +19,4 @@ backend/.env
 *.pyc
 front-synapse_space/.env
 projectSynapseSpace/
+backend/models/
