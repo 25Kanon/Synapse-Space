@@ -55,12 +55,19 @@ const OTPform = () => {
         if (resendTimer > 0) return; // Prevent resend if timer is still active
         setLoading(true);
         setResendMessage(null);
+
         try {
-            const message = await resendOTP(usernameOrEmail);
+            const { message, remaining_time } = await resendOTP(usernameOrEmail);
+
+            // Set the success message and start the timer
             setResendMessage(message);
-            setResendTimer(60); // Start 1-minute timer
+            setResendTimer(remaining_time);
         } catch (error) {
-            setResendMessage(String(error));
+            const remainingTime = error.remaining_time;
+            if (remainingTime) {
+                setResendTimer(parseInt(remainingTime, 10));
+            }
+            setResendMessage(error.error || 'Failed to resend OTP.');
         } finally {
             setLoading(false);
         }
