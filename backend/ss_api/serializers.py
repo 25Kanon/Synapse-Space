@@ -163,7 +163,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             })
 
         # Check if the user is locked out
-        if self.is_locked_out(username_or_email, LOCKOUT_DURATION):
+        if self.is_locked_out(username_or_email, LOCKOUT_DURATION) and False:
             raise serializers.ValidationError({
                 "message": _(
                     f"Your account is locked due to {MAX_LOGIN_ATTEMPTS} failed login attempts. Please try again after {LOCKOUT_DURATION // 60} minutes."
@@ -322,7 +322,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         connection_string = os.getenv('AZURE_ACS_CONNECTION_STRING')
         email_client = EmailClient.from_connection_string(connection_string)
         sender = os.getenv('AZURE_ACS_SENDER_EMAIL')
-        # print(body)
+        print(body)
         message = {
             "content": {
                 'subject': 'One Time Password for Synapse Space',

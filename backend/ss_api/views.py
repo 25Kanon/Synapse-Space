@@ -775,21 +775,13 @@ class PostCreateView(generics.CreateAPIView):
         title = serializer.validated_data.get("title")
         plain_text = self.extract_text_from_content(raw_content)
 
-        # Check for malicious content
-        automoderator = get_automoderator()
-        is_malicious = automoderator.is_malicious(plain_text)
-        is_malicious_title = automoderator.is_malicious(title)
-        community_id = serializer.validated_data.get("posted_in").id
-        banned_words_found = check_banned_words(plain_text, community_id)
-
-
         # Save the post
         post = serializer.save(created_by=request.user)
 
         # Handle malicious content if detected
-        if is_malicious or banned_words_found or is_malicious_title:
+        if is_malicious or banned_words_found:
             reasons = []
-
+            report_content = None
             if is_malicious or is_malicious_title:
                 report_content = None
 

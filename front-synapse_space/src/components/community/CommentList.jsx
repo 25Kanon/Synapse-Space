@@ -1,7 +1,7 @@
 import React from "react";
 import CommentItem from "./CommentItem";
 
-const CommentList = ({ onUpdate, onDelete, onReply, comments, refetchComments }) => {
+const CommentList = ({ onUpdate, onDelete, onReply, comments, refetchComments, postID }) => {
     // Sort comments by vote score in descending order
     const sortedComments = [...comments].sort(
         (a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes)
@@ -20,6 +20,7 @@ const CommentList = ({ onUpdate, onDelete, onReply, comments, refetchComments })
                     }}
                     onUpdate={onUpdate}
                     onDelete={onDelete}
+                    postID={postID}
                 />
             ))}
         </div>

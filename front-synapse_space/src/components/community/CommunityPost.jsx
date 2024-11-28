@@ -271,7 +271,7 @@ const CommunityPost = ({
 
                         {/* Report Modal */}
                         <dialog id={`PostModal${postId}`} className="modal">
-                            <ReportForm type={"post"} object={postId} community={community} />
+                            <ReportForm type={"post"} object={postId} community={community}/>
                         </dialog>
                     </div>
 

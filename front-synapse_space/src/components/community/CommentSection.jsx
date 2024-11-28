@@ -134,7 +134,7 @@ const CommentSection = ({ postID }) => {
             </h2>
             <CommentForm onSubmit={(content) => addComment(content)} />
             <CommentList
-                postId={postID}
+                postID={postID}
                 comments={comments}
                 onReply={addComment}
                 onVote={handleVote}

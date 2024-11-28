@@ -5,7 +5,7 @@ import AxiosInstance from "../../utils/AxiosInstance";
 import CommentForm from "./CommentForm";
 import ReportForm from "../ReportForm";
 
-const CommentItem = ({ comment, onReply, onUpdate, onDelete, optionalClasses }) => {
+const CommentItem = ({ comment, onReply, onUpdate, onDelete, optionalClasses, postID }) => {
     const [userVote, setUserVote] = useState(comment.user_vote || null); // 'upvote', 'downvote', or null
     const [voteScore, setVoteScore] = useState(comment.vote_score || 0);
     const [isEditing, setIsEditing] = useState(false);
@@ -132,6 +132,7 @@ const CommentItem = ({ comment, onReply, onUpdate, onDelete, optionalClasses }) 
                             type="comment"
                             object={comment.id}
                             community={comment.post_community_id}
+                            comment_post_id={postID}
                         />
                     </dialog>
                 </div>

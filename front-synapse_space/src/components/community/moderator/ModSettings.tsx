@@ -74,7 +74,7 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                     <div className="space-y-4">
                         <h3 className="text-lg font-medium">AutoMod Configuration</h3>
                         <div className="flex items-center justify-between">
-                            <label className="flex items-center space-x-2">
+                            {/* <label className="flex items-center space-x-2">
                                 <span>Enable AutoMod</span>
                                 <input
                                     type="checkbox"
@@ -99,7 +99,7 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                                     }))}
                                     className="input input-bordered w-20 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
@@ -129,7 +129,7 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                     </div>
 
                     {/* New User Restrictions */}
-                    <div className="space-y-4">
+                    {/* <div className="space-y-4">
                         <h3 className="text-lg font-medium">New User Restrictions</h3>
                         <div className="flex items-center space-x-2">
                             <span>Account age required (days):</span>
@@ -145,10 +145,10 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                                 className="input input-bordered w-20 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* Notifications */}
-                    <div className="space-y-4">
+                    {/* <div className="space-y-4">
                         <h3 className="text-lg font-medium">Notifications</h3>
                         <div className="flex items-center space-x-2">
                             <input
@@ -162,10 +162,10 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                             />
                             <span>Enable Mod Notifications</span>
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* Auto-Lock */}
-                    <div className="space-y-4">
+                    {/* <div className="space-y-4">
                         <h3 className="text-lg font-medium">Auto-Lock Settings</h3>
                         <div className="flex items-center space-x-2">
                             <span>Auto-lock threads after reports:</span>
@@ -181,7 +181,7 @@ export function ModSettingsModal({ isOpen, onClose, settings, onSave }: ModSetti
                                 className="input input-bordered rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="flex items-center justify-end gap-4 p-4 border-t">
