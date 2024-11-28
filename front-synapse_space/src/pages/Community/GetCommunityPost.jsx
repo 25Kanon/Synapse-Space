@@ -24,15 +24,22 @@ const GetCommunityPost = () => {
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state added
+  const [loading, setLoading] = useState(true); // Add loading state  
   const { user } = useContext(AuthContext);
   const [editorContent, setEditorContent] = useState("");
   const [title, setTitle] = useState("");
   const navigate = useNavigate();
 
+  // Sync isEditing with location.state
+  useEffect(() => {
+    if (state?.isEditing !== undefined) {
+      setIsEditing(state.isEditing);
+    }
+  }, [state]);
+
   useEffect(() => {
     const getCommunityPost = async () => {
-      setLoading(true); // Start loading
+      setLoading(true); // Set loading to true before fetching data
       try {
         const response = await AxiosInstance.get(
           `/api/community/${community_id}/post/${post_id}`,
@@ -43,123 +50,15 @@ const GetCommunityPost = () => {
       } catch (error) {
         setError(`Error fetching post: ${error.message}`);
       } finally {
-        setLoading(false); // End loading
+        setLoading(false); // Set loading to false after fetching data
       }
     };
 
     getCommunityPost();
   }, [community_id, post_id, isEditing]);
 
-  const moveImagesToPermanentStorage = async (content, originalContent) => {
-    const blocks = Array.isArray(content.blocks) ? content.blocks : [];
-    const originalBlocks = Array.isArray(originalContent.blocks)
-      ? originalContent.blocks
-      : [];
-
-    const updatedBlocks = await Promise.all(
-      blocks.map(async (block, index) => {
-        const originalBlock = originalBlocks[index]; // Safe access
-
-        if (!originalBlock || block.type !== "image") {
-          return block;
-        }
-
-        const originalUrl = originalBlock?.data?.file?.url;
-        const currentUrl = block.data.file.url;
-
-        if (currentUrl === originalUrl) {
-          return block;
-        }
-
-        try {
-          const tempUrl = currentUrl;
-          const response = await AxiosInstance.post(
-            `/api/move-image/`,
-            { tempUrl },
-            {
-              withCredentials: true,
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-
-          if (response.status === 200) {
-            block.data.file.url = response.data.newUrl;
-          }
-        } catch (error) {
-          console.error("Error moving image:", error);
-        }
-
-<<<<<<< Updated upstream
-
-
-
-    return (
-        <>
-            <Helmet>
-                <title>{post?.title ? post.title: `Community`} - Synapse Space</title>
-            </Helmet>
-        <div className="flex flex-col min-h-screen">
-            {error && <ErrorAlert text={error} classExtensions="fixed z-50" />}
-            {success && <SuccessAlert text={success} classExtensions="fixed z-50" />}
-            <NavBar />
-            <Sidebar />
-            <MembersList id={community_id} />
-            <MainContentContainer>
-
-                {post ? (
-                    isEditing ? (
-                        <div className="flex flex-col m-6">
-                            <form onSubmit={handleSubmit} className="form form-control">
-                                <label className="text-sm font-bold">Title</label>
-                                <input type="text" name="title" defaultValue={post.title}
-                                       className="m-3 input input-primary"
-                                       onChange={(e) => setTitle(e.target.value)}
-                                       required />
-                                <span className="text-sm font-bold">Content</span>
-                                <RichTextEditor
-                                    setEditorContent={setEditorContent}
-                                    isEditing={isEditing}
-                                    initialContent={post.content}
-                                />
-                                <button type="submit" className="m-6 btn btn-primary">Save Changes</button>
-                            </form>
-                        </div>
-                    ) : (
-                        <CommunityPost
-                            key={post.id}
-                            userName={post.created_by_username}
-                            community={post.posted_in}
-                            postTitle={post.title}
-                            postContent={post.content}
-                            postId={post.id}
-                            showComments={true}
-                            userID={user.id}
-                            authorId={post.created_by}
-                            userAvatar={post.userAvatar}
-                            isPinned={post.isPinned}
-                            createdAt={post.created_at}
-                        />
-                    )
-                ) : (
-                    <h2>Post does not exist</h2>
-                )}
-            </MainContentContainer>
-            <Footer/> 
-        </div>
-    </>
-=======
-        return block;
-      })
->>>>>>> Stashed changes
-    );
-
-    return { ...content, blocks: updatedBlocks };
-  };
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission behavior
     setSuccess(null);
     setError(null);
 
@@ -173,17 +72,12 @@ const GetCommunityPost = () => {
     }
 
     try {
-      const updatedContent = await moveImagesToPermanentStorage(
-        editorContent,
-        post.content
-      );
-
       const formData = new FormData();
       formData.append("title", DOMPurify.sanitize(title));
-      formData.append("content", JSON.stringify(updatedContent));
+      formData.append("content", JSON.stringify(editorContent));
       formData.append("posted_in", community_id);
 
-      const response = await AxiosInstance.put(
+      await AxiosInstance.put(
         `/api/community/${community_id}/post/update/${post_id}/`,
         formData,
         {
@@ -216,7 +110,7 @@ const GetCommunityPost = () => {
         <MembersList id={community_id} />
         <MainContentContainer>
           {loading ? (
-            <Loading /> // Show loading state
+            <Loading /> // Display loading component while data is being fetched
           ) : post ? (
             isEditing ? (
               <div className="flex flex-col m-6">

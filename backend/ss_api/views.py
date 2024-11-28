@@ -754,7 +754,7 @@ class PostCreateView(generics.CreateAPIView):
         # Get serializer and validate the data
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-<<<<<<< Updated upstream
+
         #print(request.data)
         # Extract plain text from the content
         raw_content = serializer.validated_data.get("content")
@@ -769,7 +769,6 @@ class PostCreateView(generics.CreateAPIView):
         content_banned_words_found = check_banned_words(content, community_id)
         banned_words_found = title_banned_words_found or content_banned_words_found
         is_malicious = is_malicious_content or is_malicious_title
-=======
 
         # Extract plain text and title from the validated data
         raw_content = serializer.validated_data.get("content")
@@ -783,20 +782,19 @@ class PostCreateView(generics.CreateAPIView):
         community_id = serializer.validated_data.get("posted_in").id
         banned_words_found = check_banned_words(plain_text, community_id)
 
->>>>>>> Stashed changes
+
         # Save the post
         post = serializer.save(created_by=request.user)
 
         # Handle malicious content if detected
         if is_malicious or banned_words_found or is_malicious_title:
             reasons = []
-<<<<<<< Updated upstream
+
             if is_malicious or is_malicious_title:
-=======
-            report_content = None
+                report_content = None
 
             if is_malicious:
->>>>>>> Stashed changes
+
                 reasons.append("Automatically flagged as malicious by the system.")
                 report_content = plain_text
 
@@ -811,11 +809,9 @@ class PostCreateView(generics.CreateAPIView):
             # Create a report for the malicious post
             report = Reports.objects.create(
                 type="post",
-<<<<<<< Updated upstream
+
                 content=title if is_malicious_title or title_banned_words_found else content,
-=======
-                content=report_content,
->>>>>>> Stashed changes
+
                 author=request.user,
                 content_type=ContentType.objects.get_for_model(Post),
                 object_id=post.id,
