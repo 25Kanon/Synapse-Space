@@ -86,14 +86,11 @@ const OTPform = () => {
                     {[0, 1, 2, 3, 4, 5].map((index) => (
                         <div className="w-16 h-16" key={index}>
                             <input
-                                className={`appearance-textfield
+                                className={`appearance-auto textarea textarea-primary
                                 [&::-webkit-outer-spin-button]:appearance-none
                                 [&::-webkit-inner-spin-button]:appearance-none
                                 w-full h-full flex flex-col items-center justify-center
-                                text-center px-5 rounded-xl border
-                                light:border-gray-400 dark:border-gray-700
-                                text-lg focus:ring-1 ring-blue-700 outline-none
-                                text-black`}
+                                text-center px-5 rounded-xl border`}
                                 type="number"
                                 id={`otp-input-${index}`}
                                 maxLength={1}
