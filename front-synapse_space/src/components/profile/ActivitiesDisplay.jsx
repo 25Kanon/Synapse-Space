@@ -22,20 +22,8 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
         return await AxiosInstance.get(`/api/community/joined/posts/?page=${page}`, {}, { withCredentials: true });
     };
 
-    // Fetch user comments
-    const fetchUserComments = async (userId) => {
-        try {
-            const response = await AxiosInstance.get(`/api/comments/user/${userId}/`, {
-                withCredentials: true,
-            });
-            return response.data;
-        } catch (error) {
-            console.error("Error fetching user comments:", error);
-            return [];
-        }
-    };
 
-    const fetchLikedPosts = async (userId) => {
+    const fetchActivities = async (userId) => {
         setLoadingLikedPosts(true);
         try {
             const response = await AxiosInstance.get(`api/activities/${userId}`, {
@@ -46,6 +34,9 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
             }
             if (response.data.disliked_posts) {
                 setDislikedPosts(response.data.disliked_posts);
+            }
+            if (response.data.comments) {
+                setUserComments(response.data.comments);
             }
         } catch (error) {
             console.error("Error fetching liked posts:", error);
@@ -75,18 +66,14 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
     // Fetch user comments when "comments" tab is active
     useEffect(() => {
         if (activeTab === "comments") {
-            fetchUserComments(user.id).then((data) =>
-                setUserComments(
-                    data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // Sort latest to oldest
-                )
-            );
+            fetchActivities(userID);
         }
-    }, [activeTab, user.id]);
+    }, [activeTab, userID]);
 
     // Fetch liked posts when the "liked" tab is active
     useEffect(() => {
         if (activeTab === "liked" || activeTab === "disliked") {
-            fetchLikedPosts(userID);
+            fetchActivities(userID);
         }
     }, [activeTab, userID]);
 
@@ -233,3 +220,4 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
 };
 
 export default ActivitiesDisplay;
+    
