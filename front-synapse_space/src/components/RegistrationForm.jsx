@@ -24,7 +24,11 @@ const validationSchema = yup.object({
     password: yup
         .string()
         .required('Password is required')
-        .min(8, 'Password must be at least 8 characters long'),
+        .min(8, 'Password must be at least 8 characters long')
+        .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
+        .matches(/\d/, 'Password must contain at least one number')
+        .matches(/[@$!%*?&_]/, 'Password must contain at least one special character'),
     confirmPassword: yup
         .string()
         .oneOf([yup.ref('password'), null], 'Passwords must match')
@@ -171,8 +175,13 @@ export default function RegistrationForm() {
                         onClick={() => setShowPassword(!showPassword)}
                     />
                 </div>
-                {formik.errors.password ?
-                    <span className="label-text text-error">{formik.errors.password}</span> : null}
+                {formik.errors.password ? (
+                    <span className="label-text text-error">{formik.errors.password}</span>
+                ) : (
+                    <p className="mt-1 text-xs text-gray-500">
+                        Password must be at least 8 characters long, and include an uppercase letter, a lowercase letter, a number, and a special character.
+                    </p>
+                )}
             </div>
 
             <div className="form-control">

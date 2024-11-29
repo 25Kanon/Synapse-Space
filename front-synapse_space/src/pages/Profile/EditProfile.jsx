@@ -134,6 +134,11 @@ const EditProfile = () => {
         }
     };
 
+    const validatePassword = (password) => {
+        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{8,}$/;
+        return passwordPattern.test(password);
+    };
+
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         setPasswordError("");
@@ -145,6 +150,11 @@ const EditProfile = () => {
 
         if (newPassword !== confirmNewPassword) {
             setPasswordError("New password and confirmation do not match.");
+            return;
+        }
+
+        if (!validatePassword(newPassword)) {
+            setPasswordError("Password must be at least 8 characters long and include a number, an uppercase letter, a lowercase letter, and a special character.");
             return;
         }
 
@@ -318,6 +328,9 @@ const EditProfile = () => {
                             className="w-full p-3 text-black border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                             required
                         />
+                        <p className="mt-1 text-xs text-gray-500">
+                            Password must be at least 8 characters long, and include an uppercase letter, a lowercase letter, a number, and a special character.
+                        </p>
                         <FontAwesomeIcon
                             icon={showNewPassword ? faEye : faEyeSlash}
                             className={`absolute right-3 top-12 cursor-pointer ${

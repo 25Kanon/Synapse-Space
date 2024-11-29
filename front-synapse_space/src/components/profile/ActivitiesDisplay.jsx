@@ -137,7 +137,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
 
             {activeTab === "comments" && (
                 <div>
-                    <h2 className="mb-4 font-semibold text-accent dark:text-white">Your Comments</h2>
+                    <h2 className="mb-4 font-semibold text-accent dark:text-white">User's Comments</h2>
                     {userComments.length > 0 ? (
                         userComments.map((comment) => (
                             <div
@@ -186,7 +186,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
 
             {activeTab === "liked" && (
                 <div>
-                    <h2 className="font-semibold">User's Posts</h2>
+                    <h2 className="font-semibold">User's Liked Posts</h2>
                     {likedPosts.length > 0 && (
                         likedPosts.map((post) => (
                             <CommunityPost
@@ -207,7 +207,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
             )}
             {activeTab === "disliked" && (
                 <div>
-                    <h2 className="font-semibold">User's Posts</h2>
+                    <h2 className="font-semibold">User's Disliked Posts</h2>
                     {dislikedPosts.length > 0 && (
                         dislikedPosts.map((post) => (
                             <CommunityPost
