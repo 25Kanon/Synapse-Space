@@ -7,7 +7,6 @@ import NavBar from '../components/NavBar';
 import Sidebar from '../components/Sidebar';
 import FriendsList from '../components/FriendsList';
 import MainContentContainer from '../components/MainContentContainer';
-import Footer from '../components/Footer';
 import {Helmet} from "react-helmet-async";
 
 export default function Chat() {
@@ -33,7 +32,6 @@ export default function Chat() {
                 </div>
 
             </MainContentContainer>
-            <Footer/>
         </>
 
     );
