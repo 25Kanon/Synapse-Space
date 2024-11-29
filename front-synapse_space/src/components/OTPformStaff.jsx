@@ -10,7 +10,7 @@ const OTPformStaff = () => {
     const [loading, setLoading] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
 
-    // Countdown Timer
+    // Start the resend timer
     useEffect(() => {
         let timer;
         if (resendTimer > 0) {
@@ -44,10 +44,10 @@ const OTPformStaff = () => {
             const response = await AxiosInstance.post('/api/auth/resend-otp/', {
                 username_or_email: usernameOrEmail,
             });
-            return response.data; // Return the full success response
+            return response.data.message;
         } catch (error) {
             console.error('Error resending OTP:', error.response?.data || error.message);
-            throw error.response?.data || 'Failed to resend OTP.';
+            throw error.response?.data?.error || 'Failed to resend OTP.';
         }
     };
 
@@ -55,19 +55,12 @@ const OTPformStaff = () => {
         if (resendTimer > 0) return; // Prevent resend if timer is still active
         setLoading(true);
         setResendMessage(null);
-
         try {
-            const { message, remaining_time } = await resendOTP(usernameOrEmail);
-
-            // Set the success message and start the timer
+            const message = await resendOTP(usernameOrEmail);
             setResendMessage(message);
-            setResendTimer(remaining_time);
+            setResendTimer(60); // Start 1-minute timer
         } catch (error) {
-            const remainingTime = error.remaining_time;
-            if (remainingTime) {
-                setResendTimer(parseInt(remainingTime, 10));
-            }
-            setResendMessage(error.error || 'Failed to resend OTP.');
+            setResendMessage(String(error));
         } finally {
             setLoading(false);
         }
@@ -76,9 +69,9 @@ const OTPformStaff = () => {
     return (
         <div className="flex flex-col space-y-2">
             {error && <ErrorAlert text={error} classExtensions="max-w-lg" />}
-            <h2 className="card-title justify-center mb-5">Verify it's you.</h2>
+            <h2 className="justify-center mb-5 card-title">Verify it's you.</h2>
             <div className="max-w-sm mx-auto">
-                <p className="text-justify justify-center">
+                <p className="justify-center text-justify">
                     We just sent a six-digit code to your email address. Enter the code below to sign in.
                 </p>
             </div>
@@ -89,15 +82,18 @@ const OTPformStaff = () => {
             </div>
             <form className="px-5" onSubmit={loginStaff}>
                 <input type="hidden" value={otp} name="otp" required />
-                <div className="flex flex-row items-center justify-between mx-auto w-full gap-5">
+                <div className="flex flex-row items-center justify-between w-full gap-5 mx-auto">
                     {[0, 1, 2, 3, 4, 5].map((index) => (
                         <div className="w-16 h-16" key={index}>
                             <input
-                                className={`appearance-auto textarea textarea-primary
+                                className={`appearance-textfield
                                 [&::-webkit-outer-spin-button]:appearance-none
                                 [&::-webkit-inner-spin-button]:appearance-none
                                 w-full h-full flex flex-col items-center justify-center
-                                text-center px-5 rounded-xl border`}
+                                text-center px-5 rounded-xl border
+                                light:border-gray-400 dark:border-gray-700
+                                text-lg focus:ring-1 ring-blue-700 outline-none
+                                text-black`}
                                 type="number"
                                 id={`otp-input-${index}`}
                                 maxLength={1}
@@ -108,16 +104,16 @@ const OTPformStaff = () => {
                         </div>
                     ))}
                 </div>
-                <div className="flex flex-col space-y-5 mt-5">
+                <div className="flex flex-col mt-5 space-y-5">
                     <button
-                        className="flex flex-row items-center justify-center text-center w-full border rounded-xl outline-none py-5 bg-primary border-none text-white text-sm shadow-sm"
+                        className="flex flex-row items-center justify-center w-full py-5 text-sm text-center text-white border border-none shadow-sm outline-none rounded-xl bg-primary"
                         type="submit"
                     >
                         Verify Account
                     </button>
                 </div>
             </form>
-            <div className="flex flex-row items-center text-sm font-medium space-x-1 text-gray-500">
+            <div className="flex flex-row items-center space-x-1 text-sm font-medium text-gray-500">
                 {resendMessage && <p>{resendMessage}</p>}
                 <p>Didn't receive code?</p>
                 <button
@@ -129,7 +125,7 @@ const OTPformStaff = () => {
                 </button>
             </div>
             <div className="flex flex-row justify-center text-sm">
-                <a className="flex flex-row text-secondary underline" href="/" target="_blank" rel="noopener noreferrer">
+                <a className="flex flex-row underline text-secondary" href="/" target="_blank" rel="noopener noreferrer">
                     Go back to signin
                 </a>
             </div>

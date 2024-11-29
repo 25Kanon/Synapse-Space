@@ -1,4 +1,3 @@
-import base64
 import hashlib
 import json
 from collections import defaultdict
@@ -23,7 +22,6 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 
 from django.db.models import Count
-from django.utils.timezone import now
 # Rest Framework imports
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.decorators import api_view
@@ -599,7 +597,7 @@ class ChangePasswordView(APIView):
             errors.append("Password must be significantly different from the current password.")
 
         return errors
-
+    
 class CommunityCreateView(generics.CreateAPIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -705,7 +703,7 @@ class MembershipListView(generics.ListAPIView):
 
         for membership in queryset:
             community = membership.community
-
+            
             # Serialize the membership data
             serialized_data = MembershipSerializer(membership).data
             response_data.append(serialized_data)
@@ -777,21 +775,13 @@ class PostCreateView(generics.CreateAPIView):
         title = serializer.validated_data.get("title")
         plain_text = self.extract_text_from_content(raw_content)
 
-        # Check for malicious content
-        automoderator = get_automoderator()
-        is_malicious = automoderator.is_malicious(plain_text)
-        is_malicious_title = automoderator.is_malicious(title)
-        community_id = serializer.validated_data.get("posted_in").id
-        banned_words_found = check_banned_words(plain_text, community_id)
-
-
         # Save the post
         post = serializer.save(created_by=request.user)
 
         # Handle malicious content if detected
-        if is_malicious or banned_words_found or is_malicious_title:
+        if is_malicious or banned_words_found:
             reasons = []
-
+            report_content = None
             if is_malicious or is_malicious_title:
                 report_content = None
 
@@ -1076,7 +1066,7 @@ class getPostLikesView(APIView):
         likes = Likes.objects.filter(post=post)
         serializer = LikedPostSerializer(likes, many=True)
         return Response(serializer.data)
-
+    
 class CommentCreateView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CreateCommentSerializer
@@ -1137,7 +1127,7 @@ class CommentDetailView(generics.RetrieveAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
-
+    
 class UserCommentsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1390,7 +1380,7 @@ class UserActivitiesView(APIView):
 
         return Response(activities)
 
-
+    
 class CommunityListView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -1452,7 +1442,7 @@ class JoinCommunityView(generics.CreateAPIView):
                         "community_name": community.name,
                     }
                 )
-
+            
             serializer = MembershipSerializer(membership)
             return Response({"message": "Successfully joined the community.", "membership": serializer.data}, status=status.HTTP_201_CREATED)
         else:
@@ -1496,8 +1486,8 @@ class getCommunityStats(APIView):
         community = get_object_or_404(Community, id=community_id)
         members = Membership.objects.filter(community=community).count()
         posts = Post.objects.filter(posted_in=community).count()
-
-
+        
+        
         # Top 10 Most Liked Posts
         most_liked_posts = (
             Post.objects.filter(posted_in=community)
@@ -1521,7 +1511,7 @@ class getCommunityStats(APIView):
             .order_by('-comment_count')[:10]
             .values('id', 'title', 'comment_count')
         )
-
+        
         return Response({
             'members': members,
             'posts': posts,
@@ -1680,7 +1670,7 @@ class AcceptMembershipView(APIView):
             membership.status = 'accepted'
             membership.save()
             updated_memberships.append(membership)
-
+            
             user = membership.user
             email_body = f"Dear {user.username},\n\nCongratulations! You have been accepted into the community '{community.name}'. Welcome aboard!"
             self.send_acceptance_email(
@@ -1690,7 +1680,7 @@ class AcceptMembershipView(APIView):
             )
         serializer = MembershipSerializer(updated_memberships, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
     @staticmethod
     def send_acceptance_email(body, to_email, username):
         print(body)
@@ -1743,7 +1733,7 @@ class BanMembershipView(APIView):
             membership.status = 'banned'
             membership.save()
             updated_memberships.append(membership)
-
+            
             # Create a notification for the banned user
             Notification.objects.create(
                 user=membership.user,
@@ -1847,7 +1837,7 @@ class ListFriendsView(generics.ListAPIView):
         # Get all friends (user2) for the logged-in user
         friendships = Friendship.objects.filter(user1=user).select_related("user2")
         return [friendship.user2 for friendship in friendships]
-
+        
 class ListSentFriendRequestsView(generics.ListAPIView):
     serializer_class = FriendRequestSerializer  # Use FriendRequestSerializer to display sent friend requests
     authentication_classes = [CookieJWTAuthentication]
@@ -1885,7 +1875,7 @@ class RespondToFriendRequestView(generics.UpdateAPIView):
             # Create a mutual friendship between sender and receiver
             Friendship.objects.create(user1=friend_request.sender, user2=friend_request.receiver)
             Friendship.objects.create(user1=friend_request.receiver, user2=friend_request.sender)
-
+            
             # Create a notification for the sender with a JSON object as the message
             Notification.objects.create(
                 user=friend_request.sender,
@@ -2426,7 +2416,7 @@ class InteractionTrendView(APIView):
 
         return Response(interaction_trend, status=status.HTTP_200_OK)
 
-
+    
 class ResendOTPView(APIView):
     def post(self, request):
         username_or_email = request.data.get('username_or_email')
@@ -2435,7 +2425,8 @@ class ResendOTPView(APIView):
 
         try:
             UserModel = get_user_model()
-
+            print(UserModel.objects.all())  # Print all user objects for debugging
+            
             # Attempt to fetch the user by email or username
             user = None
             if UserModel.objects.filter(email=username_or_email).exists():
@@ -2448,100 +2439,17 @@ class ResendOTPView(APIView):
 
             if not hasattr(user, 'otp_secret') or not user.otp_secret:
                 return Response({"error": "User does not have an OTP secret configured."}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Fetch OTP settings from the database
-            OTP_RATE_LIMIT = self.get_int_setting("OTP_RATE_LIMIT", 60)
-            OTP_INTERVAL = self.get_float_setting("OTP_INTERVAL", 300)
-
-            # Ensure settings are valid
-            if OTP_INTERVAL <= 0:
-                return Response({"error": "Invalid OTP interval configuration."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            # Check for rate limiting
-            last_otp_time = cache.get(f"otp_generation:{user.id}")
-            if last_otp_time and (now().timestamp() - last_otp_time) < OTP_RATE_LIMIT:
-                remaining_time = OTP_RATE_LIMIT - (now().timestamp() - last_otp_time)
-                return Response({
-                    "error": f"OTP generation is rate-limited. ",
-                    "remaining_time": int(remaining_time),
-                }, status=status.HTTP_429_TOO_MANY_REQUESTS)
-
-            # Validate the OTP secret
-            if not self.is_valid_secret(user.otp_secret):
-                return Response({"error": "Invalid OTP secret. Please contact support."}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Generate the OTP
-            otp = self.generate_otp(user.otp_secret, OTP_INTERVAL)
+            
+            totp = pyotp.TOTP(user.otp_secret, interval=300)
+            otp = totp.now()
             body = f"Your OTP is: {otp}"
+            # print(body)
             CustomTokenObtainPairSerializer.send_otp(body, user.email, user.username)
 
-            # Store OTP generation time in cache
-            cache.set(f"otp_generation:{user.id}", now().timestamp(), OTP_RATE_LIMIT)
-
-            return Response({"message": "OTP sent successfully.",
-                             "remaining_time": int(OTP_RATE_LIMIT)}, status=status.HTTP_200_OK)
+            return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def get_setting(self, key, default=None):
-        """
-        Retrieve a setting value from the cache or database.
-        """
-        value = cache.get(key)
-        if value is None:
-            try:
-                # Fetch from the database and update the cache
-                value = SystemSetting.objects.get(key=key).value
-                cache.set(key, value, timeout=3600)  # Cache for 1 hour
-            except SystemSetting.DoesNotExist:
-                value = default
-        return value
-
-    def get_int_setting(self, key, default=0):
-        """
-        Retrieve a setting and convert it to an integer.
-        """
-        value = self.get_setting(key, default)
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            return int(default)  # Return the default value if conversion fails
-
-    def get_float_setting(self, key, default=0.0):
-        """
-        Retrieve a setting and convert it to a float.
-        """
-        value = self.get_setting(key, default)
-        try:
-            return float(value)
-        except (ValueError, TypeError):
-            return float(default)  # Return the default value if conversion fails
-
-    def generate_otp(self, user_secret, otp_interval):
-        """
-        Generate a time-based OTP using the user's secret.
-        """
-        try:
-            totp = pyotp.TOTP(user_secret, interval=otp_interval)
-            return totp.now()
-        except pyotp.exceptions.InvalidSecretKey:
-            raise serializers.ValidationError({"message": "Invalid OTP secret. Please contact support."})
-        except Exception as e:
-            raise serializers.ValidationError({"message": f"Error generating OTP: {e}"})
-
-    def is_valid_secret(self, secret):
-        """
-        Validate the user's OTP secret to ensure it is a valid Base32 string.
-        """
-        try:
-            base64.b32decode(secret)
-            return True
-        except Exception:
-            return False
-
-
-
         
 class UnfriendView(APIView):
     permission_classes = [permissions.IsAuthenticated]
