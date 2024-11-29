@@ -16,6 +16,7 @@ import ChatBadge from "./ChatBadge";
 const NavBar = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
+    const [username, setUsername] = useState(user?.username || "");
     const { acceptFriendRequest, rejectFriendRequest, filteredFriendRequests } =
         useFriends();
     const [scrolled, setScrolled] = useState(false);
@@ -58,6 +59,21 @@ const NavBar = () => {
             console.error("Logout failed:", error);
         }
     };
+
+    useEffect(() => {
+        const fetchUsername = async () => {
+            try {
+                const response = await AxiosInstance.get("/api/profile/", {
+                    withCredentials: true,
+                });
+                setUsername(response.data.username);
+            } catch (error) {
+                console.error("Error fetching username:", error);
+            }
+        };
+
+        fetchUsername();
+    }, []);
 
     const renderDropdown = <ul className="menu dropdown-content bg-base-100 rounded-box z-[50] w-52 p-2 shadow">
         <li>
@@ -118,7 +134,7 @@ const NavBar = () => {
                                     <FontAwesomeIcon icon={faBell} className="h-5" />
                                     {(filteredFriendRequests.length > 0 || unreadNotifications.length > 0) && (
                                         <span
-                                            className="absolute top-3 right-1 z-40 flex items-center justify-center w-5 h-5 text-xs text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                                            className="absolute z-40 flex items-center justify-center w-5 h-5 text-xs text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full top-3 right-1">
                                             {filteredFriendRequests.length + unreadNotifications.length}
                                         </span>
                                     )}
@@ -302,7 +318,7 @@ const NavBar = () => {
                                         <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                                     </div>
                                     <p className="flex items-center text-sm font-semibold">
-                                        {user.username}
+                                        {username}
                                         <span>
                                             <FontAwesomeIcon icon={faChevronDown} className="ms-3" />
                                         </span>

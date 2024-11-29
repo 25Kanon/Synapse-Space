@@ -26,20 +26,20 @@ const ProfilePage = () => {
     }, []);
 
     return (
-        <LayoutProfile showSidebar={true} membersListId={userProfile.id}>
+        <LayoutProfile showSidebar={true} membersListId={userProfile?.id}>
             <Helmet>
-                <title>{userProfile.username ? userProfile.username: `Profile`} - Synapse Space</title>
+                <title>{userProfile?.username ? userProfile?.username: `Profile`} - Synapse Space</title>
             </Helmet>
             <div className="p-6">
                 {/* Banner Profile Section */}
                 <BannerProfile 
-                    first_name={userProfile.first_name} // Use first_name from userProfile
-                    last_name={userProfile.last_name} // Add last_name from userProfile
-                    username={userProfile.username} // Pass username
-                    profBanner={userProfile.profile_banner} 
-                    profAvatar={userProfile.profile_pic}
-                    bio={userProfile.bio}
-                    interests={userProfile.interests}
+                    first_name={userProfile?.first_name} // Use first_name from userProfile
+                    last_name={userProfile?.last_name} // Add last_name from userProfile
+                    username={userProfile?.username} // Pass username
+                    profBanner={userProfile?.profile_banner} 
+                    profAvatar={userProfile?.profile_pic}
+                    bio={userProfile?.bio}
+                    interests={userProfile?.interests}
                     isSelf={true}
                 />
                 
@@ -50,7 +50,7 @@ const ProfilePage = () => {
                 <ActivitiesDisplay 
                     activities={activities} 
                     activeTab={activeTab} 
-                    userID={userProfile.id} 
+                    userID={userProfile?.id} 
                 />
             </div>
         </LayoutProfile>

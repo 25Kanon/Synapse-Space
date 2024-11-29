@@ -15,6 +15,7 @@ import { useNotifications } from "../../context/NotificationContext";
 const NavBar = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
+    const [username, setUsername] = useState(user.username);
     const { acceptFriendRequest, rejectFriendRequest, filteredFriendRequests } =
         useFriends();
     const [scrolled, setScrolled] = useState(false);
@@ -48,6 +49,25 @@ const NavBar = () => {
             navigate("/search", { state: { query: searchQuery } });
         }
     };
+
+    // Fetch username if it changes
+    useEffect(() => {
+        const fetchUsername = async () => {
+            try {
+                const response = await AxiosInstance.get("/api/profile/", {
+                    withCredentials: true,
+                });
+                setUsername(response.data.username);
+            } catch (error) {
+                console.error("Error fetching updated username:", error);
+            }
+        };
+            fetchUsername();
+    }, []); // Empty dependency array ensures this runs once on mount
+    
+    const updateUsername = (newUsername) => {
+        setUsername(newUsername); // Update username dynamically
+    }
 
     const handleLogout = async () => {
         try {
@@ -299,7 +319,7 @@ const NavBar = () => {
                                         <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                                     </div>
                                     <p className="flex items-center text-sm font-semibold">
-                                        {user.username}
+                                        {username}
                                         <span>
                                             <FontAwesomeIcon icon={faChevronDown} className="ms-3" />
                                         </span>
