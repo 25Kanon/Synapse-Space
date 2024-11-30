@@ -73,7 +73,7 @@ class Community(models.Model):
             community=self,
             role__in=['admin']
         ).exists()
-        
+
     @property
     def member_count(self):
         """Count the number of members in the community."""
@@ -261,3 +261,44 @@ class ModeratorSettings(models.Model):
 
     def __str__(self):
         return f"Moderator Settings for {self.community.name}"
+
+
+class CommunityActivity(models.Model):
+    id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateTimeField()
+    location = models.CharField(max_length=255)
+    organizer = models.ForeignKey(User, on_delete=models.CASCADE)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE)
+    max_participants = models.PositiveIntegerField()
+    image = models.CharField(max_length=255)
+    status = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.title
+
+
+class ActivityParticipants(models.Model):
+    activity = models.ForeignKey(CommunityActivity, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('activity', 'user')
+
+    def __str__(self):
+        return f'{self.user.username} - {self.activity.title}'
+
+
+class ActivityRating(models.Model):
+    activity = models.ForeignKey(CommunityActivity, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField()
+    comment = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ('activity', 'user')  # A user can rate an activity only once
+
+    def __str__(self):
+        return f'{self.user.username} - {self.activity.title} - {self.rating}'
