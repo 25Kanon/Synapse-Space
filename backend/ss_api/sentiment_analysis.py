@@ -15,5 +15,7 @@ class SentimentAnalyzer:
         logits = outputs.logits
         sentiment = torch.argmax(logits, dim=1).item()
 
-        sentiment_mapping = {0: "negative", 1: "neutral", 2: "positive"}
+        # Fixed sentiment mapping (swapping positive and neutral)
+        sentiment_mapping = {0: "negative", 1: "positive", 2: "neutral"}
         return sentiment_mapping.get(sentiment, "neutral")
+    

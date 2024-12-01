@@ -176,7 +176,7 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
         if (participants.length >= activity.max_participants) {
             setIsFull(true);
         }
-    }, [participants, showRating]);
+    }, [participants, showRating, activity.id]);
 
     return (
         <div className="border bordered-solid rounded-lg shadow-md p-4 mb-6">

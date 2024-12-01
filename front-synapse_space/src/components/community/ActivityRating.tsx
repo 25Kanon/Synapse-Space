@@ -1,8 +1,10 @@
-import React, {useContext} from 'react';
+import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Star } from 'lucide-react';
 import AxiosInstance from '../../utils/AxiosInstance';
 import AuthContext from '../../context/AuthContext';
+import ErrorAlert from '../ErrorAlert';
+import Loading from '../Loading';
 
 interface RatingFormData {
     rating: number;
@@ -19,8 +21,12 @@ interface ActivityRatingProps {
 export function ActivityRating({ activityId, onClose, community }: ActivityRatingProps) {
     const { handleSubmit, register } = useForm<RatingFormData>();
     const { user } = useContext(AuthContext);
+    const [isLoading, setIsLoading] = useState(false); // Loading state
+    const [error, setError] = useState<string | null>(null); // Error state
 
     const onSubmit = async (data: RatingFormData) => {
+        setIsLoading(true); // Start loading
+        setError(null); // Reset error
         try {
             // Create FormData object
             const formData = new FormData();
@@ -32,7 +38,7 @@ export function ActivityRating({ activityId, onClose, community }: ActivityRatin
             formData.append('user', String(user.id));
 
             // Send FormData via Axios
-            const response = await AxiosInstance.post(
+            await AxiosInstance.post(
                 `/api/community/${community}/activity/${activityId}/rating/`,
                 formData,
                 {
@@ -44,12 +50,17 @@ export function ActivityRating({ activityId, onClose, community }: ActivityRatin
             onClose();
         } catch (error) {
             console.error(error);
+            setError('Failed to submit your rating. Please try again.');
+        } finally {
+            setIsLoading(false); // Stop loading
         }
     };
 
     return (
         <div className="bg-base-200 p-6 rounded-lg shadow-lg">
             <h3 className="text-xl font-bold mb-4">Rate This Activity</h3>
+            {isLoading && <Loading />}
+            {error && <ErrorAlert text={error} />}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium mb-2">
@@ -85,12 +96,14 @@ export function ActivityRating({ activityId, onClose, community }: ActivityRatin
                         type="button"
                         onClick={onClose}
                         className="px-4 py-2 rounded-lg btn btn-secondary"
+                        disabled={isLoading} // Disable during loading
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        className="px-4 py-2 btn btn-primary"
+                        className={`px-4 py-2 btn btn-primary ${isLoading ? 'btn-disabled' : ''}`}
+                        disabled={isLoading} // Disable during loading
                     >
                         Submit Rating
                     </button>
