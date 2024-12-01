@@ -1164,6 +1164,7 @@ class ActivityParticipantsSerializer(serializers.ModelSerializer):
         return obj.user.profile_pic
 
 class RatingSerializer(serializers.ModelSerializer):
+    sentiment = serializers.CharField(read_only=True)
     class Meta:
         model = ActivityRating
-        fields = ['id', 'activity', 'user', 'rating', 'comment']
+        fields = ['id', 'activity', 'user', 'rating', 'comment', 'sentiment']

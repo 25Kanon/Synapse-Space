@@ -64,10 +64,16 @@ export interface CommunityActivity {
 }
 
 
+export interface ActivitySentiment {
+    positive: number;
+    neutral: number;
+    negative: number;
+}
 
 export interface ActivityRating {
     user: number;
     activity: number;
     rating: number;
     comment?: string;
+    sentiment?: string;
 }

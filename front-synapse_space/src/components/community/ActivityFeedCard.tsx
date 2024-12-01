@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Calendar, Frown, Heart, MapPin, Meh, Smile, Users } from "lucide-react";
+import {BarChart2, Calendar, Frown, Heart, MapPin, Meh, Smile, Users} from "lucide-react";
 import { format } from "date-fns";
-import { CommunityActivity, Participant, ActivityRating as Rating } from "./types";
+import {CommunityActivity, Participant, ActivityRating as Rating, ActivitySentiment} from "./types";
 import AuthContext from "../../context/AuthContext";
 import AxiosInstance from "../../utils/AxiosInstance";
 import ErrorAlert from "../ErrorAlert";
@@ -21,7 +21,50 @@ function EmotionIcon({ rating }: { rating: number }) {
     return <Frown className="text-red-500" />;
 }
 
-export function ActivityFeedCard({ activity }: ActivityFeedCardProps) {
+function SentimentSummary({ sentiments }: { sentiments: { positive: number; neutral: number; negative: number } }) {
+    const categories = {
+        positive: { label: "Positive", color: "from-green-500 to-green-600", icon: <Smile className="text-green-500" size={16} /> },
+        neutral: { label: "Neutral", color: "from-yellow-500 to-yellow-600", icon: <Meh className="text-yellow-500" size={16} /> },
+        negative: { label: "Negative", color: "from-red-500 to-red-600", icon: <Frown className="text-red-500" size={16} /> },
+    };
+
+    const total = sentiments.positive + sentiments.neutral + sentiments.negative;
+
+    return (
+        <div className="mt-4 p-4 bg-accent rounded-lg">
+            <h4 className="flex items-center gap-2 text-accent-content font-semibold">
+                <BarChart2 size={18}/>
+                Participant Sentiments
+            </h4>
+            <p className="text-xs mb-3">Based on feedbacks and comments</p>
+            <div className="space-y-3">
+                {Object.entries(categories).map(([key, {label, color, icon}]) => {
+                    const count = sentiments[key as keyof typeof sentiments];
+                    const percentage = total > 0 ? (count / total) * 100 : 0;
+
+                    return (
+                        <div key={key} className="flex items-center gap-2">
+                            <span className="text-sm text-accent-content w-20">{label}:</span>
+                            <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full bg-gradient-to-r ${color} rounded-full transition-all duration-500`}
+                                    style={{width: `${percentage}%`}}
+                                />
+                            </div>
+                            <div className="flex items-center gap-2 w-20">
+                                {icon}
+                                <span className="text-sm text-accent-content">{percentage.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+
+export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
     const { user } = useContext(AuthContext);
     const [showRating, setShowRating] = useState(false);
     const [error, setError] = useState("");
@@ -71,6 +114,15 @@ export function ActivityFeedCard({ activity }: ActivityFeedCardProps) {
         }
     };
 
+    const sentimentCounts = rating.reduce(
+        (acc, curr) => {
+            if (curr.sentiment === "positive") acc.positive += 1;
+            else if (curr.sentiment === "neutral") acc.neutral += 1;
+            else if (curr.sentiment === "negative") acc.negative += 1;
+            return acc;
+        },
+        { positive: 0, neutral: 0, negative: 0 }
+    );
     const averageRating = rating.reduce((acc, curr) => acc + curr.rating, 0) / rating.length || 0;
 
     const getParticipants = async () => {
@@ -191,35 +243,41 @@ export function ActivityFeedCard({ activity }: ActivityFeedCardProps) {
                         </div>
                     )}
 
-                    <div className="flex -space-x-2 pt-2">
-                        {participants.slice(0, 3).map((participant) =>
-                            participant.user_pic ? (
-                                <img
-                                    key={participant.id}
-                                    src={participant?.user_pic}
-                                    alt={participant.user_name}
-                                    className="w-8 h-8 rounded-full border-2 border-white"
-                                />
-                            ) : (
-                                <div
-                                    key={participant.id}
-                                    className="w-8 h-8 rounded-full border-2 border-white bg-secondary flex items-center justify-center text-xs font-medium"
-                                >
-                                    {getInitials(participant.user_name)}
-                                </div>
-                            )
-                        )}
-                        {participants.length > 3 && (
-                            <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-medium">
-                                +{participants.length - 3}
-                            </div>
-                        )}
-                    </div>
+                    {rating.length > 0 && (
+                        <SentimentSummary sentiments={sentimentCounts} />
+                    )}
+
+
                 </div>
             </div>
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-4">
+                <div className="flex -space-x-2 pt-2">
+                    {participants.slice(0, 3).map((participant) =>
+                        participant.user_pic ? (
+                            <img
+                                key={participant.id}
+                                src={participant?.user_pic}
+                                alt={participant.user_name}
+                                className="w-8 h-8 rounded-full border-2 border-white"
+                            />
+                        ) : (
+                            <div
+                                key={participant.id}
+                                className="w-8 h-8 rounded-full border-2 border-white bg-secondary flex items-center justify-center text-xs font-medium"
+                            >
+                                {getInitials(participant.user_name)}
+                            </div>
+                        )
+                    )}
+                    {participants.length > 3 && (
+                        <div
+                            className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-medium">
+                            +{participants.length - 3}
+                        </div>
+                    )}
+                </div>
                 {membership && (
                     <div className="flex gap-2">
                         {canRate && (

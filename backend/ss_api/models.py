@@ -8,6 +8,7 @@ import pyotp
 
 from django.db.models import JSONField
 from rest_framework.exceptions import ValidationError
+from .sentiment_analysis import SentimentAnalyzer
 
 
 class Program(models.Model):
@@ -313,9 +314,21 @@ class ActivityRating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField()
     comment = models.TextField(blank=True)
+    sentiment = models.CharField(max_length=10, choices=[
+        ("positive", "Positive"),
+        ("neutral", "Neutral"),
+        ("negative", "Negative"),
+    ], blank=True)
 
     class Meta:
         unique_together = ('activity', 'user')  # A user can rate an activity only once
+
+    def save(self, *args, **kwargs):
+        if self.comment:
+            analyzer = SentimentAnalyzer()
+            self.sentiment = analyzer.analyze(self.comment)
+        super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f'{self.user.username} - {self.activity.title} - {self.rating}'
