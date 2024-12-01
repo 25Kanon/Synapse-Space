@@ -5,7 +5,7 @@ import { CommunityActivity, Participant, ActivityRating as Rating } from "./type
 import AuthContext from "../../context/AuthContext";
 import AxiosInstance from "../../utils/AxiosInstance";
 import ErrorAlert from "../ErrorAlert";
-import {Loading} from "../Loading";
+import Loading from "../Loading";
 import { useMemberships } from "../../context/MembershipContext";
 import { CollapsibleText } from "./CollapsibleText";
 import { ActivityRating } from "./ActivityRating";
