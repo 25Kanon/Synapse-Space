@@ -61,7 +61,8 @@ import torch
 from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
-    Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback, SystemSetting, ModeratorSettings
+    Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback, SystemSetting, ModeratorSettings, \
+    CommunityActivity, ActivityParticipants, ActivityRating
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -71,7 +72,9 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           DetailedUserSerializer, CreateUserSerializer, ProgramSerializer, NotificationSerializer,
                           PostSerializer, SavedPostSerializer, PasswordResetRequestSerializer, PasswordResetSerializer,
                           DislikedPostSerializer, ContentSerializer, FeedbackSerializer,
-                          CustomTokenObtainPairSerializerStaff, SystemSettingSerializer, ModeratorSettingsSerializer)
+                          CustomTokenObtainPairSerializerStaff, SystemSettingSerializer, ModeratorSettingsSerializer,
+                          CommunityActivitySerializer, ActivityParticipantsSerializer, RatingSerializer,
+                          )
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff
 
@@ -2707,3 +2710,91 @@ class ModeratorSettingsDetailView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class createCommunityActivity(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityAdminORModerator]
+
+    def post(self, request, community_id):
+        serializer = CommunityActivitySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(community_id=community_id)
+            ActivityParticipants.objects.create(activity=serializer.instance, user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class getCommunityActivities(generics.ListAPIView):
+    pagination_class = PostPagination
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
+    serializer_class = CommunityActivitySerializer
+
+    def get_queryset(self):
+        community = self.kwargs.get('community_id')
+        return CommunityActivity.objects.filter(community=community).order_by('-created_at')
+
+
+class communityActivityParticipantView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
+    serializer_class = ActivityParticipantsSerializer
+
+    def post(self, request, *args, **kwargs):
+        activity_id = request.data.get('activity_id')
+        user = request.user
+
+        if not activity_id:
+            return Response({"error": "Activity ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            activity = CommunityActivity.objects.get(id=activity_id)
+        except CommunityActivity.DoesNotExist:
+            return Response({"error": "Activity not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        participant = ActivityParticipants(activity=activity, user=user)
+        participant.save()
+
+        serializer = ActivityParticipantsSerializer(participant)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get(self, request, activity_id, community_id):
+        activity = get_object_or_404(CommunityActivity, id=activity_id)
+        participants = ActivityParticipants.objects.filter(activity=activity)
+        serializer = ActivityParticipantsSerializer(participants, many=True)
+        return Response(serializer.data)
+
+class activityRatingViewset(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsCommunityMember]
+
+    def post(self, request, activity_id, community_id):
+        activity = get_object_or_404(CommunityActivity, id=activity_id)
+        user = request.user
+
+        # Check if the user already has a rating for this activity
+        existing_rating = ActivityRating.objects.filter(activity=activity, user=user).first()
+
+        if existing_rating:
+            # Update the existing rating
+            serializer = RatingSerializer(existing_rating, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # Create a new rating
+            serializer = RatingSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(activity=activity, user=user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, activity_id, community_id):
+        activity = get_object_or_404(CommunityActivity, id=activity_id)
+        ratings = ActivityRating.objects.filter(activity=activity)
+        serializer = RatingSerializer(ratings, many=True)
+        return Response(serializer.data)

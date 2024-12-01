@@ -311,7 +311,7 @@ const CommunityPost = ({
                         label={dislikes}
                         labelPlacement="end"
                     />
-                    <button className="btn btn-circle" onClick={handleNavigate}>
+                    <button className="btn btn-circle btn-neutral" onClick={handleNavigate}>
                         <FontAwesomeIcon icon={faComment} className="text-current" />
                     </button>
                 </div>

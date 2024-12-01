@@ -1,23 +1,25 @@
-import React, { useContext, useState, useEffect, useCallback } from "react";
-import { useParams } from 'react-router-dom';
+import React, { useContext, useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import AuthContext from "../../context/AuthContext";
 import AxiosInstance from "../../utils/AxiosInstance";
 import ErrorAlert from "../../components/ErrorAlert";
 import Layout from "../../components/Layout";
-import Banner from '../../components/community/Banner';
+import Banner from "../../components/community/Banner";
 import CommunityPost from "../../components/community/CommunityPost";
-import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
+import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import CreateContent from "../../components/community/CreateContent";
 import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
+import {ActivityFeedCard} from "../../components/community/ActivityFeedCard"
 import { Helmet } from "react-helmet";
 
 export default function Community() {
-    const { user, error: authError } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const { id } = useParams();
     const [isMember, setIsMember] = useState(false);
     const [communityDetails, setCommunityDetails] = useState(null);
     const [error, setError] = useState(null);
     const [postCreated, setPostCreated] = useState(false);
+    const [activitiesCreated, setActivitiesCreated] = useState(false);
 
     // Fetch community details
     useEffect(() => {
@@ -25,45 +27,55 @@ export default function Community() {
             try {
                 const response = await AxiosInstance.get(`/api/community/${id}`, { withCredentials: true });
                 setCommunityDetails(response.data);
-                setIsMember(true); // Adjust based on your API response
+                setIsMember(true);
             } catch (err) {
                 setError(`Failed to load community details. ${err.response?.data?.detail || err.message}`);
                 setIsMember(false);
             }
         };
-        if (id) fetchCommunityDetails();
-    }, [id]); // Refetch on `postCreated` change
-
-    // Fetch posts with infinite scroll
-    const fetchCommunityPosts = useCallback(async (page) => {
-        try {
-            const response = await AxiosInstance.get(`/api/community/${id}/posts/?page=${page}`, { withCredentials: true });
-            return response;
-        } catch (err) {
-            console.error(err);
-            throw new Error("Failed to load posts.");
+        if (id) {
+            fetchCommunityDetails();
         }
     }, [id]);
 
+    // Fetch posts
+    const fetchCommunityPosts = async (page) => {
+        const response = await AxiosInstance.get(`/api/community/${id}/posts/?page=${page}`, { withCredentials: true });
+        console.log("Posts API Response:", response.data);
+        return response;
+    };
+
+    // Fetch activities
+    const fetchCommunityActivities = async (page) => {
+        const response = await AxiosInstance.get(`/api/community/${id}/activities/?page=${page}`, { withCredentials: true });
+        console.log("Activities API Response:", response.data);
+        return response;
+    };
+
+    // Infinite scroll for posts
     const {
-        loading,
+        loading: postsLoading,
         items: communityPosts,
-        hasMore,
-        loadMore,
-        error: scrollError
-    } = useInfiniteScroll(fetchCommunityPosts, [id, postCreated]); // Refetch posts on `postCreated` change
+        hasMore: postsHasMore,
+        loadMore: loadMorePosts,
+        error: postsError,
+    } = useInfiniteScroll(fetchCommunityPosts, [id, postCreated]);
 
-    // Infinite scroll event listener
+    // Infinite scroll for activities
+    const {
+        loading: activitiesLoading,
+        items: communityActivities,
+        hasMore: activitiesHasMore,
+        loadMore: loadMoreActivities,
+        error: activitiesError,
+    } = useInfiniteScroll(fetchCommunityActivities, [id, activitiesCreated]);
+
+    // Initial data fetch for posts and activities
     useEffect(() => {
-        const handleScroll = () => {
-            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
-                loadMore();
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [loadMore]);
+        if (communityPosts.length === 0) {
+            loadMorePosts();
+        }
+    }, [communityPosts, loadMorePosts]);
 
     if (!user) {
         return (
@@ -79,8 +91,9 @@ export default function Community() {
                 <Helmet>
                     <title>{communityDetails?.name || "Community"} - Synapse Space</title>
                 </Helmet>
-                {authError && <ErrorAlert text={authError} />}
+
                 <Layout showSidebar membersListId={id}>
+                    {error && <ErrorAlert text={error} classExtensions={"z-50"} />}
                     <Banner
                         communityName={communityDetails?.name}
                         commBanner={communityDetails?.bannerURL}
@@ -109,8 +122,9 @@ export default function Community() {
             <Helmet>
                 <title>{communityDetails?.name || "Community"} - Synapse Space</title>
             </Helmet>
-            {(scrollError || error) && <ErrorAlert text={scrollError || error} />}
+
             <Layout showSidebar membersListId={id}>
+                {(postsError || activitiesError || error) && <ErrorAlert text={postsError || activitiesError || error} />}
                 <Banner
                     communityName={communityDetails?.name}
                     commBanner={communityDetails?.bannerURL}
@@ -121,27 +135,71 @@ export default function Community() {
                     userName={user.username}
                     community={communityDetails?.id}
                     rules={communityDetails?.rules}
-                    onPostCreated={() => setPostCreated((prev) => !prev)} // Toggle postCreated to refresh data
+                    onPostCreated={() => setPostCreated((prev) => !prev)}
+                    onActivityCreated={() => setActivitiesCreated((prev) => !prev)}
                 />
-                {communityPosts.map((post) => (
-                    <CommunityPost
-                        key={post.id}
-                        userName={post.created_by_username}
-                        community={post.posted_in}
-                        postTitle={post.title}
-                        postContent={post.content}
-                        postId={post.id}
-                        userID={user.id}
-                        authorId={post.created_by}
-                        userAvatar={post.userAvatar}
-                        isPinnedInit={post.isPinned}
-                        createdAt={post.created_at}
+                <div role="tablist" className="tabs tabs-lifted tabs-lg m-3">
+                    <input
+                        type="radio"
+                        name="community_tabs"
+                        role="tab"
+                        className="tab"
+                        aria-label="Posts"
+                        defaultChecked
                     />
-                ))}
-                {loading && <div className="text-center">
-                    <div className="loading loading-spinner loading-lg"></div>
-                </div>}
-                {!hasMore && <div className="mt-4 text-center">No more posts to load</div>}
+                    <div role="tabpanel" className="tab-content bg-base-100 p-6 border rounded-box">
+                        <>
+                            {communityPosts.length > 0 ? (
+                                communityPosts.map((post) => (
+                                    <CommunityPost
+                                        key={post.id}
+                                        userName={post.created_by_username}
+                                        community={post.posted_in}
+                                        postTitle={post.title}
+                                        postContent={post.content}
+                                        postId={post.id}
+                                        userID={user.id}
+                                        authorId={post.created_by}
+                                        userAvatar={post.userAvatar}
+                                        isPinnedInit={post.isPinned}
+                                        createdAt={post.created_at}
+                                    />
+                                ))
+                            ) : (
+                                <div className="text-center">No posts to display</div>
+                            )}
+                            {postsLoading && (
+                                <div className="text-center">
+                                    <div className="loading loading-spinner loading-lg"></div>
+                                </div>
+                            )}
+                            {!postsHasMore && communityPosts.length > 0 && (
+                                <div className="mt-4 text-center">No more posts to load</div>
+                            )}
+                        </>
+                    </div>
+
+                    <input type="radio" name="community_tabs" role="tab" className="tab" aria-label="Activities" />
+                    <div role="tabpanel" className="tab-content bg-base-100 p-6 border rounded-box">
+                        <>
+                            {communityActivities.length > 0 ? (
+                                communityActivities.map((activity) => (
+                                    <ActivityFeedCard key={`activity-${activity.id}`} activity={activity} />
+                                ))
+                            ) : (
+                                <div className="text-center">No activities to display</div>
+                            )}
+                            {activitiesLoading && (
+                                <div className="text-center">
+                                    <div className="loading loading-spinner loading-lg"></div>
+                                </div>
+                            )}
+                            {!activitiesHasMore && communityActivities.length > 0 && (
+                                <div className="mt-4 text-center">No more activities to load</div>
+                            )}
+                        </>
+                    </div>
+                </div>
             </Layout>
         </>
     );

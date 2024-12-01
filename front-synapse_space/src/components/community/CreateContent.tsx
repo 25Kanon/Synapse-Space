@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
-import CreatePost from './CreatePost';
-import { CreateActivity } from './CreateActivity';
+import React, { useState } from "react";
+import CreatePost from "./CreatePost";
+import { CreateActivity } from "./CreateActivity";
 
-const CreateContent = ({ userName, community, rules, onPostCreated }) => {
+const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCreated }) => {
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const [activeTab, setActiveTab] = useState("post");
 
     const toggleFormVisibility = () => {
         setIsFormVisible(!isFormVisible);
+    };
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
     };
 
     return (
@@ -21,41 +26,42 @@ const CreateContent = ({ userName, community, rules, onPostCreated }) => {
                 </button>
             </label>
             {isFormVisible && (
-                <div role="tablist" className="tabs tabs-bordered tabs-lg p-3">
-                    <input
-                        type="radio"
-                        name="my_tabs_1"
-                        role="tab"
-                        className="tab ms-3"
-                        aria-label="Create Post"
-                        defaultChecked
-                    />
-                    <div role="tabpanel" className="tab-content">
-                        <CreatePost
-                            userName={userName}
-                            community={community}
-                            rules={rules}
-                            onPostCreated={() => {
-                                onPostCreated(); // Trigger refresh in parent
-                                setIsFormVisible(false);
-                            }}
-                        />
+                <div className="tabs tabs-boxed p-3">
+                    <div className="flex gap-4">
+                        <button
+                            className={`tab ${activeTab === "post" ? "tab-active" : ""}`}
+                            onClick={() => handleTabChange("post")}
+                        >
+                            Create Post
+                        </button>
+                        <button
+                            className={`tab ${activeTab === "activity" ? "tab-active" : ""}`}
+                            onClick={() => handleTabChange("activity")}
+                        >
+                            Start a Community Activity
+                        </button>
                     </div>
-
-                    <input
-                        type="radio"
-                        name="my_tabs_1"
-                        role="tab"
-                        className="tab"
-                        aria-label="Start a Community Activity"
-                    />
-                    <div role="tabpanel" className="tab-content">
-                        <CreateActivity
-                            onActivityCreated={() => {
-                                onPostCreated(); // Trigger refresh in parent
-                                setIsFormVisible(false);
-                            }}
-                        />
+                    <div className="mt-4">
+                        {activeTab === "post" && (
+                            <CreatePost
+                                userName={userName}
+                                community={community}
+                                rules={rules}
+                                onPostCreated={() => {
+                                    onPostCreated(); // Trigger refresh in parent
+                                    setIsFormVisible(false);
+                                }}
+                            />
+                        )}
+                        {activeTab === "activity" && (
+                            <CreateActivity
+                                community={community}
+                                onActivityCreated={() => {
+                                    onActivityCreated(); // Trigger refresh in parent
+                                    setIsFormVisible(false);
+                                }}
+                            />
+                        )}
                     </div>
                 </div>
             )}
@@ -64,4 +70,3 @@ const CreateContent = ({ userName, community, rules, onPostCreated }) => {
 };
 
 export default CreateContent;
-

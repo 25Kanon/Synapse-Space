@@ -8,6 +8,7 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
     const [error, setError] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
     const [shouldLoadMore, setShouldLoadMore] = useState(false);
+
     const loadMore = async () => {
         if (loading || (!hasMore && !initialLoad)) return;
 
@@ -18,15 +19,14 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
                 const newItems = response.data.results;
 
                 setItems((prev) => {
-                    const existingIds = new Set(prev.map((item) => item.id)); // Create a set of existing IDs
-                    const filteredNewItems = newItems.filter((item) => !existingIds.has(item.id)); // Filter out duplicates
+                    const existingIds = new Set(prev.map((item) => item.id));
+                    const filteredNewItems = newItems.filter((item) => !existingIds.has(item.id));
                     return initialLoad ? newItems : [...prev, ...filteredNewItems];
                 });
 
-                // Extract the page number from the `next` field
                 if (response.data.next) {
                     const urlParams = new URL(response.data.next).searchParams;
-                    const nextPage = parseInt(urlParams.get('page'), 10) || page + 1; // Default fallback
+                    const nextPage = parseInt(urlParams.get('page'), 10) || page + 1;
                     setPage(nextPage);
                     setHasMore(true);
                 } else {
@@ -46,8 +46,6 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
         }
     };
 
-
-    // Reset on dependency change (e.g., community change)
     useEffect(() => {
         setInitialLoad(true);
         setItems([]);
@@ -62,5 +60,6 @@ export const useInfiniteScroll = (fetchCallback, dependencies = []) => {
             loadMore();
         }
     }, [shouldLoadMore]);
+
     return { loading, items, hasMore, loadMore, error };
 };

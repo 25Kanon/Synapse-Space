@@ -20,7 +20,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     PasswordResetRequestView, PasswordResetView, getPostDislikesView, dislikePostView,
                     undislikePostView,
                     UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView, StaffLoginView, SettingsView,
-                    UpdateSettingsView, ModeratorSettingsDetailView)
+                    UpdateSettingsView, ModeratorSettingsDetailView, getCommunityActivities, createCommunityActivity,
+                    communityActivityParticipantView, activityRatingViewset)
 from django.contrib import admin
 
 
@@ -63,6 +64,7 @@ urlpatterns = [
     path('move-image/', MoveImageView.as_view(), name='move-image'),
     path('community/joined/posts/', getJoinedCommunityPosts.as_view(), name='joined-community-posts'),
     path('community/<int:community_id>/posts/', getCommunityPosts.as_view(), name='community-posts-list'),
+    path('community/<int:community_id>/posts/', getCommunityActivities.as_view(), name='community-activities-list'),
     path('community/<int:community_id>/join/', JoinCommunityView.as_view(), name='join-community'),
     path('community/', CommunityListView.as_view(), name='community-list'),
     path('community/<int:community_id>/post/<int:post_id>', getCommunityPost.as_view(), name='post-view'),
@@ -95,6 +97,12 @@ urlpatterns = [
     path('community/update/<int:community_id>/', CommunityUpdateView.as_view(), name='community-update'),
     path('community/<int:community_id>/post/update/<int:post_id>/', CommunityPostUpdateView.as_view(), name='community-post-update'),
     path('community/<int:community_id>/post/delete/<int:post_id>/', CommunityPostDeleteView.as_view(), name='community-post-delete'),
+
+    path('community/<int:community_id>/create/activity/', createCommunityActivity.as_view(), name='create-community-activity'),
+    path('community/<int:community_id>/activities/', getCommunityActivities.as_view(), name='community-activities-list'),
+    path('community/<int:community_id>/activity/<int:activity_id>/', communityActivityParticipantView.as_view(), name='activity-participants'),
+    path('community/<int:community_id>/activity/<int:activity_id>/rating/', activityRatingViewset.as_view(), name='activity-rating'),
+
     # User URLs
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),
     path('users/', UserListView.as_view(), name='user-list'),

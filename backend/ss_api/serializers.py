@@ -22,7 +22,7 @@ from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
                      Reports, FriendRequest, Program,
                      Notification, DislikedPost, Feedback, SystemSetting,
-                     ModeratorSettings)
+                     ModeratorSettings, CommunityActivity, ActivityParticipants, ActivityRating)
 
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -1128,3 +1128,42 @@ class ModeratorSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ModeratorSettings
         fields = '__all__'
+
+class CommunityActivitySerializer(serializers.ModelSerializer):
+    organizer_name = serializers.SerializerMethodField()
+    organizer_pic = serializers.SerializerMethodField()
+    status = serializers.ReadOnlyField()  # Ensures the dynamic property is included and read-only
+
+    class Meta:
+        model = CommunityActivity
+        fields = [
+            'id', 'title', 'description', 'created_at', 'location', 'organizer',
+            'organizer_name', 'organizer_pic', 'community', 'max_participants',
+            'image', 'status', 'startDate', 'endDate'
+        ]
+
+    def get_organizer_name(self, obj):
+        return obj.organizer.username
+
+    def get_organizer_pic(self, obj):
+        return obj.organizer.profile_pic
+
+
+class ActivityParticipantsSerializer(serializers.ModelSerializer):
+    user_name = serializers.SerializerMethodField()
+    user_pic = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ActivityParticipants
+        fields = ['id', 'activity', 'user', 'user_name', 'user_pic']
+
+    def get_user_name(self, obj):
+        return obj.user.username
+
+    def get_user_pic(self, obj):
+        return obj.user.profile_pic
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActivityRating
+        fields = ['id', 'activity', 'user', 'rating', 'comment']

@@ -34,3 +34,40 @@ export type ModSettings = {
     notificationsEnabled: boolean;
     autoLockThreshold: number;
 };
+
+
+export interface Participant {
+    id: number;
+    activity: number;
+    user: number;
+    user_name: string;
+    user_pic: string;
+}
+
+
+export interface CommunityActivity {
+    id: number;
+    title: string;
+    description: string;
+    created_at: string; // ISO date string
+    location: string;
+    organizer: number; // Organizer's user ID
+    organizer_name: string;
+    organizer_pic: string;
+    community: number;
+    max_participants: number;
+    image: string | null;
+    status: "Upcoming" | "Ongoing" | "Completed";
+    startDate: string; // ISO date string
+    endDate: string;
+    // ISO date string
+}
+
+
+
+export interface ActivityRating {
+    user: number;
+    activity: number;
+    rating: number;
+    comment?: string;
+}
