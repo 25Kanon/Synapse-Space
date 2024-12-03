@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useCallback } from "react";
+import React, {useContext, useEffect, useCallback, useState} from "react";
 import { AuthContext } from "../context/AuthContext";
 import ErrorAlert from "../components/ErrorAlert";
 import Sidebar from "../components/Sidebar";
@@ -77,6 +77,7 @@ export default function Home() {
                         authorId={post.created_by}
                         userAvatar={post.userAvatar}
                         createdAt={post.created_at}
+                        allowInteraction={post.status ? post.status === "accepted" : true} // Allow interaction if post is approved
                     />
                 ))}
                 {loading && <div className="loading loading-spinner loading-lg"></div>}

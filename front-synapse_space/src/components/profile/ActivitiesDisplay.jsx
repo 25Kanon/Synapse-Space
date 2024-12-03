@@ -115,6 +115,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
                                 userAvatar={post.userAvatar}
                                 createdAt={post.created_at}
                                 canEdit={post.created_by === userID} // Pass permission to edit/delete
+                                allowInteraction={post.status ? post.status === "accepted" : true} // Allow interaction if post is approved
                             />
                         ))
                     )}
@@ -186,6 +187,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
                                 userID={userID}
                                 userAvatar={post.userAvatar}
                                 createdAt={post.created_at}
+                                allowInteraction={post.status ? post.status === "accepted" : true} // Allow interaction if post is approved
                             />
                         ))
                     )}
@@ -207,6 +209,7 @@ const ActivitiesDisplay = ({ activeTab, navigateToPost, userID }) => {
                                 userID={userID}
                                 userAvatar={post.userAvatar}
                                 createdAt={post.created_at}
+                                allowInteraction={post.status ? post.status === "accepted" : true} // Allow interaction if post is approved
                             />
                         ))
                     )}

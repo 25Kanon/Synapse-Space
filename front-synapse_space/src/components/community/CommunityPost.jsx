@@ -27,6 +27,7 @@ const CommunityPost = ({
     authorId,
     isPinnedInit,
     createdAt,
+    allowInteraction,
 }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
@@ -285,42 +286,47 @@ const CommunityPost = ({
                     </article>
                 </div>
 
-                {/* Like/Dislike Buttons */}
-                <div className="flex flex-row m-4 gap-4">
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                onChange={handleLikeChange}
-                                checked={isLiked}
-                                icon={<FontAwesomeIcon className="text-xl text-current text-secondary dark:text-neutral-300" icon={faThumbsUp} />}
-                                checkedIcon={<FontAwesomeIcon className="text-xl" icon={ThumbsUpIcon} />}
-                            />
-                        }
-                        label={likes}
-                        labelPlacement="end"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                onChange={handleDislikeChange}
-                                checked={isDisliked}
-                                icon={<FontAwesomeIcon className="text-xl text-current text-secondary dark:text-neutral-300" icon={faThumbsDown} />}
-                                checkedIcon={<FontAwesomeIcon className="text-xl" icon={ThumbsDownIcon} />}
-                            />
-                        }
-                        label={dislikes}
-                        labelPlacement="end"
-                    />
-                    <button className="btn btn-circle btn-neutral" onClick={handleNavigate}>
-                        <FontAwesomeIcon icon={faComment} className="text-current" />
-                    </button>
-                </div>
 
-                {/* Comments Section */}
-                {showComments && (
-                    <div className="m-5">
-                        <CommentSection postID={postId} />
-                    </div>
+                {!allowInteraction ? null : (
+                    <>
+                        {/* Like/Dislike Buttons */}
+                        <div className="flex flex-row m-4 gap-4">
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        onChange={handleLikeChange}
+                                        checked={isLiked}
+                                        icon={<FontAwesomeIcon className="text-xl text-current text-secondary dark:text-neutral-300" icon={faThumbsUp} />}
+                                        checkedIcon={<FontAwesomeIcon className="text-xl" icon={ThumbsUpIcon} />}
+                                    />
+                                }
+                                label={likes}
+                                labelPlacement="end"
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        onChange={handleDislikeChange}
+                                        checked={isDisliked}
+                                        icon={<FontAwesomeIcon className="text-xl text-current text-secondary dark:text-neutral-300" icon={faThumbsDown} />}
+                                        checkedIcon={<FontAwesomeIcon className="text-xl" icon={ThumbsDownIcon} />}
+                                    />
+                                }
+                                label={dislikes}
+                                labelPlacement="end"
+                            />
+                            <button className="btn btn-circle btn-neutral" onClick={handleNavigate}>
+                                <FontAwesomeIcon icon={faComment} className="text-current" />
+                            </button>
+                        </div>
+
+                        {/* Comments Section */}
+                        {showComments && (
+                            <div className="m-5">
+                                <CommentSection postID={postId} />
+                            </div>
+                        )}
+                    </>
                 )}
             </div >
         </>
@@ -338,6 +344,7 @@ CommunityPost.propTypes = {
     showComments: PropTypes.bool,
     authorId: PropTypes.number,
     isPinned: PropTypes.bool,
+    allowInteraction: PropTypes.bool,
 };
 
 export default CommunityPost;

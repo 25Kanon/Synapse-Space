@@ -149,6 +149,7 @@ const GetCommunityPost = () => {
                 userAvatar={post.userAvatar}
                 isPinned={post.isPinned}
                 createdAt={post.created_at}
+                allowInteraction={post.status ? post.status === "accepted" : true} // Allow interaction if post is approved
               />
             )
           ) : (
