@@ -1608,6 +1608,12 @@ class modResolveView(generics.UpdateAPIView):
         report.resolved_at = timezone.now()
         report.save()
 
+        if report.status == 'approved':
+            if report.type == 'post':
+                post = Post.objects.get(id=report.object_id)
+                post.status = 'accepted'
+                post.save()
+
         if report.status == 'rejected':
             if report.type == 'post':
                 post = Post.objects.get(id=report.object_id)
