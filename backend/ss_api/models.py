@@ -90,6 +90,7 @@ class Post(models.Model):
     created_by = models.ForeignKey(User, to_field='id', on_delete=models.SET_NULL, null=True)
     posted_in = models.ForeignKey(Community, on_delete=models.CASCADE )
     isPinned = models.BooleanField(default=False)
+    status = models.CharField(max_length=255, default='accepted')
 
 
 class Membership(models.Model):

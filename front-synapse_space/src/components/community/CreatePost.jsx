@@ -121,6 +121,7 @@ const CreatePost = ({ userName, community, onPostCreated, rules }) => {
             formData.append("title", DOMPurify.sanitize(title));
             formData.append("content", JSON.stringify(updatedContent));
             formData.append("posted_in", community);
+            formData.append('status', "pending");
 
             const response = await AxiosInstance.post(
                 `/api/community/${community}/post`,
@@ -134,10 +135,20 @@ const CreatePost = ({ userName, community, onPostCreated, rules }) => {
             );
 
             if (response.status === 200 || response.status === 201) {
+
                 setTitle("");
                 setEditorContent("");
                 setSuccess("Post submitted successfully");
-                onPostCreated(); // Trigger parent to toggle visibility
+                onPostCreated();
+
+                if (response.data.status === "pending") {
+                    await Swal.fire({
+                        title: 'Profanity Check',
+                        text: 'Your post is pending approval.',
+                        icon: 'info',
+                        confirmButtonText: 'OK'
+                    });
+                }
             } else {
                 setError("Error submitting post: " + response.statusText);
             }
@@ -145,6 +156,7 @@ const CreatePost = ({ userName, community, onPostCreated, rules }) => {
             setError("Error submitting post: " + error.message);
         } finally {
             setLoading(false);
+            document.getElementById("loading-modal").close();
         }
     };
 

@@ -764,9 +764,11 @@ class CommunityWithScoreSerializer(serializers.ModelSerializer):
 
 
 class CreatePostSerializer(serializers.ModelSerializer):
+
+    status = serializers.CharField(required=False)
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'posted_in']
+        fields = ['id', 'title', 'content', 'posted_in', 'status']
 
     def validate(self, data):
         if not data.get('title'):
@@ -775,6 +777,8 @@ class CreatePostSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Content is required")
         if not data.get('posted_in'):
             raise serializers.ValidationError("A community must be selected")
+        if not data.get('status'):
+            raise serializers.ValidationError("Status is required")
         return data
 
 class CommunityPostSerializer(serializers.ModelSerializer):

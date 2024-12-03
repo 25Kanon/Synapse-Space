@@ -779,7 +779,8 @@ class PostCreateView(generics.CreateAPIView):
         plain_text = self.extract_text_from_content(raw_content)
 
         # Save the post
-        post = serializer.save(created_by=request.user)
+        post_status = 'pending' if is_malicious or banned_words_found else 'approved'
+        post = serializer.save(created_by=request.user, status= post_status)
 
         # Handle malicious content if detected
         if is_malicious or banned_words_found:
@@ -999,7 +1000,7 @@ class getCommunityPosts(generics.ListAPIView):
 
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
-        return Post.objects.filter(posted_in_id=community_id).order_by('-isPinned', '-created_at')
+        return Post.objects.filter(posted_in_id=community_id, status='accepted').order_by('-isPinned', '-created_at')
 
 
 class getJoinedCommunityPosts(generics.ListAPIView):
@@ -1011,7 +1012,7 @@ class getJoinedCommunityPosts(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         joined_communities = Membership.objects.filter(user=user, status='accepted').values_list('community_id', flat=True)
-        return Post.objects.filter(posted_in_id__in=joined_communities).order_by('-created_at')
+        return Post.objects.filter(posted_in_id__in=joined_communities, status='accepted').order_by('-created_at')
 
 
 class getCommunityPost(generics.RetrieveAPIView):
