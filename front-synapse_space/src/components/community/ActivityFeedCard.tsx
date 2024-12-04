@@ -180,7 +180,7 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
 
     return (
         <div className="border bordered-solid rounded-lg shadow-md p-4 mb-6">
-            {loading && <Loading />}
+            {loading && <Loading loadingText="Please wait..."/>}
             {error && <ErrorAlert text={error} />}
             {/* Organizer Information */}
             <div className="flex items-center gap-2 mb-4">
