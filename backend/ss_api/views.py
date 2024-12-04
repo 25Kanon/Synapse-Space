@@ -76,7 +76,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           CommunityActivitySerializer, ActivityParticipantsSerializer, RatingSerializer,
                           )
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
-    IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff
+    IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff, isCommunityViewer
 
 from .recommender import get_hybrid_recommendations
 
@@ -995,12 +995,12 @@ class PostPagination(PageNumberPagination):
 class getCommunityPosts(generics.ListAPIView):
     pagination_class = PostPagination
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
     serializer_class = CommunityPostSerializer
 
     def get_queryset(self):
         community_id = self.kwargs.get('community_id')
-        return Post.objects.filter(posted_in_id=community_id, status='accepted').order_by('-isPinned', '-created_at')
+        return Post.objects.filter(posted_in_id=community_id, status='approved').order_by('-isPinned', '-created_at')
 
 
 class getJoinedCommunityPosts(generics.ListAPIView):
@@ -1012,12 +1012,12 @@ class getJoinedCommunityPosts(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         joined_communities = Membership.objects.filter(user=user, status='accepted').values_list('community_id', flat=True)
-        return Post.objects.filter(posted_in_id__in=joined_communities, status='accepted').order_by('-created_at')
+        return Post.objects.filter(posted_in_id__in=joined_communities, status='approved').order_by('-created_at')
 
 
 class getCommunityPost(generics.RetrieveAPIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
     serializer_class = getCommunityPostSerializer
     queryset = Post.objects.all()
     lookup_field = 'id'  # Assuming 'id' is the primary key for Post
@@ -1029,7 +1029,7 @@ class getCommunityPost(generics.RetrieveAPIView):
 
 class likePostView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
 
     def post(self, request, community_id, post_id):
         post = get_object_or_404(Post, id=post_id, posted_in_id=community_id)
@@ -1048,7 +1048,7 @@ class likePostView(APIView):
 
 class unlikePostView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
     def post(self, request, community_id, post_id):
         post = Post.objects.get(id=post_id)
         user = request.user
@@ -2501,7 +2501,7 @@ class PasswordResetView(APIView):
     
 class dislikePostView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
 
     def post(self, request, community_id, post_id):
         post = get_object_or_404(Post, id=post_id, posted_in_id=community_id)
@@ -2523,7 +2523,7 @@ class dislikePostView(APIView):
 
 class undislikePostView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
 
     def post(self, request, community_id, post_id):
         post = get_object_or_404(Post, id=post_id, posted_in_id=community_id)
@@ -2737,7 +2737,7 @@ class createCommunityActivity(APIView):
 class getCommunityActivities(generics.ListAPIView):
     pagination_class = PostPagination
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
     serializer_class = CommunityActivitySerializer
 
     def get_queryset(self):
@@ -2747,7 +2747,7 @@ class getCommunityActivities(generics.ListAPIView):
 
 class communityActivityParticipantView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
     serializer_class = ActivityParticipantsSerializer
 
     def post(self, request, *args, **kwargs):
@@ -2776,7 +2776,7 @@ class communityActivityParticipantView(APIView):
 
 class activityRatingViewset(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsCommunityMember]
+    permission_classes = [IsAuthenticated, isCommunityViewer]
 
     def post(self, request, activity_id, community_id):
         activity = get_object_or_404(CommunityActivity, id=activity_id)

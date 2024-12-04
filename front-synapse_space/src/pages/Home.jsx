@@ -77,7 +77,7 @@ export default function Home() {
                         authorId={post.created_by}
                         userAvatar={post.userAvatar}
                         createdAt={post.created_at}
-                        allowInteraction={post.status ? post.status === "accepted" : true} // Allow interaction if post is approved
+                        postStatus={post.status}
                     />
                 ))}
                 {loading && <div className="loading loading-spinner loading-lg"></div>}

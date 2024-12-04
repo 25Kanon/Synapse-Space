@@ -27,7 +27,7 @@ const CommunityPost = ({
     authorId,
     isPinnedInit,
     createdAt,
-    allowInteraction,
+    postStatus,
 }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
@@ -287,7 +287,7 @@ const CommunityPost = ({
                 </div>
 
 
-                {!allowInteraction ? null : (
+                {postStatus === 'approved' ? (
                     <>
                         {/* Like/Dislike Buttons */}
                         <div className="flex flex-row m-4 gap-4">
@@ -322,12 +322,18 @@ const CommunityPost = ({
 
                         {/* Comments Section */}
                         {showComments && (
-                            <div className="m-5">
-                                <CommentSection postID={postId} />
-                            </div>
+                          membership && membership.status === 'accepted' ? (
+                                <div className="m-5">
+                                    <CommentSection postID={postId} />
+                                </div>
+                            ) : (
+                                <div className="m-5">
+                                    Join the community to view comments
+                                </div>
+                            )
                         )}
                     </>
-                )}
+                ) : null}
             </div >
         </>
     );
@@ -344,7 +350,7 @@ CommunityPost.propTypes = {
     showComments: PropTypes.bool,
     authorId: PropTypes.number,
     isPinned: PropTypes.bool,
-    allowInteraction: PropTypes.bool,
+    postStatus:PropTypes.string,
 };
 
 export default CommunityPost;

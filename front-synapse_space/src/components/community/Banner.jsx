@@ -1,9 +1,10 @@
 import React from "react";
 import {Navigate, useNavigate} from "react-router-dom";
+import {Globe, LockKeyhole} from "lucide-react";
 import ModEntryBtn from "../community/moderator/ModEntryBtn";
 import AdminEntryBtn from "../community/admin/AdminEntryBtn";
 
-const Banner = ({ communityName, commAvatar, commBanner, communityID }) => {
+const Banner = ({ communityName, commAvatar, commBanner, communityID, communityPrivacy }) => {
     const navigate = useNavigate();
     const getInitials = (name) => {
         if (!name) return '';
@@ -36,12 +37,14 @@ const Banner = ({ communityName, commAvatar, commBanner, communityID }) => {
                     </div>
                 </div>
 
-                <div className="text-left">
-                    <h2 className="font-semibold -mt-8 ml-36">{communityName}</h2>
+                <div className="text-left flex items-center -mt-8 ml-36">
+                    <h2 className="font-semibold">{communityName}</h2>
+                    <span className="ml-2">{communityPrivacy === 'public' ? (<sup><Globe size={15}/></sup>) : (
+                        <sup><LockKeyhole size={15}/></sup>)}</span>
                 </div>
 
                 <div className="text-right">
-                  <ModEntryBtn communityID={communityID}/>
+                    <ModEntryBtn communityID={communityID}/>
                     <AdminEntryBtn communityID={communityID}/>
                 </div>
             </div>

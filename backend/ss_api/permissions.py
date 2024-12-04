@@ -28,6 +28,26 @@ class IsCommunityMember(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return self.has_permission(request, view)
 
+
+class isCommunityViewer(permissions.BasePermission):
+    def has_permission(self, request, view):
+        community_id = view.kwargs.get('community_id')
+        if not community_id:
+            return False
+
+        try:
+            community = Community.objects.get(id=community_id)
+        except Community.DoesNotExist:
+            return False
+
+        # Allow all users except those with a 'banned' status
+        if Membership.objects.filter(status='banned', user=request.user, community=community).exists():
+            return False
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        return self.has_permission(request, view)
+
 class IsCommunityAdminORModerator(permissions.BasePermission):
     def has_permission(self, request, view):
         # Check if the user is authenticated

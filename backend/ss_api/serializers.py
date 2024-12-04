@@ -732,19 +732,23 @@ class CommunitySerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-            # Handle update logic
-            if 'imgURL' in validated_data:
-                instance.imgURL = validated_data['imgURL']
-            if 'bannerURL' in validated_data:
-                instance.bannerURL = validated_data['bannerURL']
-            if 'description' in validated_data:
-                instance.description = validated_data['description']
-            if 'rules' in validated_data:
-                instance.rules = validated_data['rules']
-            if 'keyword' in validated_data:
-                instance.keyword = validated_data['keyword']
-            instance.save()
-            return instance
+        # Handle update logic for all fields
+        if 'imgURL' in validated_data:
+            instance.imgURL = validated_data['imgURL']
+        if 'bannerURL' in validated_data:
+            instance.bannerURL = validated_data['bannerURL']
+        if 'description' in validated_data:
+            instance.description = validated_data['description']
+        if 'rules' in validated_data:
+            instance.rules = validated_data['rules']
+        if 'keyword' in validated_data:
+            instance.keyword = validated_data['keyword']
+        if 'privacy' in validated_data:
+            instance.privacy = validated_data['privacy']
+        if 'name' in validated_data:
+            instance.name = validated_data['name']
+        instance.save()
+        return instance
 
 class CommunityWithScoreSerializer(serializers.ModelSerializer):
     similarity_score = serializers.FloatField(read_only=True, required=False)

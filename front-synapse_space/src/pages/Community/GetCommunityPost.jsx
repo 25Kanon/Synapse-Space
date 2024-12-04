@@ -14,12 +14,15 @@ import Footer from "../../components/Footer";
 import { Helmet } from "react-helmet";
 import SuccessAlert from "../../components/SuccessAlert";
 import Loading from "../../components/Loading";
+import {useMemberships} from "../../context/MembershipContext";
 
 const GetCommunityPost = () => {
   const location = useLocation();
   const { state } = location || {}; // Safely handle if no state is passed
   const [isEditing, setIsEditing] = useState(state?.isEditing || false);
-
+  const { memberships } = useMemberships();
+  const [isMember, setIsMember] = useState(false);
+  const [membership, setMembership] = useState({});
   const { community_id, post_id } = useParams();
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
@@ -29,6 +32,41 @@ const GetCommunityPost = () => {
   const [editorContent, setEditorContent] = useState("");
   const [title, setTitle] = useState("");
   const navigate = useNavigate();
+  const [communityDetails, setCommunityDetails] = useState(null);
+
+  const findMembership = async () => {
+    const foundMembership = await memberships.find((membership) => parseInt(membership.community) === parseInt(community_id));
+    console.log("Found membership:", memberships);
+    if (foundMembership) {
+      setIsMember(true);
+      setMembership(foundMembership);
+      console.log("Membership:", foundMembership);
+    }
+  };
+
+  useEffect(() => {
+    findMembership();
+  }, [memberships]);
+
+
+  // Fetch community details
+  useEffect(() => {
+    const fetchCommunityDetails = async () => {
+      try {
+        const response = await AxiosInstance.get(`/api/community/${community_id}`, { withCredentials: true });
+        setCommunityDetails(response.data);
+      } catch (err) {
+        setError(`Failed to load community details. ${err.response?.data?.detail || err.message}`);
+      }
+    };
+    if (community_id) {
+      fetchCommunityDetails();
+    }
+  }, [community_id]);
+
+  useEffect(() => {
+    findMembership();
+  }, [memberships, post_id]);
 
   // Sync isEditing with location.state
   useEffect(() => {
@@ -97,6 +135,22 @@ const GetCommunityPost = () => {
     }
   };
 
+  if (communityDetails && communityDetails.privacy === "private" && !isMember) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <NavBar />
+        <Sidebar />
+        <MainContentContainer>
+          <div className="flex flex-col items-center justify-center mt-12">
+            <h1 className="text-3xl font-bold">You are not a member of this community</h1>
+            <p className="text-lg mt-4">Join the community to view this post</p>
+          </div>
+        </MainContentContainer>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <>
       <Helmet>
@@ -149,7 +203,7 @@ const GetCommunityPost = () => {
                 userAvatar={post.userAvatar}
                 isPinned={post.isPinned}
                 createdAt={post.created_at}
-                allowInteraction={post.status ? post.status === "accepted" : true} // Allow interaction if post is approved
+                postStatus={post.status}
               />
             )
           ) : (
