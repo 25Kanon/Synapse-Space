@@ -22,7 +22,7 @@ from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
                      Reports, FriendRequest, Program,
                      Notification, DislikedPost, Feedback, SystemSetting,
-                     ModeratorSettings, CommunityActivity, ActivityParticipants, ActivityRating)
+                     ModeratorSettings, CommunityActivity, ActivityParticipants, ActivityRating, NotInterested)
 
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -1178,3 +1178,9 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivityRating
         fields = ['id', 'activity', 'user', 'rating', 'comment', 'sentiment']
+
+
+class NotInterestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotInterested
+        fields = ['user', 'post', 'activity', 'community']

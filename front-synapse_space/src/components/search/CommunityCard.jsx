@@ -4,6 +4,7 @@ import { marked } from 'marked';
 import JoinCommuinityBtn from '../community/JoinCommuinityBtn';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react'
+import AxiosInstance from "../../utils/AxiosInstance";
 
 
 const CommunityCard = ({ community, getInitials, isJoined, isRecommendation }) => {
@@ -13,12 +14,23 @@ const CommunityCard = ({ community, getInitials, isJoined, isRecommendation }) =
     navigate(`/community/${community.id}`);
   };
 
+  const notInterested = async () => {
+
+    try {
+      const handleNotInterested = await AxiosInstance.post(`api/not-interested/`, {"community_id": community.id}, {withCredentials: true})
+        if (handleNotInterested.status === 200 || handleNotInterested.status === 201)
+          window.location.reload();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
+  };
+
   return (
     <>
       <div className="p-4 w-full sm:w-1/2 lg:w-1/3 xl:w-1/4" style={{ minWidth: '250px' }}>
         <div
           className="relative transition-transform transform shadow-lg cursor-pointer card bg-base-100 hover:scale-105 hover:shadow-xl h-full flex flex-col"
-          onClick={handleCardClick}
         >
           <figure className="relative h-48">
             <img
@@ -44,6 +56,24 @@ const CommunityCard = ({ community, getInitials, isJoined, isRecommendation }) =
             </div>
           </div>)}
 
+          {isRecommendation &&(
+              <div className="absolute top-2 left-2">
+                <button className="btn btn-circle btn-erro" onClick={notInterested}>
+                  <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor">
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>)}
+
           <div className="card-body flex flex-col flex-grow p-4">
             <div className="flex items-center mb-2">
               <div className="avatar placeholder mr-2">
@@ -59,7 +89,7 @@ const CommunityCard = ({ community, getInitials, isJoined, isRecommendation }) =
                   )}
                 </div>
               </div>
-              <p className="text-sm font-semibold truncate" title={community.name}>
+              <p className="text-sm font-semibold truncate" title={community.name} onClick={handleCardClick}>
                 {community.name}
               </p>
             </div>
@@ -84,6 +114,7 @@ const CommunityCard = ({ community, getInitials, isJoined, isRecommendation }) =
             {/*  {community.member_count} {community.member_count === 1 ? "member" : "members"} • {community.date}*/}
             {/*</p>*/}
             <div className="justify-end card-actions mt-auto">
+
               {isJoined ? (
                   <span className="text-sm text-green-500">Joined</span>
               ) : (

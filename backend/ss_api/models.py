@@ -335,17 +335,6 @@ class ActivityRating(models.Model):
         return f'{self.user.username} - {self.activity.title} - {self.rating}'
 
 
-class NotInterested(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="not_interested")
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)  # To track different models
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('user', 'content_type', 'object_id')  # Prevent duplicate entries
-
-
 
 class UserActivity(models.Model):
 
@@ -356,3 +345,14 @@ class UserActivity(models.Model):
 
     def __str__(self):
         return f"{self.user} {self.activity_type} at {self.timestamp}"
+
+
+class NotInterested(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
+    activity = models.ForeignKey(CommunityActivity, on_delete=models.CASCADE, null=True, blank=True)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post', 'activity', 'community')

@@ -62,7 +62,7 @@ from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
     Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback, SystemSetting, ModeratorSettings, \
-    CommunityActivity, ActivityParticipants, ActivityRating, UserActivity
+    CommunityActivity, ActivityParticipants, ActivityRating, UserActivity, NotInterested
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -74,6 +74,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           DislikedPostSerializer, ContentSerializer, FeedbackSerializer,
                           CustomTokenObtainPairSerializerStaff, SystemSettingSerializer, ModeratorSettingsSerializer,
                           CommunityActivitySerializer, ActivityParticipantsSerializer, RatingSerializer,
+                          NotInterestedSerializer,
                           )
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff, isCommunityViewer
@@ -2838,3 +2839,31 @@ class getJoinedCommunityActivities(generics.ListAPIView):
         user = self.request.user
         joined_communities = Membership.objects.filter(user=user, status='accepted').values_list('community_id', flat=True)
         return CommunityActivity.objects.filter(community__in=joined_communities).order_by('-created_at')
+
+
+
+class NotInterestedView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        post_id = request.data.get('post_id')
+        activity_id = request.data.get('activity_id')
+        community_id = request.data.get('community_id')
+
+        if not post_id and not community_id:
+            return Response({"error": "Post ID or Community ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if post_id:
+            post = get_object_or_404(Post, id=post_id)
+            not_interested, created = NotInterested.objects.get_or_create(user=user, post=post)
+        elif activity_id:
+            activity = get_object_or_404(CommunityActivity, id=activity_id)
+            not_interested, created = NotInterested.objects.get_or_create(user=user, activity=activity)
+        elif community_id:
+            community = get_object_or_404(Community, id=community_id)
+            not_interested, created = NotInterested.objects.get_or_create(user=user, community=community)
+
+        serializer = NotInterestedSerializer(not_interested)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
