@@ -1,10 +1,29 @@
-import React, { useState } from "react";
+import React, {useContext, useEffect, useState} from "react";
 import CreatePost from "./CreatePost";
 import { CreateActivity } from "./CreateActivity";
+import { useMemberships } from "../../context/MembershipContext";
+import AuthContext from "../../context/AuthContext";
 
 const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCreated }) => {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [activeTab, setActiveTab] = useState("post");
+    const { memberships } = useMemberships();
+    const { user } = useContext(AuthContext);
+    const [role, setRole] = useState("");
+    const [membership, setMembership] = useState<any>({});
+
+
+    useEffect(() => {
+        if (memberships) {
+            setMembership(memberships.find((membership) => membership.community === community));
+        }
+    }, [memberships, community])
+
+    useEffect(() => {
+        if (membership) {
+            setRole(membership.role);
+        }
+    }, [membership])
 
     const toggleFormVisibility = () => {
         setIsFormVisible(!isFormVisible);
@@ -13,6 +32,7 @@ const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCr
     const handleTabChange = (tab) => {
         setActiveTab(tab);
     };
+
 
     return (
         <>
@@ -34,12 +54,14 @@ const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCr
                         >
                             Create Post
                         </button>
-                        <button
-                            className={`tab ${activeTab === "activity" ? "tab-active" : ""}`}
-                            onClick={() => handleTabChange("activity")}
-                        >
-                            Start a Community Activity
-                        </button>
+                        {role !== "member" && (
+                            <button
+                                className={`tab ${activeTab === "activity" ? "tab-active" : ""}`}
+                                onClick={() => handleTabChange("activity")}
+                            >
+                                Start a Community Activity
+                            </button>
+                        )}
                     </div>
                     <div className="mt-4">
                         {activeTab === "post" && (

@@ -2755,7 +2755,7 @@ class createCommunityActivity(APIView):
 
 
 
-class getCommunityActivities(generics.ListAPIView):
+class   getCommunityActivities(generics.ListAPIView):
     pagination_class = PostPagination
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, isCommunityViewer]
