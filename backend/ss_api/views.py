@@ -2755,7 +2755,7 @@ class createCommunityActivity(APIView):
 
 
 
-class   getCommunityActivities(generics.ListAPIView):
+class getCommunityActivities(generics.ListAPIView):
     pagination_class = PostPagination
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated, isCommunityViewer]
@@ -2826,3 +2826,15 @@ class activityRatingViewset(APIView):
         ratings = ActivityRating.objects.filter(activity=activity)
         serializer = RatingSerializer(ratings, many=True)
         return Response(serializer.data)
+
+
+class getJoinedCommunityActivities(generics.ListAPIView):
+    pagination_class = PostPagination
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = CommunityActivitySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        joined_communities = Membership.objects.filter(user=user, status='accepted').values_list('community_id', flat=True)
+        return CommunityActivity.objects.filter(community__in=joined_communities).order_by('-created_at')

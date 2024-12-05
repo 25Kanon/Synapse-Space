@@ -21,7 +21,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     undislikePostView,
                     UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView, StaffLoginView, SettingsView,
                     UpdateSettingsView, ModeratorSettingsDetailView, getCommunityActivities, createCommunityActivity,
-                    communityActivityParticipantView, activityRatingViewset, getCommunityView)
+                    communityActivityParticipantView, activityRatingViewset, getCommunityView,
+                    getJoinedCommunityActivities)
 from django.contrib import admin
 
 
@@ -103,6 +104,7 @@ urlpatterns = [
     path('community/<int:community_id>/activities/', getCommunityActivities.as_view(), name='community-activities-list'),
     path('community/<int:community_id>/activity/<int:activity_id>/', communityActivityParticipantView.as_view(), name='activity-participants'),
     path('community/<int:community_id>/activity/<int:activity_id>/rating/', activityRatingViewset.as_view(), name='activity-rating'),
+    path('community/joined/activities/', getJoinedCommunityActivities.as_view(), name='joined-community-activities'),
 
     # User URLs
     # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),

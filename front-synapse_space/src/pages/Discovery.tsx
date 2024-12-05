@@ -84,6 +84,7 @@ export default function Discovery() {
                                 community={community}
                                 getInitials={getInitials}
                                 isJoined={isJoined}
+                                isRecommendation={true}
                             />
                         );
                     })}
