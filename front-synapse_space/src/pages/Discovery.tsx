@@ -42,7 +42,9 @@ export default function Discovery() {
         return name.split(' ').map(word => word[0]).join('');
     };
 
-    console.log(recommendations);
+    // Separate communities based on the reason
+    const recommendedForYou = recommendations?.filter(community => community.reason !== "Popular among users like you");
+    const popularCommunities = recommendations?.filter(community => community.reason === "Popular among users like you");
 
     return (
         <Layout showSidebar={true}> {/* Wrap everything inside Layout */}
@@ -52,22 +54,50 @@ export default function Discovery() {
             {Error && <ErrorAlert text={Error} classExtensions="fixed z-50" />}
             <FriendsList /> {/* Add FriendsList */}
             <div className="flex flex-col justify-between p-5">
-                {!loading && (
+                {/* Only show "Recommended For You" heading if there are recommendations */}
+                {!loading && recommendedForYou?.length > 0 && (
                     <div className="flex flex-col justify-start">
                         <p>
                             <h5 className="text-2xl font-bold">Recommended For You</h5>
                         </p>
                         <p>
                             <h5 className="text-sm font-medium">
-                                Recommended by Hybrid Recommender based on your interest
+                                Recommended based on your interest
                             </h5>
+                            <sup>Includes searches and visits</sup>
+                        </p>
+                        <p>
+
                         </p>
                     </div>
                 )}
-                <div className="flex flex-wrap justify-center">
-                    {loading && <Loading loadingText="Generating Recommendations" />}
-                    {recommendations?.map((community, index) => {
-                        // Check if the community ID is in memberships
+
+                <div className="flex flex-wrap justify-start">
+                    {loading && <div className="flex justify-center w-full mx-auto"><Loading loadingText="Generating Recommendations" /></div>}
+                    {recommendedForYou?.map((community, index) => {
+                        const isJoined = memberships.some(
+                            (membership) => membership.community === community.id
+                        );
+                        return (
+                            <CommunityCard
+                                key={index}
+                                community={community}
+                                getInitials={getInitials}
+                                isJoined={isJoined}
+                            />
+                        );
+                    })}
+                </div>
+
+                {/* Only show "Popular Communities Among Users Like You" heading if there are popular communities */}
+                {!loading && popularCommunities?.length > 0 && (
+                    <div className="flex flex-col justify-start mt-10">
+                        <h5 className="text-2xl font-bold">Popular Communities Among Users Like You</h5>
+                    </div>
+                )}
+
+                <div className="flex flex-wrap justify-start">
+                    {popularCommunities?.map((community, index) => {
                         const isJoined = memberships.some(
                             (membership) => membership.community === community.id
                         );

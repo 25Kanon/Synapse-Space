@@ -62,7 +62,7 @@ from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
     Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback, SystemSetting, ModeratorSettings, \
-    CommunityActivity, ActivityParticipants, ActivityRating
+    CommunityActivity, ActivityParticipants, ActivityRating, UserActivity
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -732,6 +732,24 @@ class CommunityDetailView(generics.RetrieveAPIView):
     queryset = Community.objects.all()
     lookup_field = 'id'
 
+
+class getCommunityView(generics.RetrieveAPIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = CommunitySerializer
+    queryset = Community.objects.all()
+    lookup_field = 'id'
+
+    def get(self, request, *args, **kwargs):
+        community_id = kwargs.get('id')
+        community = Community.objects.get(id=community_id)
+        serializer = CommunitySerializer(community)
+
+        UserActivity.objects.create(user=self.request.user, activity_type='visit', activity_data=community.name)
+
+        return Response(serializer.data)
+
+
 class PostCreateView(generics.CreateAPIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsCommunityMember]
@@ -1395,6 +1413,7 @@ class CommunityListView(APIView):
             communities = Community.objects.filter(
                 Q(name__icontains=search_query)
             )
+            UserActivity.objects.create(user=self.request.user, activity_type='search', activity_data=search_query)
         else:
             communities = Community.objects.all()  # If no search query, get all communities
 
@@ -1481,6 +1500,8 @@ class UserListView(generics.ListAPIView):
                 Q(last_name__icontains=search) |
                 Q(email__icontains=search)
             )
+
+            UserActivity.objects.create(user=self.request.user, activity_type='search', activity_data=search)
         return queryset
 
 class getCommunityStats(APIView):

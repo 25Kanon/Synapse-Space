@@ -45,7 +45,7 @@ export default function Community() {
     useEffect(() => {
         const fetchCommunityDetails = async () => {
             try {
-                const response = await AxiosInstance.get(`/api/community/${id}`, { withCredentials: true });
+                const response = await AxiosInstance.get(`/api/community/get/${id}`, { withCredentials: true });
                 setCommunityDetails(response.data);
             } catch (err) {
                 setError(`Failed to load community details. ${err.response?.data?.detail || err.message}`);

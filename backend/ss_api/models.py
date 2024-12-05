@@ -344,3 +344,15 @@ class NotInterested(models.Model):
 
     class Meta:
         unique_together = ('user', 'content_type', 'object_id')  # Prevent duplicate entries
+
+
+
+class UserActivity(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    activity_type = models.CharField(max_length=50)
+    activity_data = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} {self.activity_type} at {self.timestamp}"

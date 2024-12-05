@@ -3,7 +3,8 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from django.db.models import Q
 import numpy as np
-from .models import Community, User, Membership, CommunityActivity, Post, LikedPost, Likes, ActivityParticipants
+from .models import Community, User, Membership, CommunityActivity, Post, LikedPost, Likes, ActivityParticipants, \
+    UserActivity
 
 # Initialize the SentenceTransformer model
 model = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L12-v2')
@@ -56,13 +57,26 @@ def validate_embeddings(embeddings):
 # Content-Based Filtering
 def content_based_recommendation(user_id, score_threshold=0.3):
     """
-    Recommend communities based on the user's interests only, excluding communities the user is already a member of.
+    Recommend communities based on the user's interests, visits, and searches, excluding communities the user is already a member of.
     Only recommend communities with a similarity score above the threshold.
     """
     user = User.objects.get(id=user_id)
     user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
 
-    user_text = " ".join(user.interests)
+    # Retrieve the user's interests, visits, and searches
+    user_interests = " ".join(user.interests)
+    user_visits = " ".join(
+        [activity.activity_data for activity in
+         UserActivity.objects.filter(user_id=user_id, activity_type="visit").order_by('-timestamp')[:5]]
+    )  # Last 5 visits
+    user_searches = " ".join(
+        [activity.activity_data for activity in
+         UserActivity.objects.filter(user_id=user_id, activity_type="search").order_by('-timestamp')[:5]]
+    )  # Last 5 searches
+
+    # Combine interests, visits, and searches to create a more comprehensive user profile
+    user_text = f"{user_interests} {user_visits} {user_searches}"
+
     user_embedding = get_embedding(user_text, cache_key=f"user_{user.id}", cache_type="users")
 
     if user_embedding is None:
@@ -100,15 +114,10 @@ def content_based_recommendation(user_id, score_threshold=0.3):
     # Sort by similarity score
     recommended_communities = sorted(recommended_communities, key=lambda x: x[1], reverse=True)
 
-    print('cbf', recommended_communities)
     return recommended_communities  # Returns (Community, similarity_score, reason)
 
-
+    
 def collaborative_filtering(user_id, score_threshold=0.3):
-    """
-    Recommend communities based on memberships of similar users, excluding communities the user is already a member of.
-    Only recommend communities with a popularity score above the threshold.
-    """
     user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
 
     # Find similar users based on overlapping community memberships
@@ -133,19 +142,34 @@ def collaborative_filtering(user_id, score_threshold=0.3):
         for community in communities
     }
 
+    # Adjust popularity based on user visits and searches
+    visit_score_adjustment = {}
+    search_score_adjustment = {}
+
+    for community in communities:
+        visit_score = UserActivity.objects.filter(
+            user_id=user_id, activity_type='visit', activity_data=community.name
+        ).count()
+        search_score = UserActivity.objects.filter(
+            user_id=user_id, activity_type='search', activity_data=community.name
+        ).count()
+
+        visit_score_adjustment[community.id] = visit_score * 0.2  # Adjust weight
+        search_score_adjustment[community.id] = search_score * 0.2  # Adjust weight
+
     # Filter communities based on popularity score threshold
     recommended_communities = []
     for community in communities:
-        popularity_score = community_popularity.get(community.id, 0)
+        popularity_score = community_popularity.get(community.id, 0) + visit_score_adjustment.get(community.id, 0) + search_score_adjustment.get(community.id, 0)
         if popularity_score >= score_threshold * len(similar_users):  # Scale threshold by user base
             reason = "Popular among users like you"
             recommended_communities.append((community, popularity_score, reason))
 
-    # Sort by popularity score
+    # Sort by adjusted popularity score
     recommended_communities = sorted(recommended_communities, key=lambda x: x[1], reverse=True)
 
     print('cf', recommended_communities)
-    return recommended_communities  # Returns (Community, popularity_score, reason)
+    return recommended_communities  # Returns (Community, adjusted_popularity_score, reason)
 
 
 def normalize_scores(scores):
@@ -215,6 +239,7 @@ def get_hybrid_recommendations(user_id, cbf_weight=0.6, cf_weight=0.4, score_thr
     sorted_recommendations = sorted(filtered_recommendations, key=lambda x: x[1], reverse=True)
 
     return sorted_recommendations
+
 
 
 def log_hybrid_recommendations(user_id):
@@ -436,5 +461,3 @@ def hybrid_activity_recommendation(user_id, cbf_weight=0.6, cf_weight=0.4, score
 
     sorted_recommendations = sorted(filtered_recommendations, key=lambda x: x[1], reverse=True)
     return sorted_recommendations  # Returns (Activity, hybrid_score)
-
-
