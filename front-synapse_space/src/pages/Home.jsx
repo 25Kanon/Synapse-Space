@@ -19,14 +19,14 @@ export default function Home() {
     const [activeTab, setActiveTab] = useState("posts"); // "posts" or "activities"
 
     const fetchPosts = useCallback(async (page) => {
-        return await AxiosInstance.get(`/api/community/joined/posts/?page=${page}`,
+        return await AxiosInstance.get(`/api/recommendations/combined-posts/?page=${page}`,
             {},
             { withCredentials: true }
         );
     }, []);
 
     const fetchActivities = useCallback(async (page) => {
-        return await AxiosInstance.get(`/api/community/joined/activities/?page=${page}`,
+        return await AxiosInstance.get(`/api/recommendations/combined-activities/?page=${page}`,
             {},
             { withCredentials: true }
         );

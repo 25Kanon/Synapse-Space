@@ -233,26 +233,17 @@ def log_hybrid_recommendations(user_id):
 
 
 def content_based_post_recommendation(user_id, score_threshold=0.3):
-    """
-    Recommend posts based on the user's interests, excluding posts from communities
-    where the user is neither a member nor the community is public.
-    """
     user = User.objects.get(id=user_id)
     user_interests = " ".join(user.interests)
     user_embedding = get_embedding(user_interests, cache_key=f"user_{user.id}", cache_type="users")
 
     if user_embedding is None:
-        logger.error("User embedding is empty, cannot proceed with content-based filtering for posts.")
+        logger.error("User embedding is empty, cannot proceed with content-based filtering.")
         return []
 
-    # Filter posts from public or accepted communities
+    # Filter posts from public communities
     public_communities = Community.objects.filter(privacy="public")
-    accepted_communities = Community.objects.filter(
-        id__in=Membership.objects.filter(user_id=user_id, status="accepted").values_list('community_id', flat=True)
-    )
-    relevant_communities = public_communities | accepted_communities
-
-    posts = Post.objects.filter(posted_in__in=relevant_communities).distinct()
+    posts = Post.objects.filter(posted_in__in=public_communities).distinct()
     post_embeddings = [
         get_embedding(
             f"{post.title} {post.content}",
@@ -270,7 +261,8 @@ def content_based_post_recommendation(user_id, score_threshold=0.3):
     similarities = cosine_similarity([user_embedding], post_embeddings)[0]
     recommended_posts = [
         (post, similarity)
-        for post, similarity in zip(posts, similarities) if similarity >= score_threshold
+        for post, similarity in zip(posts, similarities)
+        if similarity >= score_threshold
     ]
 
     recommended_posts = sorted(recommended_posts, key=lambda x: x[1], reverse=True)
@@ -278,30 +270,33 @@ def content_based_post_recommendation(user_id, score_threshold=0.3):
 
 
 def collaborative_post_recommendation(user_id, score_threshold=0.3):
-    """
-    Recommend posts based on likes by similar users, excluding posts the user already interacted with.
-    """
     user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
     similar_users = Membership.objects.filter(
         community_id__in=user_memberships
     ).exclude(user_id=user_id).values_list('user_id', flat=True).distinct()
 
     posts = Post.objects.filter(
-        posted_in__in=Community.objects.filter(id__in=user_memberships)
-    ).exclude(id__in=LikedPost.objects.filter(user_id=user_id).values_list('post_id', flat=True))
+        created_by__in=similar_users,
+        posted_in__privacy="public"
+    ).exclude(
+        created_by=user_id
+    ).distinct()
 
     if not posts.exists():
         logger.warning("No posts found for collaborative filtering.")
         return []
 
     popularity_scores = [
-        (post, Likes.objects.filter(post=post, user_id__in=similar_users).count())
+        (post, LikedPost.objects.filter(post=post).count())
         for post in posts
     ]
 
     recommended_posts = [
-        (post, score) for post, score in popularity_scores if score >= score_threshold
+        (post, score)
+        for post, score in popularity_scores
+        if score >= score_threshold
     ]
+
     recommended_posts = sorted(recommended_posts, key=lambda x: x[1], reverse=True)
     return recommended_posts  # Returns (Post, popularity_score)
 
@@ -340,26 +335,17 @@ def hybrid_post_recommendation(user_id, cbf_weight=0.6, cf_weight=0.4, score_thr
 
 
 def content_based_activity_recommendation(user_id, score_threshold=0.3):
-    """
-    Recommend activities based on the user's interests, excluding activities from communities
-    where the user is neither a member nor the community is public.
-    """
     user = User.objects.get(id=user_id)
     user_interests = " ".join(user.interests)
     user_embedding = get_embedding(user_interests, cache_key=f"user_{user.id}", cache_type="users")
 
     if user_embedding is None:
-        logger.error("User embedding is empty, cannot proceed with content-based filtering for activities.")
+        logger.error("User embedding is empty, cannot proceed with content-based filtering.")
         return []
 
-    # Filter activities from public or accepted communities
+    # Filter activities from public communities
     public_communities = Community.objects.filter(privacy="public")
-    accepted_communities = Community.objects.filter(
-        id__in=Membership.objects.filter(user_id=user_id, status="accepted").values_list('community_id', flat=True)
-    )
-    relevant_communities = public_communities | accepted_communities
-
-    activities = CommunityActivity.objects.filter(community__in=relevant_communities).distinct()
+    activities = CommunityActivity.objects.filter(community__in=public_communities).distinct()
     activity_embeddings = [
         get_embedding(
             f"{activity.title} {activity.description}",
@@ -377,7 +363,8 @@ def content_based_activity_recommendation(user_id, score_threshold=0.3):
     similarities = cosine_similarity([user_embedding], activity_embeddings)[0]
     recommended_activities = [
         (activity, similarity)
-        for activity, similarity in zip(activities, similarities) if similarity >= score_threshold
+        for activity, similarity in zip(activities, similarities)
+        if similarity >= score_threshold
     ]
 
     recommended_activities = sorted(recommended_activities, key=lambda x: x[1], reverse=True)
@@ -385,30 +372,33 @@ def content_based_activity_recommendation(user_id, score_threshold=0.3):
 
 
 def collaborative_activity_recommendation(user_id, score_threshold=0.3):
-    """
-    Recommend activities based on participation by similar users, excluding activities the user already participated in.
-    """
     user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
     similar_users = Membership.objects.filter(
         community_id__in=user_memberships
     ).exclude(user_id=user_id).values_list('user_id', flat=True).distinct()
 
     activities = CommunityActivity.objects.filter(
-        community__in=Community.objects.filter(id__in=user_memberships)
-    ).exclude(id__in=ActivityParticipants.objects.filter(user_id=user_id).values_list('activity_id', flat=True))
+        organizer__in=similar_users,
+        community__privacy="public"
+    ).exclude(
+        organizer=user_id
+    ).distinct()
 
     if not activities.exists():
         logger.warning("No activities found for collaborative filtering.")
         return []
 
     popularity_scores = [
-        (activity, ActivityParticipants.objects.filter(activity=activity, user_id__in=similar_users).count())
+        (activity, ActivityParticipants.objects.filter(activity=activity).count())
         for activity in activities
     ]
 
     recommended_activities = [
-        (activity, score) for activity, score in popularity_scores if score >= score_threshold
+        (activity, score)
+        for activity, score in popularity_scores
+        if score >= score_threshold
     ]
+
     recommended_activities = sorted(recommended_activities, key=lambda x: x[1], reverse=True)
     return recommended_activities  # Returns (Activity, popularity_score)
 

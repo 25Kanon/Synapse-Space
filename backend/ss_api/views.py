@@ -79,7 +79,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff, isCommunityViewer
 
-from .recommender import get_hybrid_recommendations
+from .recommender import get_hybrid_recommendations, hybrid_post_recommendation, hybrid_activity_recommendation
 
 from django.conf import settings
 
@@ -2867,3 +2867,87 @@ class NotInterestedView(APIView):
 
         serializer = NotInterestedSerializer(not_interested)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class PostRecommendationView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = PostPagination
+    def get(self, request, *args, **kwargs):
+        user_id = request.user.id
+        post_recommendations = hybrid_post_recommendation(user_id)
+        serialized_posts = PostSerializer([post for post, _ in post_recommendations], many=True)
+        return JsonResponse({'posts': serialized_posts}, safe=False)
+
+
+class ActivityRecommendationView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = PostPagination
+    def get(self, request, *args, **kwargs):
+        user_id = request.user.id
+
+        # Get hybrid recommendations for activities
+        activity_recommendations = hybrid_activity_recommendation(user_id)
+
+        # Serialize the recommendations
+        serialized_activities = CommunityActivitySerializer([activity for activity, _ in activity_recommendations], many=True)
+
+        # Return the serialized data as a JSON response
+        return JsonResponse({'activities': serialized_activities}, safe=False)
+
+
+class CombinedPostView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = PostPagination
+    serializer_class = CommunityPostSerializer
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.user.id
+
+        # Get hybrid recommendations for posts
+        post_recommendations = hybrid_post_recommendation(user_id)
+        recommended_posts = [post for post, _ in post_recommendations]
+
+        # Get joined community posts
+        joined_communities = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
+        joined_posts = Post.objects.filter(posted_in_id__in=joined_communities, status='approved').order_by('-isPinned', '-created_at')
+
+        # Combine the results
+        combined_posts = list(recommended_posts) + list(joined_posts)
+
+        # Apply pagination
+        paginator = self.pagination_class()
+        paginated_posts = paginator.paginate_queryset(combined_posts, request)
+        serialized_posts = self.serializer_class(paginated_posts, many=True)
+
+        return paginator.get_paginated_response(serialized_posts.data)
+
+
+
+class CombinedActivityView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = PostPagination
+    serializer_class = CommunityActivitySerializer
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.user.id
+
+        # Get hybrid recommendations for activities
+        activity_recommendations = hybrid_activity_recommendation(user_id)
+        recommended_activities = [activity for activity, _ in activity_recommendations]
+
+        # Get joined community activities
+        joined_communities = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
+        joined_activities = CommunityActivity.objects.filter(community__in=joined_communities).order_by('-created_at')
+
+        # Combine the results
+        combined_activities = list(recommended_activities) + list(joined_activities)
+
+        # Apply pagination
+        paginator = self.pagination_class()
+        paginated_activities = paginator.paginate_queryset(combined_activities, request)
+        serialized_activities = self.serializer_class(paginated_activities, many=True)
+
+        return paginator.get_paginated_response(serialized_activities.data)

@@ -22,7 +22,8 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     UpvoteCommentView, DownvoteCommentView, RemoveVoteView, FeedbackView, StaffLoginView, SettingsView,
                     UpdateSettingsView, ModeratorSettingsDetailView, getCommunityActivities, createCommunityActivity,
                     communityActivityParticipantView, activityRatingViewset, getCommunityView,
-                    getJoinedCommunityActivities, NotInterestedView)
+                    getJoinedCommunityActivities, NotInterestedView, PostRecommendationView, ActivityRecommendationView,
+                    CombinedPostView, CombinedActivityView)
 from django.contrib import admin
 
 
@@ -142,6 +143,13 @@ urlpatterns = [
     path('admin/settings/', SettingsView.as_view(), name='admin-settings'),
     path('admin/update/settings/', UpdateSettingsView.as_view(), name='update-admin-settings'),
     path('moderator/settings/<int:community_id>/', ModeratorSettingsDetailView.as_view(), name='moderator-settings'),
+
+
+    path('recommendations/posts/', PostRecommendationView.as_view(), name='post-recommendations'),
+    path('recommendations/activities/', ActivityRecommendationView.as_view(), name='activity-recommendations'),
+
+    path('recommendations/combined-posts/', CombinedPostView.as_view(), name='combined-posts'),
+    path('recommendations/combined-activities/', CombinedActivityView.as_view(), name='combined-activities'),
 
     # path('check_profanity/', ProfanityCheckView.as_view(), name='check_profanity'),
 ]
