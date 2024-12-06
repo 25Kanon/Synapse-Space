@@ -1612,7 +1612,8 @@ class getReportsView(generics.ListAPIView):
             content_type__in=community_content_types,
             community=community,
             status='pending'
-        )
+        ).order_by('-created_at')
+
 
 
 class modResolveView(generics.UpdateAPIView):
