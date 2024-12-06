@@ -1633,7 +1633,7 @@ class modResolveView(generics.UpdateAPIView):
         if report.status == 'approved':
             if report.type == 'post':
                 post = Post.objects.get(id=report.object_id)
-                post.status = 'accepted'
+                post.status = 'approved'
                 post.save()
 
         if report.status == 'rejected':
