@@ -790,13 +790,21 @@ class CommunityPostSerializer(serializers.ModelSerializer):
     userAvatar = serializers.CharField(source='created_by.profile_pic', read_only=True)
     isPinned = serializers.BooleanField(read_only=True)
     status = serializers.CharField(read_only=True)
+    community_name = serializers.CharField(source='posted_in.name', read_only=True)
+    community_avatar = serializers.CharField(source='posted_in.imgURL', read_only=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar', 'isPinned', 'status']
+        fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar', 'isPinned', 'status', 'community_name', 'community_avatar']
 
     def get_created_by_username(self, obj):
         return obj.created_by.username
+    
+    def get_community_name(self, obj):
+        return obj.posted_in.name
+    
+    def get_community_avatar(self, obj):
+        return obj.posted_in.imgURL
 
 class getCommunityPostSerializer(serializers.ModelSerializer):
     created_by_username = serializers.SerializerMethodField()

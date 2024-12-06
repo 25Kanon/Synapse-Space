@@ -28,6 +28,8 @@ const CommunityPost = ({
     isPinnedInit,
     createdAt,
     postStatus,
+    community_avatar,
+    community_name,
 }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likes, setLikes] = useState(0);
@@ -163,13 +165,13 @@ const CommunityPost = ({
             <div key={postId} className={`w-full my-5 border border-solid shadow-xl card card-compact ${isPinned ? "border-amber-400" : ""}`}>
                 <div className="card-body ">
                     {/* Post Header */}
-                    <div className="flex justify-between items-center h-5">
+                    <div className="flex items-center justify-between h-5">
                         {/* Left: Avatar and Author Info */}
                         <div className="flex items-center">
                             <Link to={`/profile/user/${authorId}`}>
                                 <div className="flex items-center">
                                     <div className="mx-2 avatar">
-                                        <div className="rounded-full h-7 cursor-pointer">
+                                        <div className="rounded-full cursor-pointer h-7">
                                             {userAvatar ? (
                                                 <img
                                                     src={userAvatar}
@@ -191,20 +193,26 @@ const CommunityPost = ({
                             <div className="flex items-center text-sm text-gray-500">
                                 <span className="mx-2 text-gray-400">&rarr;</span> {/* Arrow indicator */}
                                 <Link to={`/community/${community}`} className="flex items-center text-sm text-gray-500 hover:underline">
-                                    <div className="w-5 h-5 rounded-full overflow-hidden mr-2">
-                                        {membership && membership.community_avatar ? (
-                                            <img
-                                                src={membership.community_avatar}
-                                                alt="Community avatar"
-                                                className="object-cover w-full h-full"
-                                            />
-                                        ) : (
-                                            <div className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
-                                                <span className="text-xs font-semibold">C</span>
-                                            </div>
-                                        )}
+                                    <div className="w-5 h-5 mr-2 overflow-hidden rounded-full">
+                                    {(membership?.community_avatar || community_avatar) ? (
+                                        <img
+                                            src={membership?.community_avatar || community_avatar}
+                                            alt="Community avatar"
+                                            className="object-cover w-full h-full"
+                                            onError={(e) => { e.target.src = '/path/to/default-avatar.png'; }} // Fallback for broken image
+                                        />
+                                    ) : (
+                                        <div className="flex items-center justify-center w-full h-full bg-gray-300 rounded-full">
+                                            <span className="text-xs font-semibold">C</span>
+                                        </div>
+                                    )}
+
+
                                     </div>
-                                    <span className="text-gray-400">{membership?.community_name ?? ""}</span>
+                                    <span className="text-gray-400">
+                                        {membership?.community_name || community_name || ""}
+                                    </span>
+
                                 </Link>
                             </div>
                         </div>
@@ -290,7 +298,7 @@ const CommunityPost = ({
                 {postStatus === 'approved' ? (
                     <>
                         {/* Like/Dislike Buttons */}
-                        <div className="flex flex-row m-4 gap-4">
+                        <div className="flex flex-row gap-4 m-4">
                             <FormControlLabel
                                 control={
                                     <Checkbox
@@ -351,6 +359,8 @@ CommunityPost.propTypes = {
     authorId: PropTypes.number,
     isPinned: PropTypes.bool,
     postStatus:PropTypes.string,
+    community_avatar: PropTypes.string,
+    community_name: PropTypes.string
 };
 
 export default CommunityPost;

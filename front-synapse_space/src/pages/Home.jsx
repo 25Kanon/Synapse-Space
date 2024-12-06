@@ -128,9 +128,11 @@ export default function Home() {
                                 userAvatar={post.userAvatar}
                                 createdAt={post.created_at}
                                 postStatus={post.status}
+                                community_avatar={post.community_avatar}
+                                community_name={post.community_name}
                             />
                         ))}
-                        {postsLoading && <div className="loading loading-spinner loading-lg"></div>}
+                        {postsLoading && <div className="flex w-full "><div className="mx-auto loading loading-spinner loading-lg"></div></div>}
                         {!postsHasMore && <div className="mt-4 text-center">No more posts to load</div>}
                     </div>
                 )}
@@ -141,7 +143,7 @@ export default function Home() {
                         {feedActivities?.map((activity) => (
                             <ActivityFeedCard key={activity.id} activity={activity} />
                         ))}
-                        {activitiesLoading && <div className="loading loading-spinner loading-lg"></div>}
+                        {activitiesLoading && <div className="flex w-full "><div className="mx-auto loading loading-spinner loading-lg"></div></div>}
                         {!activitiesHasMore && <div className="mt-4 text-center">No more activities to load</div>}
                     </div>
                 )}
