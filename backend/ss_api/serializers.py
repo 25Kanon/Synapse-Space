@@ -1143,13 +1143,14 @@ class CommunityActivitySerializer(serializers.ModelSerializer):
     organizer_name = serializers.SerializerMethodField()
     organizer_pic = serializers.SerializerMethodField()
     status = serializers.ReadOnlyField()  # Ensures the dynamic property is included and read-only
+    community_name = serializers.SerializerMethodField()
 
     class Meta:
         model = CommunityActivity
         fields = [
             'id', 'title', 'description', 'created_at', 'location', 'organizer',
             'organizer_name', 'organizer_pic', 'community', 'max_participants',
-            'image', 'status', 'startDate', 'endDate'
+            'image', 'status', 'startDate', 'endDate', 'community_name'
         ]
 
     def get_organizer_name(self, obj):
@@ -1157,6 +1158,9 @@ class CommunityActivitySerializer(serializers.ModelSerializer):
 
     def get_organizer_pic(self, obj):
         return obj.organizer.profile_pic
+    
+    def get_community_name(self, obj):
+        return obj.community.name
 
 
 class ActivityParticipantsSerializer(serializers.ModelSerializer):

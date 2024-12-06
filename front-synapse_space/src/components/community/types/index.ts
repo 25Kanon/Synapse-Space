@@ -46,6 +46,7 @@ export interface Participant {
 
 
 export interface CommunityActivity {
+    community_name: string;
     id: number;
     title: string;
     description: string;

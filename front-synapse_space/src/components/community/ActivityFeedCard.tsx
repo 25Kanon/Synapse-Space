@@ -9,6 +9,7 @@ import Loading from "../Loading";
 import { useMemberships } from "../../context/MembershipContext";
 import { CollapsibleText } from "./CollapsibleText";
 import { ActivityRating } from "./ActivityRating";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 interface ActivityFeedCardProps {
     activity: CommunityActivity;
@@ -31,12 +32,12 @@ function SentimentSummary({ sentiments }: { sentiments: { positive: number; neut
     const total = sentiments.positive + sentiments.neutral + sentiments.negative;
 
     return (
-        <div className="mt-4 p-4 bg-accent rounded-lg">
-            <h4 className="flex items-center gap-2 text-accent-content font-semibold">
+        <div className="p-4 mt-4 rounded-lg bg-accent">
+            <h4 className="flex items-center gap-2 font-semibold text-accent-content">
                 <BarChart2 size={18}/>
                 Participant Sentiments
             </h4>
-            <p className="text-xs mb-3">Based on feedbacks and comments</p>
+            <p className="mb-3 text-xs">Based on feedbacks and comments</p>
             <div className="space-y-3">
                 {Object.entries(categories).map(([key, {label, color, icon}]) => {
                     const count = sentiments[key as keyof typeof sentiments];
@@ -44,14 +45,14 @@ function SentimentSummary({ sentiments }: { sentiments: { positive: number; neut
 
                     return (
                         <div key={key} className="flex items-center gap-2">
-                            <span className="text-sm text-accent-content w-20">{label}:</span>
-                            <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                            <span className="w-20 text-sm text-accent-content">{label}:</span>
+                            <div className="flex-1 h-2 overflow-hidden rounded-full bg-secondary">
                                 <div
                                     className={`h-full bg-gradient-to-r ${color} rounded-full transition-all duration-500`}
                                     style={{width: `${percentage}%`}}
                                 />
                             </div>
-                            <div className="flex items-center gap-2 w-20">
+                            <div className="flex items-center w-20 gap-2">
                                 {icon}
                                 <span className="text-sm text-accent-content">{percentage.toFixed(1)}%</span>
                             </div>
@@ -179,7 +180,7 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
     }, [participants, showRating, activity.id]);
 
     return (
-        <div className="border bordered-solid rounded-lg shadow-md p-4 mb-6">
+        <div className="p-4 mb-6 border rounded-lg shadow-md bordered-solid">
             {loading && <Loading loadingText="Please wait..."/>}
             {error && <ErrorAlert text={error} />}
             {/* Organizer Information */}
@@ -191,12 +192,17 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
                         className="w-10 h-10 rounded-full"
                     />
                 ) : (
-                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xs">
+                    <div className="flex items-center justify-center w-10 h-10 text-xs rounded-full bg-secondary">
                         {getInitials(activity?.organizer_name)}
                     </div>
                 )}
-                <div>
-                    <p className="font-semibold"> {activity?.organizer_name}</p>
+                <div> 
+                    <p className="font-semibold"> {activity?.organizer_name} 
+                        <Link to={`/community/${activity?.community}`} className="flex items-center text-sm text-gray-500 hover:underline">
+                        <span className="mx-2 text-gray-400">&rarr;</span> {activity?.community_name}
+                        </Link>
+                     </p>
+                
                     <p className="text-sm text-secondary">Created at {formatDate(activity.created_at)}</p>
                 </div>
             </div>
@@ -206,17 +212,17 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
                 <img
                     src={activity.image}
                     alt={activity.title}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
+                    className="object-cover w-full h-48 mb-4 rounded-lg"
                 />
             ) : (
-                <div className="w-full h-48 bg-secondary rounded-lg mb-4 flex items-center justify-center ">
+                <div className="flex items-center justify-center w-full h-48 mb-4 rounded-lg bg-secondary ">
                     No Image Available
                 </div>
             )}
 
             {/* Activity Details */}
             <div className="space-y-2">
-                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                <span className="px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
                     {activity.status}
                 </span>
                 <h3 className="text-xl font-bold">{activity.title}</h3>
@@ -253,19 +259,19 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-4">
-                <div className="flex -space-x-2 pt-2">
+                <div className="flex pt-2 -space-x-2">
                     {participants.slice(0, 3).map((participant) =>
                         participant.user_pic ? (
                             <img
                                 key={participant.id}
                                 src={participant?.user_pic}
                                 alt={participant.user_name}
-                                className="w-8 h-8 rounded-full border-2 border-white"
+                                className="w-8 h-8 border-2 border-white rounded-full"
                             />
                         ) : (
                             <div
                                 key={participant.id}
-                                className="w-8 h-8 rounded-full border-2 border-white bg-secondary flex items-center justify-center text-xs font-medium"
+                                className="flex items-center justify-center w-8 h-8 text-xs font-medium border-2 border-white rounded-full bg-secondary"
                             >
                                 {getInitials(participant.user_name)}
                             </div>
@@ -273,7 +279,7 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
                     )}
                     {participants.length > 3 && (
                         <div
-                            className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-medium">
+                            className="flex items-center justify-center w-8 h-8 text-xs font-medium bg-gray-200 border-2 border-white rounded-full">
                             +{participants.length - 3}
                         </div>
                     )}
@@ -299,7 +305,7 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
 
             {/* Rating Modal */}
             {showRating && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <ActivityRating
                         activityId={activity.id}
                         onClose={() => setShowRating(false)}
