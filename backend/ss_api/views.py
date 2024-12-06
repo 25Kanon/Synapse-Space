@@ -2896,7 +2896,6 @@ class ActivityRecommendationView(APIView):
         # Return the serialized data as a JSON response
         return JsonResponse({'activities': serialized_activities}, safe=False)
 
-
 class CombinedPostView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -2920,9 +2919,15 @@ class CombinedPostView(APIView):
         # Apply pagination
         paginator = self.pagination_class()
         paginated_posts = paginator.paginate_queryset(combined_posts, request)
+        
+        if paginated_posts is None:
+            # Return an empty paginated response if there are no more items
+            return paginator.get_paginated_response([])
+
         serialized_posts = self.serializer_class(paginated_posts, many=True)
 
         return paginator.get_paginated_response(serialized_posts.data)
+
 
 
 

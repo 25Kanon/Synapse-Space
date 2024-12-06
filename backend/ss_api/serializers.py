@@ -798,6 +798,9 @@ class CommunityPostSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'content', 'created_at', 'created_by', 'created_by_username', 'posted_in', 'userAvatar', 'isPinned', 'status', 'community_name', 'community_avatar']
 
     def get_created_by_username(self, obj):
+        # Safely handle NoneType for created_by
+        if obj.created_by is None:
+            return "Unknown User"
         return obj.created_by.username
     
     def get_community_name(self, obj):
@@ -805,6 +808,7 @@ class CommunityPostSerializer(serializers.ModelSerializer):
     
     def get_community_avatar(self, obj):
         return obj.posted_in.imgURL
+
 
 class getCommunityPostSerializer(serializers.ModelSerializer):
     created_by_username = serializers.SerializerMethodField()
