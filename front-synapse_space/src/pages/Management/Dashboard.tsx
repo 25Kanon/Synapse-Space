@@ -20,12 +20,12 @@ function StatCard({ title, value, icon: Icon, color }: {
     color: string;
 }) {
     return (
-        <div className="bordered border rounded-xl shadow-sm p-6 flex items-center space-x-4">
+        <div className="flex items-center p-6 space-x-4 border shadow-sm bordered rounded-xl">
             <div className={`p-3 rounded-lg ${color}`}>
                 <Icon className="w-6 h-6 text-white" />
             </div>
             <div>
-                <p className="text-gray-500 text-sm font-medium">{title}</p>
+                <p className="text-sm font-medium text-gray-500">{title}</p>
                 <p className="text-2xl font-semibold">{value?.toLocaleString()}</p>
             </div>
         </div>
@@ -35,7 +35,7 @@ function StatCard({ title, value, icon: Icon, color }: {
 function LoadingState() {
     return (
         <div className="flex items-center justify-center h-[400px] bg-white rounded-xl">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            <div className="w-12 h-12 border-b-2 border-gray-900 rounded-full animate-spin"></div>
         </div>
     );
 }
@@ -43,10 +43,10 @@ function LoadingState() {
 function ErrorState({ onRetry }: { onRetry: () => void }) {
     return (
         <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-xl">
-            <p className="text-gray-500 mb-4">Failed to load engagement data</p>
+            <p className="mb-4 text-gray-500">Failed to load engagement data</p>
             <button
                 onClick={onRetry}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-600"
             >
                 Try Again
             </button>
@@ -101,6 +101,7 @@ function Dashboard() {
         disliked_posts: 0,
         most_active_user: null,
         most_active_community: null,
+        least_active_community: null,
     };
 
 
@@ -113,12 +114,12 @@ function Dashboard() {
             <div className="flex-1">
                 <Header />
                 <main>
-                    <div className="flex flex-col space-y-6 m-6">
+                    <div className="flex flex-col m-6 space-y-6">
                         <div>
                             <h1 className="text-2xl font-bold ">Dashboard</h1>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             <StatCard
                                 title="Total Users"
                                 value={selectedPoint?.users || latestData.users} // Use selected point or latest data
@@ -157,10 +158,10 @@ function Dashboard() {
                             />
                         </div>
 
-                        <div className="bg-base-100 rounded-xl shadow-sm p-6">
+                        <div className="p-6 shadow-sm bg-base-100 rounded-xl">
                             <div className="flex flex-col space-y-4">
                                 <div
-                                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                                     <div>
                                         <h2 className="text-lg font-semibold ">Engagement Trends</h2>
                                         <p className="text-sm ">Visual representation of engagement metrics
@@ -170,7 +171,7 @@ function Dashboard() {
                                 </div>
                                 <MetricSelector selected={selectedMetric} onChange={setSelectedMetric}/>
                             </div>
-                            <div className="mt-6 flex flex-row">
+                            <div className="flex flex-row mt-6">
                                 <div className="w-full">
                                     {isLoading ? (
                                         <LoadingState/>
@@ -197,6 +198,12 @@ function Dashboard() {
                                     <StatCard
                                         title="Most Active Community"
                                         value={selectedPoint?.most_active_community|| latestData.most_active_community}
+                                        icon={Medal}
+                                        color="bg-primary"
+                                    />
+                                    <StatCard
+                                        title="Least Active Community"
+                                        value={selectedPoint?.least_active_community || latestData.least_active_community}
                                         icon={Medal}
                                         color="bg-primary"
                                     />

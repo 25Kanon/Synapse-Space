@@ -55,4 +55,5 @@ export interface EngagementData {
     disliked_posts: number;
     most_active_user: string;
     most_active_community: string;
+    least_active_community: string;
 }

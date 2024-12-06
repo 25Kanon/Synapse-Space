@@ -2364,7 +2364,20 @@ class InteractionTrendView(APIView):
             .order_by('-activity_count')  # Sort by total activity count
             .first()
         )
-
+        
+        least_active_community = (
+            Community.objects.annotate(
+                post_count=Count('post', distinct=True),  # Count posts in the community
+                comment_count=Count('post__comments', distinct=True),  # Count comments in the community
+                like_count=Count('post__likes', distinct=True),  # Count likes in the community
+                activity_count=Count('post', distinct=True) + Count('post__comments', distinct=True) + Count('post__likes', distinct=True)  # Combine engagement metrics
+            )
+            .filter(activity_count__gt=0)  # Exclude communities with no activity
+            .order_by('activity_count')  # Sort by total activity count (ascending)
+            .first()  # Get the least engaged community
+        )
+        
+        
         # Initialize a dictionary to store counts by date
         activity_counts = defaultdict(
             lambda: {'users': 0, 'communities': 0,  'posts': 0, 'comments': 0, 'liked_posts': 0, 'disliked_posts': 0})
@@ -2427,7 +2440,8 @@ class InteractionTrendView(APIView):
                 'liked_posts': counts['liked_posts'],
                 'disliked_posts': counts['disliked_posts'],
                 'most_active_user': most_active_user.username,
-                'most_active_community': most_active_community.name
+                'most_active_community': most_active_community.name,
+                'least_active_community': least_active_community.name
             }
             for date_str, counts in sorted(activity_counts.items())
         ]
