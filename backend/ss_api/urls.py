@@ -23,7 +23,7 @@ from .views import (RegisterView, LoginView, LogoutView, ChangePasswordView, Com
                     UpdateSettingsView, ModeratorSettingsDetailView, getCommunityActivities, createCommunityActivity,
                     communityActivityParticipantView, activityRatingViewset, getCommunityView,
                     getJoinedCommunityActivities, NotInterestedView, PostRecommendationView, ActivityRecommendationView,
-                    CombinedPostView, CombinedActivityView)
+                    CombinedPostView, CombinedActivityView, PollViewSet, PollListView, PollDetailView, PollVoteView)
 from django.contrib import admin
 
 
@@ -107,6 +107,10 @@ urlpatterns = [
     path('community/<int:community_id>/activity/<int:activity_id>/rating/', activityRatingViewset.as_view(), name='activity-rating'),
     path('community/joined/activities/', getJoinedCommunityActivities.as_view(), name='joined-community-activities'),
 
+    path('community/polls/', PollListView.as_view(), name='poll-list'),
+    path('community/<int:community_id>/polls/', PollListView.as_view(), name='poll-list'),
+    path('community/polls/<int:pk>/', PollDetailView.as_view(), name='poll-detail'),
+    path('community/polls/<int:pk>/vote/', PollVoteView.as_view(), name='poll-vote'),
 
     path('not-interested/', NotInterestedView.as_view(), name='not-interested'),
 
@@ -150,6 +154,8 @@ urlpatterns = [
 
     path('recommendations/combined-posts/', CombinedPostView.as_view(), name='combined-posts'),
     path('recommendations/combined-activities/', CombinedActivityView.as_view(), name='combined-activities'),
+
+
 
     # path('check_profanity/', ProfanityCheckView.as_view(), name='check_profanity'),
 ]

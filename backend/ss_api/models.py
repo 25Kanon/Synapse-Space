@@ -356,3 +356,23 @@ class NotInterested(models.Model):
 
     class Meta:
         unique_together = ('user', 'post', 'activity', 'community')
+
+
+class Poll(models.Model):
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, null=True, blank=True)
+    question = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    options = JSONField(default=list)  # Stores options as a list
+    created_at= models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.question
+
+
+class Vote(models.Model):
+    poll = models.ForeignKey(Poll, related_name='votes', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    option = models.IntegerField()
+
+    def __str__(self):
+        return f"Vote {self.option} for Poll {self.poll.id}"

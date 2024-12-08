@@ -59,6 +59,7 @@
     "react-easy-crop": "^5.0.8",
     "react-helmet": "^6.1.0",
     "react-helmet-async": "^2.0.5",
+    "react-leaf-polls": "^1.1.6",
     "react-router-dom": "^6.26.1",
     "react-tailwindcss-datepicker": "^1.7.2",
     "react-toastify": "^10.0.6",

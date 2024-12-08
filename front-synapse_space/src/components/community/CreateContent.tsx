@@ -3,8 +3,9 @@ import CreatePost from "./CreatePost";
 import { CreateActivity } from "./CreateActivity";
 import { useMemberships } from "../../context/MembershipContext";
 import AuthContext from "../../context/AuthContext";
+import PollCreator from "./PollCreator";
 
-const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCreated }) => {
+const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCreated, onPollCreated }) => {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [activeTab, setActiveTab] = useState("post");
     const { memberships } = useMemberships();
@@ -54,6 +55,14 @@ const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCr
                         >
                             Create Post
                         </button>
+
+                        <button
+                            className={`tab ${activeTab === "poll" ? "tab-active" : ""}`}
+                            onClick={() => handleTabChange("poll")}
+                        >
+                            Start a Poll
+                        </button>
+
                         {role !== "member" && (
                             <button
                                 className={`tab ${activeTab === "activity" ? "tab-active" : ""}`}
@@ -65,15 +74,18 @@ const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCr
                     </div>
                     <div className="mt-4">
                         {activeTab === "post" && (
-                            <CreatePost
-                                userName={userName}
-                                community={community}
-                                rules={rules}
-                                onPostCreated={() => {
-                                    onPostCreated(); // Trigger refresh in parent
-                                    setIsFormVisible(false);
-                                }}
-                            />
+                            <>
+                                <CreatePost
+                                    userName={userName}
+                                    community={community}
+                                    rules={rules}
+                                    onPostCreated={() => {
+                                        onPostCreated(); // Trigger refresh in parent
+                                        setIsFormVisible(false);
+                                    }}
+                                />
+                            </>
+
                         )}
                         {activeTab === "activity" && (
                             <CreateActivity
@@ -83,6 +95,18 @@ const CreateContent = ({ userName, community, rules, onPostCreated, onActivityCr
                                     setIsFormVisible(false);
                                 }}
                             />
+                        )}
+
+                        {activeTab === "poll" && (
+                            <>
+                                <PollCreator communityId={community}
+                                    onPollCreated={() => {
+                                    onPollCreated(); // Trigger refresh in parent
+                                    setIsFormVisible(false);
+                                    }}
+                                />
+                            </>
+
                         )}
                     </div>
                 </div>

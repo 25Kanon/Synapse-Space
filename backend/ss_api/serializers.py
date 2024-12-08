@@ -22,7 +22,8 @@ from .models import (User, Community, Membership,
                      Post, Comment, SavedPost, LikedPost,
                      Reports, FriendRequest, Program,
                      Notification, DislikedPost, Feedback, SystemSetting,
-                     ModeratorSettings, CommunityActivity, ActivityParticipants, ActivityRating, NotInterested)
+                     ModeratorSettings, CommunityActivity, ActivityParticipants, ActivityRating, NotInterested, Poll,
+                     Vote)
 
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -1200,3 +1201,21 @@ class NotInterestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotInterested
         fields = ['user', 'post', 'activity', 'community']
+
+
+class PollSerializer(serializers.ModelSerializer):
+
+    created_by = serializers.CharField( read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    class Meta:
+        model = Poll
+        fields = ['id', 'community', 'question', 'options', 'created_by', 'created_at']
+
+class VoteSerializer(serializers.ModelSerializer):
+
+    user = serializers.CharField( read_only=True)
+    poll = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Vote
+        fields = ['poll', 'user', 'option']

@@ -12,6 +12,7 @@ import JoinCommuinityBtn from "../../components/community/JoinCommuinityBtn";
 import {ActivityFeedCard} from "../../components/community/ActivityFeedCard"
 import { Helmet } from "react-helmet";
 import {useMemberships} from "../../context/MembershipContext";
+import PollsList from "../../components/community/PollsList";
 
 export default function Community() {
     const { user } = useContext(AuthContext);
@@ -22,6 +23,7 @@ export default function Community() {
     const [error, setError] = useState(null);
     const [postCreated, setPostCreated] = useState(false);
     const [activitiesCreated, setActivitiesCreated] = useState(false);
+    const [pollCreated, setPollCreated] = useState(false);
     const [membership, setMembership] = useState({});
 
 
@@ -227,6 +229,7 @@ export default function Community() {
                         rules={communityDetails?.rules}
                         onPostCreated={() => setPostCreated((prev) => !prev)}
                         onActivityCreated={() => setActivitiesCreated((prev) => !prev)}
+                        onPollCreated={() => setPollCreated((prev) => !prev)}
                     />
                     <div role="tablist" className="tabs tabs-lifted tabs-lg m-3">
                         <input
@@ -239,6 +242,7 @@ export default function Community() {
                         />
                         <div role="tabpanel" className="tab-content bg-base-100 p-6 border rounded-box">
                             <>
+                                <PollsList communityId={id} />
                                 {communityPosts.length > 0 ? (
                                     communityPosts.map((post) => (
                                         <CommunityPost

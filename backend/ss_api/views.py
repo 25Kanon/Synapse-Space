@@ -23,8 +23,8 @@ from django.contrib.auth.password_validation import validate_password
 
 from django.db.models import Count
 # Rest Framework imports
-from rest_framework import generics, permissions, status, serializers
-from rest_framework.decorators import api_view
+from rest_framework import generics, permissions, status, serializers, viewsets
+from rest_framework.decorators import api_view, action
 from rest_framework import exceptions as rest_exceptions, response, decorators as rest_decorators, permissions as rest_permissions
 from rest_framework.generics import get_object_or_404, UpdateAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -62,7 +62,7 @@ from . import adapters
 # Local imports
 from .models import Community, Membership, Post, LikedPost, Likes, Comment, User, Reports, Friendship, FriendRequest, \
     Program, Notification, SavedPost, DislikedPost, CommentVote, Feedback, SystemSetting, ModeratorSettings, \
-    CommunityActivity, ActivityParticipants, ActivityRating, UserActivity, NotInterested
+    CommunityActivity, ActivityParticipants, ActivityRating, UserActivity, NotInterested, Poll, Vote
 from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer,
                           CustomTokenRefreshSerializer, CreateCommunitySerializer, CreateMembership,
                           MembershipSerializer, CommunitySerializer, CreatePostSerializer,
@@ -74,7 +74,7 @@ from .serializers import (UserSerializer, RegisterSerializer, CustomTokenObtainP
                           DislikedPostSerializer, ContentSerializer, FeedbackSerializer,
                           CustomTokenObtainPairSerializerStaff, SystemSettingSerializer, ModeratorSettingsSerializer,
                           CommunityActivitySerializer, ActivityParticipantsSerializer, RatingSerializer,
-                          NotInterestedSerializer,
+                          NotInterestedSerializer, PollSerializer, VoteSerializer,
                           )
 from .permissions import IsCommunityMember, CookieJWTAuthentication, IsCommunityAdminORModerator, IsCommunityAdmin, \
     IsSuperUser, RefreshCookieJWTAuthentication, IsSuperUserOrStaff, isCommunityViewer
@@ -2971,3 +2971,125 @@ class CombinedActivityView(APIView):
         serialized_activities = self.serializer_class(paginated_activities, many=True)
 
         return paginator.get_paginated_response(serialized_activities.data)
+
+
+class PollViewSet(APIView):
+    def get(self, request, pk=None):
+        if pk:
+            poll = Poll.objects.get(pk=pk).order_by('-created_at')
+            serializer = PollSerializer(poll)
+        else:
+            polls = Poll.objects.all()
+            serializer = PollSerializer(polls, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = PollSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
+    def vote(self, request, pk=None):
+        poll = Poll.objects.get(pk=pk)
+        serializer = VoteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(poll=poll, user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PollDetailView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk):
+        poll = get_object_or_404(Poll, pk=pk)
+        serializer = PollSerializer(poll)
+        return Response(serializer.data)
+
+class PollListView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, community_id):
+        polls = Poll.objects.filter(community_id=community_id)
+        user_votes = Vote.objects.filter(user=request.user).values('poll_id', 'option')
+
+        polls_with_votes = []
+        for poll in polls:
+            options_votes = [
+                {
+                    'text': option,
+                    'votes': poll.votes.filter(option=index).count()  # Count votes for each option
+                }
+                for index, option in enumerate(poll.options)
+            ]
+
+            user_vote = next((vote['option'] for vote in user_votes if vote['poll_id'] == poll.id), None)
+
+            polls_with_votes.append({
+                'id': poll.id,
+                'question': poll.question,
+                'options': options_votes,
+                'created_by': poll.created_by.username,
+                'created_at': poll.created_at,
+                'user_vote': user_vote  # Add the user's vote (if exists)
+            })
+
+        return Response(polls_with_votes)
+
+    def post(self, request):
+        serializer = PollSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(created_by=self.request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PollVoteView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request, pk):
+        poll = get_object_or_404(Poll, pk=pk)
+        user = request.user
+        serializer = VoteSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Check if the user has already voted in this poll
+            existing_vote = Vote.objects.filter(poll=poll, user=user).first()
+
+            if existing_vote:
+                # If the user has already voted, update their existing vote
+                existing_vote.option = serializer.validated_data['option']
+                existing_vote.save()
+
+                # Optionally return the updated vote counts
+                updated_poll = Poll.objects.get(pk=pk)
+                option_votes = {
+                    option: updated_poll.votes.filter(option=option).count()
+                    for option in range(len(updated_poll.options))  # Adjust based on your options logic
+                }
+
+                return Response({
+                    'message': 'Vote successfully updated',
+                    'votes': option_votes
+                }, status=status.HTTP_200_OK)
+
+            else:
+                # If the user hasn't voted yet, create a new vote
+                serializer.save(poll=poll, user=user)
+
+                # Optionally return the updated vote counts
+                updated_poll = Poll.objects.get(pk=pk)
+                option_votes = {
+                    option: updated_poll.votes.filter(option=option).count()
+                    for option in range(len(updated_poll.options))  # Adjust based on your options logic
+                }
+
+                return Response({
+                    'message': 'Vote successfully recorded',
+                    'votes': option_votes
+                }, status=status.HTTP_201_CREATED)
+
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
