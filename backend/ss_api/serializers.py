@@ -1192,9 +1192,13 @@ class ActivityParticipantsSerializer(serializers.ModelSerializer):
 
 class RatingSerializer(serializers.ModelSerializer):
     sentiment = serializers.CharField(read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
     class Meta:
         model = ActivityRating
-        fields = ['id', 'activity', 'user', 'rating', 'comment', 'sentiment']
+        fields = ['id', 'activity', 'user', 'username' , 'rating', 'comment', 'sentiment']
+
+    def get_username(self, obj):
+        return obj.user.username
 
 
 class NotInterestedSerializer(serializers.ModelSerializer):

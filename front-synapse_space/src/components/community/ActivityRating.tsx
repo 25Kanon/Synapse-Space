@@ -59,7 +59,7 @@ export function ActivityRating({ activityId, onClose, community }: ActivityRatin
     return (
         <div className="bg-base-200 p-6 rounded-lg shadow-lg">
             <h3 className="text-xl font-bold mb-4">Rate This Activity</h3>
-            {isLoading && <Loading />}
+            {isLoading && <Loading loadingText='Please Wait' />}
             {error && <ErrorAlert text={error} />}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
@@ -74,6 +74,8 @@ export function ActivityRating({ activityId, onClose, community }: ActivityRatin
                                 {...register('rating', { required: true })}
                                 className="mask mask-star-2 bg-orange-400"
                                 value={value}
+                                defaultChecked={value === 1}
+                                required
                             />
                         ))}
                     </div>

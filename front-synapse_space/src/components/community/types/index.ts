@@ -72,7 +72,9 @@ export interface ActivitySentiment {
 }
 
 export interface ActivityRating {
+    id: number;
     user: number;
+    username: string;
     activity: number;
     rating: number;
     comment?: string;

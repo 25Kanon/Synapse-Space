@@ -10,6 +10,7 @@ import { useMemberships } from "../../context/MembershipContext";
 import { CollapsibleText } from "./CollapsibleText";
 import { ActivityRating } from "./ActivityRating";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import {LeafPoll} from "react-leaf-polls";
 
 interface ActivityFeedCardProps {
     activity: CommunityActivity;
@@ -226,36 +227,54 @@ export function ActivityFeedCard({activity}: ActivityFeedCardProps) {
                     {activity.status}
                 </span>
                 <h3 className="text-xl font-bold">{activity.title}</h3>
-                <CollapsibleText text={activity.description} maxLength={150} />
+                <CollapsibleText text={activity.description} maxLength={150}/>
 
                 <div className="space-y-1 text-sm text-secondary">
                     <div className="flex items-center">
-                        <Calendar size={16} className="mr-2" />
+                        <Calendar size={16} className="mr-2"/>
                         {formatDate(activity.startDate)} - {formatDate(activity.endDate)}
                     </div>
                     <div className="flex items-center">
-                        <MapPin size={16} className="mr-2" />
+                        <MapPin size={16} className="mr-2"/>
                         {activity.location}
                     </div>
                     <div className="flex items-center">
-                        <Users size={16} className="mr-2" />
+                        <Users size={16} className="mr-2"/>
                         Participants: {participants.length}/{activity.max_participants}
                     </div>
 
                     {rating.length > 0 && (
-                        <div className="flex items-center gap-2">
-                            <EmotionIcon rating={averageRating} />
-                            <span>{averageRating.toFixed(1)} ({rating.length} ratings)</span>
-                        </div>
+                        <>
+                            <div className="flex items-center gap-2">
+                                <EmotionIcon rating={averageRating}/>
+                                <span>{averageRating.toFixed(1)} ({rating.length} ratings)</span>
+                            </div>
+
+                            <div className="collapse collapse-arrow join-item border-base-300 border gap-2">
+                                {/* Accordion Container */}
+                                <input type="checkbox" className="collapse-checkbox" id="polls-accordion"/>
+                                <div className="collapse-title text-sm font-medium">
+                                    View Feedbacks
+                                </div>
+                                <div className="collapse-content">
+                                    {rating.map((rate) => (
+                                        <div key={rate.id}
+                                             className="w-full mb-2 border border-solid shadow-xl card card-compact p-3">
+                                            <p className="text-sm font-semibold">{rate.username}</p>
+                                            <p className="text-sm">{rate.comment}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
                     )}
 
                     {rating.length > 0 && (
-                        <SentimentSummary sentiments={sentimentCounts} />
+                        <SentimentSummary sentiments={sentimentCounts}/>
                     )}
-
-
                 </div>
             </div>
+
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-4">
