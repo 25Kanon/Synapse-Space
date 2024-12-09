@@ -55,7 +55,7 @@ def validate_embeddings(embeddings):
 
 
 # Content-Based Filtering
-def content_based_recommendation(user_id, score_threshold=0.3):
+def content_based_recommendation(user_id, score_threshold=0.2):
     user = User.objects.get(id=user_id)
     user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
     not_interested_communities = NotInterested.objects.filter(user_id=user_id).values_list('community_id', flat=True)
@@ -77,6 +77,7 @@ def content_based_recommendation(user_id, score_threshold=0.3):
         logger.error("User embedding is empty, cannot proceed with content-based filtering.")
         return []
 
+    print(user_text)
     communities = list(Community.objects.exclude(id__in=user_memberships).exclude(id__in=not_interested_communities))
 
     community_embeddings = [
@@ -169,7 +170,7 @@ def normalize_scores(scores):
     return [(score - min_score) / (max_score - min_score) for score in scores]
 
 
-def get_hybrid_recommendations(user_id, cbf_weight=0.6, cf_weight=0.4, score_threshold=0.3):
+def get_hybrid_recommendations(user_id, cbf_weight=0.6, cf_weight=0.4, score_threshold=0.2):
     """
     Combine content-based and collaborative filtering recommendations, excluding communities the user is already a member of.
     Normalize the scores from both methods and filter by a similarity/popularity threshold.
