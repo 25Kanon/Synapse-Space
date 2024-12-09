@@ -55,31 +55,37 @@ def validate_embeddings(embeddings):
 
 
 # Content-Based Filtering
-def content_based_recommendation(user_id, score_threshold=0.2):
+def content_based_recommendation(user_id, score_threshold=0.3):
     user = User.objects.get(id=user_id)
     user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
     not_interested_communities = NotInterested.objects.filter(user_id=user_id).values_list('community_id', flat=True)
 
+    # User interests from profile
     user_interests = " ".join(user.interests)
+
+    # Get recent visits and searches - weight them more as they reflect recent interests
     user_visits = " ".join(
         [activity.activity_data for activity in
-         UserActivity.objects.filter(user_id=user_id, activity_type="visit").order_by('-timestamp')[:5]]
+         UserActivity.objects.filter(user_id=user_id, activity_type="visit").order_by('-timestamp')[:10]]
     )
     user_searches = " ".join(
         [activity.activity_data for activity in
-         UserActivity.objects.filter(user_id=user_id, activity_type="search").order_by('-timestamp')[:5]]
+         UserActivity.objects.filter(user_id=user_id, activity_type="search").order_by('-timestamp')[:10]]
     )
 
-    user_text = f"{user_interests} {user_visits} {user_searches}"
+    # Include visits and searches in the user profile but also allow these to be recommended even if they aren't in interests
+    user_text = f"{user_interests} {user_searches} {user_visits} "
+
+    # Generate user embedding based on all user activities
     user_embedding = get_embedding(user_text, cache_key=f"user_{user.id}", cache_type="users")
 
     if user_embedding is None:
         logger.error("User embedding is empty, cannot proceed with content-based filtering.")
         return []
 
-    print(user_text)
     communities = list(Community.objects.exclude(id__in=user_memberships).exclude(id__in=not_interested_communities))
 
+    # Generate embeddings for each community
     community_embeddings = [
         get_embedding(
             f"{community.name} {community.keyword}",
@@ -94,16 +100,27 @@ def content_based_recommendation(user_id, score_threshold=0.2):
         logger.error("No valid community embeddings available.")
         return []
 
+    # Calculate similarity between the user and the communities
     similarities = cosine_similarity([user_embedding], community_embeddings)[0]
 
     recommended_communities = []
     for community, similarity in zip(communities, similarities):
+        # If similarity score is above threshold, recommend the community
         if similarity >= score_threshold:
             combined_text = f"{community.name} {community.keyword}".lower()
+
+            # Match user interests, but also recommend based on visits and searches
             matching_interests = [interest for interest in user.interests if interest.lower() in combined_text]
-            reason = f"Matches your interest: {', '.join(matching_interests)}" if matching_interests else "Recommended for you"
+
+            # Reason for recommendation (matches interests or based on recent activity)
+            if matching_interests:
+                reason = f"Matches your interest: {', '.join(matching_interests)}"
+            else:
+                reason = "Recommended based on your recent searches and visits."
+
             recommended_communities.append((community, similarity, reason))
 
+    # Sort the recommendations by similarity score
     recommended_communities = sorted(recommended_communities, key=lambda x: x[1], reverse=True)
     return recommended_communities
 
@@ -142,8 +159,8 @@ def collaborative_filtering(user_id, score_threshold=0.25):
             user_id=user_id, activity_type='search', activity_data=community.name
         ).count()
 
-        visit_score_adjustment[community.id] = visit_score * 0.1
-        search_score_adjustment[community.id] = search_score * 0.1
+        visit_score_adjustment[community.id] = visit_score * 0.5
+        search_score_adjustment[community.id] = search_score * 0.3
 
     recommended_communities = []
     for community in communities:
