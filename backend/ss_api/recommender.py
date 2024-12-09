@@ -108,7 +108,7 @@ def content_based_recommendation(user_id, score_threshold=0.2):
     return recommended_communities
 
 
-def collaborative_filtering(user_id, score_threshold=0.3):
+def collaborative_filtering(user_id, score_threshold=0.25):
     user_memberships = Membership.objects.filter(user_id=user_id).values_list('community_id', flat=True)
     not_interested_communities = NotInterested.objects.filter(user_id=user_id).values_list('community_id', flat=True)
 
