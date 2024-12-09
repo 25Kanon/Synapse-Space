@@ -7,35 +7,59 @@ import UserList from '../search/UserList';
 import CommunityCard from '../search/CommunityCard';
 import { AuthContext } from '../../context/AuthContext';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
+import { debounce } from 'lodash';
+import Loading from '../Loading';
+
+
+
 const Search = () => {
-    // const [communities, setCommunities] = useState([]);
     const [userList, setUserList] = useState([]);
     const { memberships } = useMemberships();
     const location = useLocation();
-    const { query } = location.state || {}; // Access the search query
-    const [searchQuery, setSearchQuery] = useState(query);
+    const { query } = location.state || {}; // Access the search query from navigation state
+    const [searchQuery, setSearchQuery] = useState(query || ''); // Initialize with query from state
     const { user } = useContext(AuthContext);
-    const [activeTab, setActiveTab] = useState('communities'); // State for active tab
+    const [activeTab, setActiveTab] = useState('communities');
 
+    // Debounced state for triggering search
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
-    // Fetch callback for communities to be used with useInfiniteScroll hook
-    const fetchCommunities =
-        async (page) => {
-            const response = await AxiosInstance.get(`/api/community/?search=${searchQuery.trim()}&page=${page}`, {
-                withCredentials: true,
-            });
-            return response;
-        };
-    // Use useInfiniteScroll hook for communities
+    // Debounce function to update search query
+    const debounceSearch = useCallback(
+        debounce((value) => {
+            setDebouncedSearchQuery(value);
+        }, 500),
+        []
+    );
+
+    useEffect(() => {
+        debounceSearch(searchQuery);
+    }, [searchQuery, debounceSearch]);
+
+    // Update searchQuery when navigating from another page
+    useEffect(() => {
+        if (query) {
+            setSearchQuery(query);
+        }
+    }, [query]);
+
+    // Fetch callback for communities
+    const fetchCommunities = async (page) => {
+        const response = await AxiosInstance.get(`/api/community/?search=${debouncedSearchQuery.trim()}&page=${page}`, {
+            withCredentials: true,
+        });
+        return response;
+    };
+
+    // Infinite scroll for communities
     const {
         loading: communitiesLoading,
         items: communities,
         hasMore: communitiesHasMore,
         loadMore: loadMoreCommunities,
         error: communitiesError,
-    } = useInfiniteScroll(fetchCommunities, [searchQuery]);
+    } = useInfiniteScroll(fetchCommunities, [debouncedSearchQuery]);
 
-    // Infinite scroll event listener for loading more communities
     useEffect(() => {
         if (activeTab === 'communities') {
             const handleScroll = () => {
@@ -53,28 +77,25 @@ const Search = () => {
         }
     }, [loadMoreCommunities, communitiesLoading, communitiesHasMore, activeTab]);
 
+    // Fetch callback for users
+    const fetchUsers = async (page) => {
+        const response = await AxiosInstance.get(`/api/users/?search=${debouncedSearchQuery.trim()}&page=${page}`, {
+            withCredentials: true,
+        });
+        const filteredData = response.data.results.filter((item) => item.id !== user.id);
+        response.data.results = filteredData;
+        return response;
+    };
 
-    // Fetch callback for users to be used with useInfiniteScroll hook
-    const fetchUsers =
-        async (page) => {
-            const response = await AxiosInstance.get(`/api/users/?search=${searchQuery.trim()}&page=${page}`, {
-                withCredentials: true,
-            });
-            const filteredData = response.data.results.filter((item) => item.id !== user.id);
-            response.data.results = filteredData;
-            return response;
-        };
-
-    // Use useInfiniteScroll hook for users
+    // Infinite scroll for users
     const {
         loading: usersLoading,
         items: users,
         hasMore: usersHasMore,
         loadMore: loadMoreUsers,
         error: usersError,
-    } = useInfiniteScroll(fetchUsers, [searchQuery]);
+    } = useInfiniteScroll(fetchUsers, [debouncedSearchQuery]);
 
-    // Infinite scroll event listener for loading more users
     useEffect(() => {
         if (activeTab === 'users') {
             const handleScroll = () => {
@@ -91,6 +112,7 @@ const Search = () => {
             return () => window.removeEventListener('scroll', handleScroll);
         }
     }, [loadMoreUsers, usersLoading, usersHasMore, activeTab]);
+
     const getInitials = (name) => {
         if (!name) return '';
         return name.split(' ').map(word => word[0]).join('');
@@ -117,7 +139,9 @@ const Search = () => {
             <div className="mt-4">
                 {activeTab === 'communities' && (
                     <div className="flex flex-wrap">
-                        {communities.length > 0 ? (
+                        {communitiesLoading ? (
+                            <><div className='w-full flex justify-center'><Loading loadingText="Searching for communities" /></div></>
+                        ) : communities.length > 0 ? (
                             communities.map((community, index) => {
                                 const isJoined = memberships.some(
                                     (membership) => membership.community === community.id
@@ -132,24 +156,31 @@ const Search = () => {
                                 );
                             })
                         ) : (
-                            <p className="w-full text-center">No communities found.</p>
+                            <p className="w-full text-center">No communities found.</p> // Show message if no communities after loading
                         )}
-
                     </div>
                 )}
                 {activeTab === 'users' && (
                     <div className="flex flex-wrap">
-                        <UserList
-                            users={users}
-                            resultCount={users.length}
-                            searchQuery={searchQuery}
-                        />
+                        {usersLoading ? (
+                            <>
+                                <div className='w-full flex justify-center'><Loading
+                                    loadingText="Searching for users"/></div>
+                            </>
+                        ) : users.length > 0 ? (
+                            <UserList
+                                users={users}
+                                resultCount={users.length}
+                                searchQuery={debouncedSearchQuery}
+                            />
+                        ) : (
+                            <p className="w-full text-center">No users found.</p> // Show message if no users after loading
+                        )}
                     </div>
                 )}
             </div>
         </>
     );
-
-}
+};
 
 export default Search;

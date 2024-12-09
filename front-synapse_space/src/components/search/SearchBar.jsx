@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SearchBar = ({ searchQuery, setSearchQuery }) => {
+const SearchBar = ({ searchQuery, setSearchQuery, children }) => {
   // Handle input change
   const handleInputChange = (event) => {
     setSearchQuery(event.target.value);
@@ -20,6 +20,7 @@ const SearchBar = ({ searchQuery, setSearchQuery }) => {
             className="input input-bordered" // w-full allows it to take full width within max-w-lg
           />
         </div>
+          {children}
       </div>
     </div>
   );
