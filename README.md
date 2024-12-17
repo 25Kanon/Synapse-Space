@@ -9,21 +9,23 @@ To get this project up and running on your local machine, follow these steps:
 - A package manager like npm or yarn
 
 - Python installed on your machine
+- Make sure environment variables are properly configured
 
-### Installation
-
-  
-
-1.  **Clone the repository**
-	```bash
-
+	 ```bash
 	git clone https://github.com/25Kanon/Synapse-Space.git
 
 	cd <repository-name>
-
+	*front-end directory*
  	cd front-synapse_space
+ 	*backend-end directory*
+ 	cd front-backend
 	```
-2. **Install dependencies**
+
+### Installation
+
+> Front-end
+
+1. **Install dependencies**
 
 	Navigate to the project directory and run:
 	```bash
@@ -33,7 +35,7 @@ To get this project up and running on your local machine, follow these steps:
 	```bash
 	yarn install
 	```
-3. **Start the development server**
+2. **Start the development server**
 	```bash
 	npm  start
 	```
@@ -42,7 +44,19 @@ To get this project up and running on your local machine, follow these steps:
 	yarn start
 	```
 
-## Note
-We're not going to proceed with the functionalities yet. Focus on developing the interface and the components. Ensuring it is responsive and intuitive. 
+> Back-end
+1. **Install dependencies**
 
-To add, we must made a color theming for both dark and light mode.  Since Daisy UI will be used along with tailwind, we can utilize their theme generator for more easy color scheme creation. https://daisyui.com/theme-generator/
+	Navigate to the project directory and run:
+	```bash
+	pip install -r requirements.txt
+	```
+2. **Create and run migrations**
+	```bash
+	python manage.py makemigrations
+	python manage.py migrate
+	```
+3. **Run and serve**
+	```bash
+	python manage.py runserver
+	```
